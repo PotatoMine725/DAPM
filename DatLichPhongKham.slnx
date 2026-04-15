@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ClinicBooking.Api/ClinicBooking.Api.csproj" Id="023cb740-e0d2-4535-afee-157b4f1eaf7d" />
+  <Project Path="ClinicBooking.Application/ClinicBooking.Application.csproj" Id="9c7af9b3-2af5-48a4-910f-bbef2b2ff653" />
+  <Project Path="ClinicBooking.Domain/ClinicBooking.Domain.csproj" Id="bb6b25d4-66c7-4270-9533-aa30bed03113" />
+  <Project Path="ClinicBooking.Infrastructure/ClinicBooking.Infrastructure.csproj" Id="18ecc0e8-4425-4b7c-b268-48b83125eeee" />
+</Solution>

@@ -1,0 +1,35 @@
+wing: datlichphongkham
+rooms:
+- name: clinicbooking.api
+  description: Files from ClinicBooking.Api/
+  keywords:
+  - clinicbooking.api
+  - clinicbooking.api
+- name: clinicbooking.application
+  description: Files from ClinicBooking.Application/
+  keywords:
+  - clinicbooking.application
+  - clinicbooking.application
+- name: clinicbooking.domain
+  description: Files from ClinicBooking.Domain/
+  keywords:
+  - clinicbooking.domain
+  - clinicbooking.domain
+- name: clinicbooking.infrastructure
+  description: Files from ClinicBooking.Infrastructure/
+  keywords:
+  - clinicbooking.infrastructure
+  - clinicbooking.infrastructure
+- name: backend
+  description: Files from database/
+  keywords:
+  - backend
+  - database
+- name: documentation
+  description: Files from docs/
+  keywords:
+  - documentation
+  - docs
+- name: general
+  description: Files that don't fit other rooms
+  keywords: []

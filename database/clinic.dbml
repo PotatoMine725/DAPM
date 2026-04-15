@@ -1,0 +1,335 @@
+// ERD - He thong quan ly phong kham (module dat lich + ho so kham)
+// Dan toan bo vao https://dbdiagram.io
+//
+// Quy uoc dat ten: snake_case, tien to ro rang
+//   - khoa chinh:   id_[ten_bang]
+//   - khoa ngoai:   id_[bang_tham_chieu]
+//   - truong thuong: [ten_mo_ta_ro_rang]
+//
+// THAY DOI SO VOI PHIEN BAN CU:
+//   [1] Xoa FK du thua: ho_so_kham.id_benh_nhan, hang_cho.id_benh_nhan
+//       Giu ca_lam_viec.id_chuyen_khoa nhung ghi ro rang buoc dam bao dong bo
+//   [2] Tach lich_hen: chuyen audit trail sang bang lich_su_lich_hen moi
+//   [3] Them bang thuoc (danh muc), toa_thuoc tham chieu FK thay vi free text
+//   [4a] Them bang mau_thong_bao, thong_bao chi luu bien da render
+//   [4b] Version hoa lich_noi_tru bang ngay_ap_dung + ngay_ket_thuc
+//   [4c] Ghi chu index cho otp_log
+//   [5] Them bang dinh_nghia_ca tach biet nhan hien thi (sang/chieu/toi)
+//       khoi du lieu thuc te (gio_bat_dau/gio_ket_thuc) trong ca_lam_viec
+// ================================================================
+
+
+// ================================================================
+// NHOM 1 — XAC THUC va NGUOI DUNG
+// ================================================================
+
+Table tai_khoan {
+  id_tai_khoan       int      [pk, increment, note: 'Khoa chinh']
+  ten_dang_nhap      varchar  [unique, not null, note: 'Ten dang nhap, khong trung']
+  email              varchar  [unique, not null, note: 'Email dang nhap va nhan thong bao']
+  so_dien_thoai      varchar  [unique, not null, note: 'So dien thoai nhan OTP qua SMS']
+  mat_khau           varchar  [not null, note: 'Mat khau da ma hoa (bcrypt)']
+  vai_tro            varchar  [not null, note: 'admin | le_tan | bac_si | benh_nhan']
+  trang_thai         boolean  [not null, default: true, note: 'True = dang hoat dong, False = bi vo hieu hoa']
+  lan_dang_nhap_cuoi datetime [note: 'Thoi diem dang nhap gan nhat']
+  ngay_tao           datetime [not null]
+}
+
+Table benh_nhan {
+  id_benh_nhan        int      [pk, increment]
+  id_tai_khoan        int      [unique, not null, ref: - tai_khoan.id_tai_khoan, note: 'Lien ket 1-1 voi tai_khoan']
+  ho_ten              varchar  [not null]
+  cccd                varchar  [unique, note: 'So CCCD/CMND, dung de dinh danh khi check-in tai quay']
+  ngay_sinh           date
+  gioi_tinh           varchar  [note: 'nam | nu | khac']
+  dia_chi             varchar  [note: 'Dia chi lien he']
+  so_lan_huy_muon     int      [default: 0, note: 'So lan huy lich trong vong 24h. Dat 3 lan/3 thang thi bi han che']
+  bi_han_che          boolean  [default: false, note: 'Dang bi han che dat lich hay khong']
+  ngay_het_han_che    datetime [note: 'Thoi diem het han che. Null neu khong bi han che']
+  ngay_tao            datetime [not null]
+}
+
+Table bac_si {
+  id_bac_si       int      [pk, increment]
+  id_tai_khoan    int      [unique, not null, ref: - tai_khoan.id_tai_khoan, note: 'Lien ket 1-1 voi tai_khoan']
+  id_chuyen_khoa  int      [not null, ref: > chuyen_khoa.id_chuyen_khoa, note: 'Chuyen khoa bac si hanh nghe']
+  ho_ten          varchar  [not null]
+  anh_dai_dien    varchar  [note: 'URL anh dai dien hien thi tren giao dien']
+  bang_cap        varchar  [note: 'Hoc vi (Bac si, Thac si, Tien si...)']
+  nam_kinh_nghiem int      [note: 'So nam kinh nghiem hanh nghe']
+  tieu_su         varchar  [note: 'Mo ta ngan ve bac si hien thi cho benh nhan']
+  loai_hop_dong   varchar  [not null, note: 'noi_tru | hop_dong']
+  trang_thai      varchar  [not null, note: 'dang_lam | tam_nghi | nghi_viec']
+  ngay_tao        datetime [not null]
+}
+
+Table le_tan {
+  id_le_tan    int      [pk, increment]
+  id_tai_khoan int      [unique, not null, ref: - tai_khoan.id_tai_khoan, note: 'Lien ket 1-1 voi tai_khoan']
+  ho_ten       varchar  [not null]
+  ngay_tao     datetime [not null]
+}
+
+
+// ================================================================
+// NHOM 2 — DANH MUC HE THONG
+// ================================================================
+
+Table chuyen_khoa {
+  id_chuyen_khoa          int     [pk, increment]
+  ten_chuyen_khoa         varchar [unique, not null, note: 'Tim mach, Nhi khoa... Khong trung']
+  mo_ta                   varchar [note: 'Mo ta hien thi cho benh nhan']
+  thoi_gian_slot_mac_dinh int     [not null, note: 'Phut/slot mac dinh khi tao ca: 15 | 20 | 30. Chi la tham chieu, ca thuc te luu rieng']
+  gio_mo_dat_lich         time    [note: 'Gio bat dau nhan dat lich trong ngay']
+  gio_dong_dat_lich       time    [note: 'Gio ket thuc nhan dat lich trong ngay']
+  hien_thi                boolean [default: true, note: 'False thi an khoi giao dien nhung giu nguyen lich su']
+}
+
+Table dich_vu {
+  id_dich_vu         int      [pk, increment]
+  id_chuyen_khoa     int      [not null, ref: > chuyen_khoa.id_chuyen_khoa, note: 'Dich vu thuoc chuyen khoa nao']
+  ten_dich_vu        varchar  [not null, note: 'Kham tong quat, Sieu am o bung...']
+  mo_ta              varchar  [note: 'Mo ta chi tiet hien thi cho benh nhan']
+  thoi_gian_uoc_tinh int      [note: 'Phut uoc tinh thuc hien dich vu']
+  hien_thi           boolean  [default: true, note: 'False thi an nhung giu lich su']
+  ngay_tao           datetime [not null]
+}
+
+Table phong {
+  id_phong   int     [pk, increment]
+  ma_phong   varchar [unique, not null, note: 'Ma phong hien thi: P101, P203...']
+  ten_phong  varchar [not null]
+  suc_chua   int     [note: 'So benh nhan toi da co the cho ben trong phong']
+  trang_bi   varchar [note: 'Mo ta thiet bi trong phong']
+  trang_thai boolean [default: true, note: 'False khi phong dang bao tri hoac tam dong']
+}
+
+// [MOI - 5] Bang dinh nghia ca: tach nhan hien thi khoi du lieu thoi gian thuc te.
+// Moi ban ghi la 1 "khung ca" chuan cua phong kham (VD: Ca sang 7h-12h, Ca chieu 13h-17h).
+// ca_lam_viec tham chieu vao day de lay ten_ca hien thi, nhung van tu luu gio_bat_dau/
+// gio_ket_thuc rieng vi bac si hop dong co the lam lech gio hoac gop ca.
+// Khi bac si lam 2 ca lien tiep (sang+chieu), chi can 1 ban ghi ca_lam_viec voi
+// gio_bat_dau=07:00, gio_ket_thuc=17:00 va id_dinh_nghia_ca tro ve ca gop "sang_chieu"
+// — khong can tao 2 ban ghi rieng.
+Table dinh_nghia_ca {
+  id_dinh_nghia_ca int     [pk, increment]
+  ten_ca           varchar [unique, not null, note: 'Nhan hien thi: sang | chieu | toi | sang_chieu | ca_ngay...']
+  gio_bat_dau_mac_dinh time [not null, note: 'Gio chuan cua khung ca nay. VD sang=07:00, chieu=13:00']
+  gio_ket_thuc_mac_dinh time [not null, note: 'VD sang=12:00, chieu=17:00, toi=21:00']
+  mo_ta            varchar [note: 'Mo ta them cho Admin, VD: Ca gop sang+chieu 7h-17h']
+  trang_thai       boolean [default: true, note: 'False khi phong kham khong con su dung khung ca nay']
+}
+
+
+// ================================================================
+// NHOM 3 — CA LAM VIEC
+// ================================================================
+
+// [SUA - 4b] Them ngay_ap_dung + ngay_ket_thuc de version hoa lich noi tru.
+// Khi Admin sua lich co dinh, cap nhat ngay_ket_thuc cua ban ghi cu = hom nay,
+// tao ban ghi moi voi ngay_ap_dung = hom nay + 1. Khong xoa ban ghi cu.
+// He thong sinh ca tu dong chi lay ban ghi co ngay_ket_thuc IS NULL.
+// [SUA - 5] Thay ca_lam_viec varchar bang id_dinh_nghia_ca FK.
+Table lich_noi_tru {
+  id_lich_noi_tru  int      [pk, increment]
+  id_bac_si        int      [not null, ref: > bac_si.id_bac_si, note: 'Chi danh cho bac si noi tru']
+  id_phong         int      [not null, ref: > phong.id_phong, note: 'Phong mac dinh cho bac si noi tru nay']
+  id_dinh_nghia_ca int      [not null, ref: > dinh_nghia_ca.id_dinh_nghia_ca, note: 'Khung ca chuan bac si lam theo. Thay the ca_lam_viec varchar cu']
+  ngay_trong_tuan  int      [not null, note: '0=Thu 2, 1=Thu 3, ..., 6=Chu nhat']
+  ngay_ap_dung     date     [not null, note: 'Lich nay co hieu luc tu ngay nao. Tang dan khi Admin cap nhat']
+  ngay_ket_thuc    date     [note: 'NULL = dang ap dung. Cap nhat khi co ban ghi moi thay the']
+  trang_thai       boolean  [default: true, note: 'False thi he thong bo qua mau nay khi sinh ca']
+}
+
+// [SUA - 1] Xoa id_chuyen_khoa khoi truong list vi co the join qua bac_si.
+// Giu lai de toi uu query nhung PHAI dam bao dong bo:
+//   Trigger/app layer: khi bac_si.id_chuyen_khoa thay doi, cap nhat ca_lam_viec
+//   tuong lai cua bac si do (ca da hoan thanh giu nguyen - audit trail).
+// [SUA - 5] Xoa ca_truc varchar. Thay bang id_dinh_nghia_ca FK.
+//   gio_bat_dau/gio_ket_thuc van duoc luu RIENG tren tung ban ghi ca_lam_viec
+//   vi bac si hop dong co the tu dang ky gio lech so voi mac dinh, hoac gop nhieu khung ca.
+//   id_dinh_nghia_ca chi la nhan phan loai/hien thi — khong the thay the 2 truong gio nay.
+Table ca_lam_viec {
+  id_ca_lam_viec   int      [pk, increment]
+  id_bac_si        int      [not null, ref: > bac_si.id_bac_si]
+  id_phong         int      [not null, ref: > phong.id_phong]
+  id_chuyen_khoa   int      [not null, ref: > chuyen_khoa.id_chuyen_khoa, note: 'Denormalized de toi uu query. Phai dong bo voi bac_si.id_chuyen_khoa qua trigger/app']
+  id_dinh_nghia_ca int      [not null, ref: > dinh_nghia_ca.id_dinh_nghia_ca, note: 'Nhan hien thi khung ca (sang/chieu/toi/gop...). Thay the ca_truc varchar cu']
+  ngay_lam_viec    date     [not null]
+  gio_bat_dau      time     [not null, note: 'Gio bat dau thuc te cua ca nay. Co the khac gio_bat_dau_mac_dinh cua dinh_nghia_ca neu bac si hop dong dang ky lech gio']
+  gio_ket_thuc     time     [not null, note: 'Gio ket thuc thuc te. Khoang cach gio_bat_dau->gio_ket_thuc xac dinh tong thoi gian lam viec thuc su']
+  thoi_gian_slot   int      [not null, note: 'Phut/slot. Sao chep tu chuyen_khoa.thoi_gian_slot_mac_dinh luc tao ca va bat bien sau do']
+  so_slot_toi_da   int      [not null, note: '= (gio_ket_thuc - gio_bat_dau) / thoi_gian_slot. Tinh tu dong khi tao ca']
+  so_slot_da_dat   int      [default: 0, note: 'So slot da duoc dat. Dung kiem tra nhanh ca con cho khong']
+  trang_thai_duyet varchar  [not null, note: 'cho_duyet | da_duyet | da_huy | hoan_thanh']
+  nguon_tao_ca     varchar  [not null, note: 'tu_dong (sinh tu mau lich noi tru) | bac_si_dang_ky (hop dong tu dang ky)']
+  id_bac_si_yeu_cau int     [ref: > bac_si.id_bac_si, note: 'Nullable. Chi co gia tri khi nguon_tao_ca = bac_si_dang_ky']
+  id_admin_duyet   int      [ref: > tai_khoan.id_tai_khoan, note: 'Nullable. Tai khoan admin da duyet ca nay']
+  ly_do_tu_choi    varchar  [note: 'Ly do khi admin tu choi dang ky cua bac si hop dong']
+  ngay_duyet       datetime
+  ngay_tao         datetime [not null]
+}
+
+Table don_nghi_phep {
+  id_don_nghi_phep int      [pk, increment]
+  id_bac_si        int      [not null, ref: > bac_si.id_bac_si, note: 'Bac si gui don xin nghi']
+  id_ca_lam_viec   int      [not null, ref: > ca_lam_viec.id_ca_lam_viec, note: 'Ca cu the can nghi']
+  loai_nghi_phep   varchar  [not null, note: 'co_ke_hoach (bao truoc 3 ngay) | dot_xuat']
+  ly_do            varchar  [not null]
+  trang_thai_duyet varchar  [not null, note: 'cho_duyet | da_duyet | tu_choi']
+  id_nguoi_duyet   int      [ref: > tai_khoan.id_tai_khoan, note: 'Tai khoan admin xu ly don']
+  ly_do_tu_choi    varchar  [note: 'Ly do admin tu choi don nghi']
+  ngay_gui_don     datetime [not null]
+  ngay_xu_ly       datetime
+}
+
+
+// ================================================================
+// NHOM 4 — DAT LICH HEN
+// ================================================================
+
+// [SUA - 2] Loai bo cac truong audit trail khoi bang nay:
+//   Xoa: ly_do_huy, id_nguoi_huy, ngay_huy, danh_dau_huy_muon
+//   Xoa: id_nguoi_xac_nhan, ngay_xac_nhan
+//   Xoa: so_lan_doi_lich, id_lich_hen_truoc
+//   Tat ca chuyen sang bang lich_su_lich_hen de giu audit trail day du.
+//   Bang nay chi luu trang thai hien tai va du lieu dat lich goc.
+Table lich_hen {
+  id_lich_hen           int      [pk, increment]
+  ma_lich_hen           varchar  [unique, not null, note: 'Ma hien thi cho benh nhan: LH-20240315-001']
+  id_benh_nhan          int      [not null, ref: > benh_nhan.id_benh_nhan]
+  id_ca_lam_viec        int      [not null, ref: > ca_lam_viec.id_ca_lam_viec]
+  id_dich_vu            int      [not null, ref: > dich_vu.id_dich_vu]
+  so_slot               int      [not null, note: 'So thu tu slot trong ca. Cung voi id_ca_lam_viec tao unique key tranh trung slot']
+  hinh_thuc_dat         varchar  [not null, note: 'truc_tuyen | tai_quay']
+  bac_si_mong_muon_note varchar  [note: 'Nullable. Ghi chu bac si mong muon do benh nhan nhap tu do']
+  id_bac_si_mong_muon   int      [ref: > bac_si.id_bac_si, note: 'Nullable. He thong dien sau khi parse ghi chu va tim duoc bac si khop']
+  trieu_chung           varchar  [note: 'Trieu chung benh nhan mo ta truoc kham']
+  trang_thai            varchar  [not null, note: 'cho_xac_nhan | da_xac_nhan | dang_kham | hoan_thanh | huy_benh_nhan | huy_phong_kham | khong_den']
+  ngay_tao              datetime [not null]
+}
+
+// [MOI - 2] Bang audit trail cho lich hen.
+// Moi lan co su kien (dat moi, xac nhan, doi lich, huy) thi INSERT 1 ban ghi.
+// Khong bao gio UPDATE/DELETE bang nay — day la log bat bien.
+// Truong so_lan_doi_lich cu trong lich_hen duoc suy ra bang cach dem so ban ghi
+//   co hanh_dong = 'doi_lich' theo id_lich_hen.
+Table lich_su_lich_hen {
+  id_lich_su        int      [pk, increment]
+  id_lich_hen       int      [not null, ref: > lich_hen.id_lich_hen]
+  hanh_dong         varchar  [not null, note: 'dat_moi | xac_nhan | doi_lich | huy_benh_nhan | huy_phong_kham | check_in']
+  id_nguoi_thuc_hien int     [ref: > tai_khoan.id_tai_khoan, note: 'Nullable khi hanh dong la he_thong tu dong']
+  ly_do             varchar  [note: 'Ly do huy hoac ghi chu kem theo']
+  id_lich_hen_truoc int      [ref: > lich_hen.id_lich_hen, note: 'Nullable. Chi co gia tri khi hanh_dong = doi_lich. Tro ve lich hen goc truoc khi doi']
+  danh_dau_huy_muon boolean  [default: false, note: 'True neu huy trong vong 24h truoc gio kham. Dung de cong vao so_lan_huy_muon cua benh_nhan']
+  ngay_tao          datetime [not null]
+}
+
+Table giu_cho {
+  id_giu_cho     int      [pk, increment]
+  id_ca_lam_viec int      [not null, ref: > ca_lam_viec.id_ca_lam_viec]
+  so_slot        int      [not null, note: 'So slot dang duoc giu tam']
+  id_benh_nhan   int      [not null, ref: > benh_nhan.id_benh_nhan]
+  gio_het_han    datetime [not null, note: '= ngay_tao + 15 phut. He thong tu giai phong slot khi qua thoi diem nay']
+  da_giai_phong  boolean  [default: false, note: 'True neu da giai phong (hoan thanh dat lich hoac timeout)']
+  ngay_tao       datetime [not null]
+}
+
+// [SUA - 1] Xoa id_benh_nhan. Lay benh nhan qua join: hang_cho -> lich_hen -> benh_nhan.
+Table hang_cho {
+  id_hang_cho    int      [pk, increment]
+  id_ca_lam_viec int      [not null, ref: > ca_lam_viec.id_ca_lam_viec]
+  id_lich_hen    int      [unique, not null, ref: - lich_hen.id_lich_hen, note: 'Unique vi 1 lich hen chi vao hang cho 1 lan']
+  so_thu_tu      int      [not null, note: 'So thu tu trong hang cho cua ca do. Tang dan theo thu tu check-in']
+  trang_thai     varchar  [not null, note: 'cho_kham | dang_kham | hoan_thanh | bo_qua']
+  ngay_check_in  datetime [not null, note: 'Thoi diem benh nhan check-in tai quay']
+}
+
+
+// ================================================================
+// NHOM 5 — HO SO KHAM
+// ================================================================
+
+// [SUA - 1] Xoa id_benh_nhan. Lay benh nhan qua join: ho_so_kham -> lich_hen -> benh_nhan.
+Table ho_so_kham {
+  id_ho_so_kham int      [pk, increment]
+  id_lich_hen   int      [unique, not null, ref: - lich_hen.id_lich_hen, note: '1 buoi kham co 1 ho so. Unique de tranh tao trung']
+  id_bac_si     int      [not null, ref: > bac_si.id_bac_si, note: 'Bac si thuc hien kham']
+  chan_doan      varchar  [note: 'Chan doan so bo cua bac si']
+  ket_qua_kham  varchar  [note: 'Ket qua kham tong quat']
+  ghi_chu       varchar  [note: 'Ghi chu them cua bac si. VD: nen tai kham sau 2 tuan']
+  ngay_kham     datetime [not null]
+  ngay_tao      datetime [not null]
+}
+
+// [MOI - 3] Bang danh muc thuoc chuan hoa.
+// Giai quyet van de ten_thuoc la free text dan den nhap nhieu va khong the thong ke.
+// Moi loai thuoc chi co 1 ban ghi. toa_thuoc tham chieu vao day qua FK.
+Table thuoc {
+  id_thuoc    int     [pk, increment]
+  ten_thuoc   varchar [not null, unique, note: 'Ten thuoc chuan hoa. VD: Paracetamol 500mg']
+  hoat_chat   varchar [note: 'Hoat chat chinh. VD: Paracetamol. Dung de nhom cac thuoc tuong duong']
+  don_vi      varchar [note: 'Don vi tinh: Vien, ml, goi, ong...']
+  ghi_chu     varchar [note: 'Ghi chu them: chong chi dinh, bao quan...']
+}
+
+// Moi ban ghi = 1 dong thuoc trong toa. 1 ho so kham co nhieu ban ghi toa_thuoc.
+// Quan he 1(ho_so_kham) -> N(toa_thuoc) la chinh xac theo 1NF.
+// [SUA - 3] ten_thuoc varchar -> id_thuoc FK tro ve bang thuoc chuan hoa.
+Table toa_thuoc {
+  id_toa_thuoc  int     [pk, increment]
+  id_ho_so_kham int     [not null, ref: > ho_so_kham.id_ho_so_kham]
+  id_thuoc      int     [not null, ref: > thuoc.id_thuoc, note: 'Tham chieu thuoc chuan hoa thay vi luu free text']
+  lieu_luong    varchar [note: 'VD: 500mg, 5ml']
+  cach_dung     varchar [note: 'VD: Uong sau an, 2 lan/ngay']
+  so_ngay_dung  int     [note: 'So ngay dung thuoc']
+  ghi_chu       varchar [note: 'Ghi chu them neu can']
+}
+
+
+// ================================================================
+// NHOM 6 — HO TRO & LOG
+// ================================================================
+
+// [MOI - 4a] Bang mau thong bao de tranh luu lap noi dung giong nhau.
+// Admin/he thong quan ly mau o day. Khi gui, app render bien roi luu vao thong_bao.
+Table mau_thong_bao {
+  id_mau         int     [pk, increment]
+  loai_thong_bao varchar [unique, not null, note: 'xac_nhan_lich | nhac_1_ngay | nhac_2_gio | huy_lich | check_in | duyet_ca | tu_choi_ca']
+  tieu_de_mau    varchar [not null, note: 'Co the chua bien: {ten_benh_nhan}, {ma_lich_hen}, {ngay_kham}...']
+  noi_dung_mau   varchar [not null, note: 'Noi dung day du voi bien placeholder']
+  kenh_gui       varchar [not null, note: 'sms | email | trong_app']
+}
+
+// [SUA - 4a] Them id_mau FK. Truong tieu_de va noi_dung luu noi dung DA RENDER
+//   (sau khi app thay the bien), khong phai template goc.
+//   Nhu vay van giu duoc noi dung chinh xac da gui cho tung nguoi, dong thoi
+//   co the tra cuu mau goc qua id_mau.
+Table thong_bao {
+  id_thong_bao   int      [pk, increment]
+  id_tai_khoan   int      [not null, ref: > tai_khoan.id_tai_khoan, note: 'Nguoi nhan thong bao']
+  id_mau         int      [not null, ref: > mau_thong_bao.id_mau, note: 'Mau da dung de render thong bao nay']
+  kenh_gui       varchar  [not null, note: 'sms | email | trong_app']
+  tieu_de        varchar  [not null, note: 'Noi dung tieu de DA RENDER (bien da duoc thay the)']
+  noi_dung       varchar  [not null, note: 'Noi dung day du DA RENDER']
+  id_tham_chieu  int      [note: 'ID cua doi tuong lien quan']
+  loai_tham_chieu varchar [note: 'lich_hen | ca_lam_viec | don_nghi_phep']
+  da_doc         boolean  [default: false]
+  ngay_gui       datetime
+}
+
+// [GHI CHU - 4c] Nen co index composite: (id_tai_khoan, muc_dich, ngay_tao)
+// de query "OTP chua dung, chua het han, cua tai khoan X" khong scan toan bang.
+// Index nay tao o tang migration, khong the bieu dien trong DBML.
+Table otp_log {
+  id_otp_log   int      [pk, increment]
+  id_tai_khoan int      [not null, ref: > tai_khoan.id_tai_khoan]
+  ma_otp       varchar  [not null, note: 'Ma OTP 6 chu so. Luu dang hash']
+  muc_dich     varchar  [not null, note: 'dat_lich | dang_ky | dang_nhap']
+  gio_het_han  datetime [not null, note: '= ngay_tao + 5 phut']
+  da_su_dung   boolean  [default: false, note: 'True thi khong dung lai duoc']
+  so_lan_thu   int      [default: 0, note: 'So lan nhap OTP sai. Sau 3 lan se huy phien va giai phong slot']
+  id_phien     varchar  [note: 'UUID phien dat lich/dang ky. Dung de nhom cac lan thu OTP cua cung 1 phien, ho tro rate limiting ong app layer']
+  dia_chi_ip   varchar  [note: 'Dia chi IP thiet bi yeu cau OTP. Dung cho kiem tra bao mat']
+  ngay_tao     datetime [not null]
+}

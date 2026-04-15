@@ -1,0 +1,56 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.rsuser
+*.vcxproj.user
+*.swp
+
+# .NET / NuGet
+project.lock.json
+artifacts/
+TestResults/
+*.nupkg
+*.snupkg
+
+# Coverage and profiling
+coverage/
+coverage*.json
+*.coverage
+*.coveragexml
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local workspace / agent metadata
+.claude/
+.remember/
+.code-review-graph/
+
+# User secrets and local config
+secrets.json
+appsettings.*.local.json
+appsettings.local.json
+
+# Frontend/build caches if added later
+node_modules/
+dist/
+build/
