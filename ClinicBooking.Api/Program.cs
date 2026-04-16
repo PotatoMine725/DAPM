@@ -2,6 +2,7 @@ using ClinicBooking.Api.Extensions;
 using ClinicBooking.Api.Middleware;
 using ClinicBooking.Application;
 using ClinicBooking.Infrastructure;
+using ClinicBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 
@@ -60,6 +61,10 @@ builder.Services.AddSwaggerGen(options =>
 // cho DbContext, nen dam bao AddInfrastructure chay truoc AddApplication.
 
 var app = builder.Build();
+
+// Seed du lieu can "sua sau migration" (vi du: thay hash admin gia lap bang hash that).
+// Goi truoc khi middleware xu ly request — yeu cau database da duoc migrate.
+await app.SeedDatabaseAsync();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
