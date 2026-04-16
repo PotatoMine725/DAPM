@@ -9,10 +9,10 @@ public static class SeedData
     private static readonly DateTime NgayTaoMacDinh =
         new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    // Hash gia lap cho mat khau admin — PHAI thay bang hash that (BCrypt)
-    // khi tich hop module Auth. Chuoi nay co dinh dang BCrypt nhung khong
-    // verify duoc voi bat ky mat khau nao.
-    private const string HashMatKhauAdminGiaLap =
+    // Hash gia lap cho mat khau admin. Khong verify duoc voi bat ky mat khau nao.
+    // DatabaseSeeder se phat hien chuoi nay khi khoi dong app va thay bang hash
+    // BCrypt that dua tren cau hinh Admin:MatKhauMacDinh.
+    internal const string HashMatKhauAdminGiaLap =
         "$2a$11$GiaLapHashThayDoiTruocKhiDeployProdXXXXXXXXXXXXXXXXXXXX";
 
     public static void Apply(ModelBuilder modelBuilder)

@@ -24,6 +24,8 @@ public static class DependencyInjection
 
         services.Configure<JwtSettings>(
             configuration.GetSection(JwtSettings.SectionName));
+        services.Configure<AdminSeederSettings>(
+            configuration.GetSection(AdminSeederSettings.SectionName));
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -31,6 +33,8 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        services.AddScoped<DatabaseSeeder>();
 
         return services;
     }
