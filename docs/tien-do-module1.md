@@ -1,6 +1,6 @@
 # Tiến độ Module 1 — Đặt lịch hẹn & Hàng chờ
 
-> Cập nhật: 2026-04-17  
+> Cập nhật: 2026-04-17 (Wave 2 complete)  
 > Owner: User + Claude (shared)  
 > Branch: `develop`
 
@@ -64,27 +64,59 @@ Test Run Successful. Total tests: 2, Passed: 2
 
 ---
 
-## Wave 2 — Handler độc lập ⏳ TIẾP THEO
+## Wave 2 — Handler độc lập ✅ HOÀN TẤT
 
 ### 2a. Pure handlers (không cần stub)
 
 | # | Handler | Loại | Trạng thái |
 |---|---|---|---|
-| 1 | `GiaiPhongGiuCho` | Command | ⏳ |
-| 2 | `XemLichHen` | Query | ⏳ |
-| 3 | `DanhSachLichHenCuaToi` | Query (paging) | ⏳ |
-| 4 | `DanhSachLichHenTheoNgay` | Query | ⏳ |
-| 5 | `XemHangChoTheoCa` | Query | ⏳ |
-| 6 | `HoanThanhLuotKham` | Command | ⏳ |
+| 1 | `GiaiPhongGiuCho` | Command | ✅ |
+| 2 | `XemLichHen` | Query | ✅ |
+| 3 | `DanhSachLichHenCuaToi` | Query (paging) | ✅ |
+| 4 | `DanhSachLichHenTheoNgay` | Query | ✅ |
+| 5 | `XemHangChoTheoCa` | Query | ✅ |
+| 6 | `HoanThanhLuotKham` | Command | ✅ |
 
 ### 2b. Non-critical stub handlers
 
 | # | Handler | Stub sử dụng | Trạng thái |
 |---|---|---|---|
-| 7 | `XacNhanLichHen` | INotificationService | ⏳ |
-| 8 | `HuyLichHen` | INotificationService + ICaLamViecQueryService | ⏳ |
-| 9 | `CheckInLichHen` | INotificationService | ⏳ |
-| 10 | `GoiBenhNhanKeTiep` | INotificationService | ⏳ |
+| 7 | `XacNhanLichHen` | INotificationService | ✅ |
+| 8 | `HuyLichHen` | INotificationService + ICaLamViecQueryService | ✅ |
+| 9 | `CheckInLichHen` | INotificationService | ✅ |
+| 10 | `GoiBenhNhanKeTiep` | INotificationService | ✅ |
+
+### 2c. API surface (LichHenController + HangChoController)
+
+| Method | Route | Role | Response |
+|---|---|---|---|
+| POST | `api/lich-hen/{id}/xac-nhan` | le_tan, admin | 200 |
+| POST | `api/lich-hen/{id}/huy` | benh_nhan, le_tan, admin | 200 |
+| POST | `api/lich-hen/{id}/check-in` | le_tan | 200 + HangChoResponse |
+| POST | `api/lich-hen/giu-cho/{id}/giai-phong` | le_tan | 204 |
+| GET  | `api/lich-hen/{id}` | authenticated (owner/staff) | 200 + LichHenResponse |
+| GET  | `api/lich-hen/cua-toi` | benh_nhan | 200 + DanhSachLichHenResponse |
+| GET  | `api/lich-hen/theo-ngay?ngay=yyyy-MM-dd` | le_tan, admin | 200 + list |
+| POST | `api/hang-cho/goi-ke-tiep/{idCa}` | bac_si, le_tan | 200 + HangChoResponse |
+| POST | `api/hang-cho/{id}/hoan-thanh` | bac_si | 200 |
+| GET  | `api/hang-cho/theo-ca/{idCa}` | le_tan, bac_si, admin | 200 + list |
+
+### 2d. Ghi chú thiết kế
+
+- **HuyLichHen**: tính "huỷ muộn" bằng `(NgayLamViec + GioBatDau) - UtcNow < LichHenOptions.HuyMuonTruocGio`. Nếu đúng: `DanhDauHuyMuon=true` + `BenhNhan.SoLanHuyMuon++`. Gọi `IncrementSoSlotDaDatAsync(-1)` best-effort (try/catch — reconciliation Wave 4 dò drift).
+- **CheckInLichHen**: retry 3 lần (`LichHenConstants.SoLanThuLaiToiDa`) khi va chạm unique `(IdCaLamViec, SoThuTu)`. TODO Wave 4: bọc `IDbContextTransaction` rõ ràng để retry sạch change-tracker.
+- **GoiBenhNhanKeTiep**: option `TuDongHoanThanhLuotHienTai` (default `true`) tự đóng lượt `DangKham` trước khi chọn `SoThuTu` nhỏ nhất `ChoKham`.
+- **Auth**: dùng `VaiTroConstants` mọi chỗ, không hard-code string role.
+- **Namespace alias**: `CheckInLichHenHandler` dùng `HangChoEntity` / `LichSuLichHenEntity` để tránh va với namespace `Features.HangCho`.
+
+### Kết quả build & test
+
+```
+Build succeeded. 0 Warning(s), 0 Error(s)
+Test Run Successful. Total tests: 2, Passed: 2
+```
+
+> Unit test chi tiết từng handler (happy path + nhánh lỗi) sẽ bổ sung trước khi merge `develop`. Scope Wave 2 hiện tại là ship code clean build + contract/endpoint đầy đủ để Module 2/4 bắt nhịp.
 
 ---
 
