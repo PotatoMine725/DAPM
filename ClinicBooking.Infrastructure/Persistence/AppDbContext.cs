@@ -206,8 +206,22 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             e.HasKey(x => x.IdLichHen);
             e.HasIndex(x => x.MaLichHen).IsUnique();
+            e.Property(x => x.MaLichHen).HasMaxLength(32).IsRequired();
             e.Property(x => x.HinhThucDat).HasConversion<string>();
             e.Property(x => x.TrangThai).HasConversion<string>();
+
+            // Module 1: concurrency token bao ve race condition huy/doi lich dong thoi
+            e.Property(x => x.RowVersion).IsRowVersion();
+
+            // Module 1: unique (IdCaLamViec, SoSlot) chong double-book
+            // Xac nhan tu clinic.dbml dong 203: SoSlot la ordinal position trong ca
+            e.HasIndex(x => new { x.IdCaLamViec, x.SoSlot }).IsUnique();
+
+            // Module 1: index phuc vu query "danh sach lich hen cua toi" (benh nhan)
+            e.HasIndex(x => new { x.IdBenhNhan, x.TrangThai });
+
+            // Module 1: index phuc vu query "danh sach lich hen theo ngay" (le tan/admin)
+            e.HasIndex(x => new { x.IdCaLamViec, x.TrangThai });
 
             e.HasOne(x => x.BenhNhan)
                 .WithMany(x => x.DanhSachLichHen)
@@ -236,6 +250,9 @@ public class AppDbContext : DbContext, IAppDbContext
             e.Property(x => x.HanhDong).HasConversion<string>();
             e.Property(x => x.DanhDauHuyMuon).HasDefaultValue(false);
 
+            // Module 1: index phuc vu tab "lich su" cua mot lich hen
+            e.HasIndex(x => x.IdLichHen);
+
             e.HasOne(x => x.LichHen)
                 .WithMany(x => x.DanhSachLichSu)
                 .HasForeignKey(x => x.IdLichHen)
@@ -257,6 +274,9 @@ public class AppDbContext : DbContext, IAppDbContext
             e.HasKey(x => x.IdGiuCho);
             e.Property(x => x.DaGiaiPhong).HasDefaultValue(false);
 
+            // Module 1: index phuc vu lookup giu cho con hieu luc (chua giai phong, chua het han)
+            e.HasIndex(x => new { x.IdCaLamViec, x.DaGiaiPhong, x.GioHetHan });
+
             e.HasOne(x => x.CaLamViec)
                 .WithMany(x => x.DanhSachGiuCho)
                 .HasForeignKey(x => x.IdCaLamViec)
@@ -272,6 +292,12 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             e.HasKey(x => x.IdHangCho);
             e.Property(x => x.TrangThai).HasConversion<string>();
+
+            // Module 1: unique (IdCaLamViec, SoThuTu) dam bao khong trung so thu tu trong 1 ca
+            e.HasIndex(x => new { x.IdCaLamViec, x.SoThuTu }).IsUnique();
+
+            // Module 1: index phuc vu query "goi benh nhan ke tiep" + "xem hang cho theo ca"
+            e.HasIndex(x => new { x.IdCaLamViec, x.TrangThai, x.SoThuTu });
 
             e.HasOne(x => x.CaLamViec)
                 .WithMany(x => x.DanhSachHangCho)
