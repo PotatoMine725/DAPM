@@ -1,0 +1,54 @@
+@page
+@model ClinicBooking.Web.Pages.Auth.DangNhapModel
+@{
+    Layout = "~/Pages/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-shell">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-mark">
+                <i class="ph-fill ph-stethoscope"></i>
+            </div>
+            <div class="login-title">ClinicBooking</div>
+            <div class="login-subtitle">Hệ thống quản lý phòng khám</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger" style="margin-bottom: 16px;">@Model.ErrorMessage</div>
+        }
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none"></div>
+
+            <div class="form-group">
+                <label class="form-label" for="TenDangNhapHoacEmail">
+                    Tên đăng nhập / Email <span class="required-mark">*</span>
+                </label>
+                <input class="form-input" type="text" id="TenDangNhapHoacEmail"
+                       asp-for="Input.TenDangNhapHoacEmail"
+                       placeholder="Nhập tên đăng nhập hoặc email"
+                       autocomplete="username" />
+                <span asp-validation-for="Input.TenDangNhapHoacEmail" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="MatKhau">
+                    Mật khẩu <span class="required-mark">*</span>
+                </label>
+                <input class="form-input" type="password" id="MatKhau"
+                       asp-for="Input.MatKhau"
+                       placeholder="Nhập mật khẩu"
+                       autocomplete="current-password" />
+                <span asp-validation-for="Input.MatKhau" class="form-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                <i class="ph ph-sign-in"></i>
+                Đăng nhập
+            </button>
+        </form>
+    </div>
+</div>
