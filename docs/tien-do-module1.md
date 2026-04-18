@@ -1,8 +1,8 @@
 # Tiến độ Module 1 — Đặt lịch hẹn & Hàng chờ
 
-> Cập nhật: 2026-04-17 (Wave 3 complete)  
+> Cập nhật: 2026-04-17 (Wave 2 complete)  
 > Owner: User + Claude (shared)  
-> Branch: `feature/module1/wave2`
+> Branch: `develop`
 
 ---
 
@@ -120,39 +120,13 @@ Test Run Successful. Total tests: 2, Passed: 2
 
 ---
 
-## Wave 3 — Critical-path stub handlers ✅ HOÀN TẤT
-
-### 3a. Handlers
+## Wave 3 — Critical-path stub handlers ⏳
 
 | # | Handler | Phụ thuộc critical | Trạng thái |
 |---|---|---|---|
-| 11 | `TaoLichHen` | `ICaLamViecQueryService` (`LayThongTinCaAsync` + `KiemTraSlotTrongAsync` + `IncrementSoSlotDaDatAsync`), `IMaLichHenGenerator`, `INotificationService` | ✅ |
-| 12 | `DoiLichHen` | Như `TaoLichHen` + decrement slot cũ best-effort | ✅ |
-| 13 | `TaoGiuCho` | `ICaLamViecQueryService` | ✅ |
-
-### 3b. API surface (bổ sung vào LichHenController)
-
-| Method | Route | Role | Response |
-|---|---|---|---|
-| POST | `api/lich-hen/tao-lich-hen` | benh_nhan, le_tan, admin | 201 + LichHenResponse |
-| POST | `api/lich-hen/{id}/doi-lich` | benh_nhan, le_tan, admin | 200 + LichHenResponse |
-| POST | `api/lich-hen/tao-giu-cho` | le_tan, admin | 201 + GiuChoResponse |
-
-### 3c. Ghi chú thiết kế
-
-- **TaoLichHen**: `HinhThucDat` suy từ vai trò (`benh_nhan → TrucTuyen`, `le_tan/admin → TaiQuay`). `benh_nhan` luôn dùng `IdBenhNhan` suy từ `IdTaiKhoan`; `le_tan/admin` phải truyền `IdBenhNhan` trong body. Flow: validate `BenhNhan.BiHanChe`, `TrangThaiDuyetCa.DaDuyet`, `thoiDiemBatDau > now`, `KiemTraSlotTrongAsync`, atomic `IncrementSoSlotDaDatAsync(+1)` → `SoSlot` ordinal → insert `LichHen` + `LichSuLichHen(DatMoi)`. Khi `DbUpdateException` (va chạm unique `(IdCaLamViec, SoSlot)`) hoặc `soSlot > SoSlotToiDa`: decrement counter + `ConflictException`.
-- **DoiLichHen**: chiếm slot ca mới TRƯỚC khi huỷ ca cũ để tránh mất cả 2 slot khi race. Tạo `LichSuLichHen(DoiLich)` trên lịch cũ + `LichSuLichHen(DatMoi, IdLichHenTruoc=cũ)` trên lịch mới — chain không reset. Decrement slot ca cũ best-effort sau `SaveChanges` thành công.
-- **TaoGiuCho**: tạm coi `GiuCho.SoSlot` là ordinal giống `LichHen.SoSlot`. **Coordination point: cần PM xác nhận semantic** trước khi swap stub Module 2 (Wave 4). `GioHetHan = UtcNow + LichHenOptions.GiuChoThoiHanPhut`.
-- **Rollback counter**: tất cả 3 handler đều decrement counter qua `IncrementSoSlotDaDatAsync(-1)` trong `catch` khi save fail. Nếu decrement cũng fail → reconciliation job Wave 4 dò drift.
-
-### Kết quả build & test
-
-```
-Build succeeded. 0 Warning(s), 0 Error(s)
-Test Run Successful. Total tests: 2, Passed: 2
-```
-
-> Unit test chi tiết từng handler Wave 3 (happy path + nhánh lỗi: het slot / ca chua duyet / race) sẽ bổ sung trước khi merge `develop`.
+| 11 | `TaoLichHen` | ICaLamViecQueryService (availability check + slot increment) | ⏳ |
+| 12 | `DoiLichHen` | ICaLamViecQueryService | ⏳ |
+| 13 | `TaoGiuCho` | ICaLamViecQueryService | ⏳ |
 
 ---
 
