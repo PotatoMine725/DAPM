@@ -25,7 +25,8 @@ public interface ICaLamViecQueryService
     /// <summary>
     /// Cong don nguyen tu vao <c>CaLamViec.SoSlotDaDat</c> va tra ve gia tri moi.
     /// Delta duong khi dat lich, am khi huy. Noi bo dung atomic UPDATE (khong Read-Modify-Write tu client).
+    /// Validate rang <c>SoSlotDaDat + delta</c> nam trong [0, SoSlotToiDa].
     /// </summary>
-    /// <returns>Gia tri moi cua <c>SoSlotDaDat</c> sau khi cong.</returns>
-    Task<int> IncrementSoSlotDaDatAsync(int idCaLamViec, int delta, CancellationToken cancellationToken = default);
+    /// <returns>Gia tri moi cua <c>SoSlotDaDat</c> sau khi cong, hoac null neu constraint vi pham.</returns>
+    Task<int?> IncrementSoSlotDaDatAsync(int idCaLamViec, int delta, CancellationToken cancellationToken = default);
 }
