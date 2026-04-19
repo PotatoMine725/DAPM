@@ -105,7 +105,7 @@ public class DangKyModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Loi khi dang ky tai khoan '{Ten}'", Input.TenDangNhap);
-            ErrorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại. [DEBUG] " + ex.GetType().Name + ": " + ex.Message;
+            ErrorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại.";
             return Page();
         }
     }
