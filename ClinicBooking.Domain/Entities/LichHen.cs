@@ -17,6 +17,12 @@ public class LichHen
     public TrangThaiLichHen TrangThai { get; set; }
     public DateTime NgayTao { get; set; }
 
+    /// <summary>
+    /// Concurrency token — EF Core tu quan ly.
+    /// Bao ve cac race condition khi nhieu request dong thoi huy/doi lich cung 1 lich hen.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = [];
+
     // Navigation
     public BenhNhan BenhNhan { get; set; } = null!;
     public CaLamViec CaLamViec { get; set; } = null!;
