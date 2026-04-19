@@ -1,0 +1,122 @@
+@page
+@model ClinicBooking.Web.Pages.Auth.DangKyModel
+@using ClinicBooking.Domain.Enums
+@{
+    Layout = "~/Pages/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<div class="login-shell">
+    <div class="login-card" style="max-width: 560px;">
+        <div class="login-logo">
+            <div class="login-logo-mark">
+                <i class="ph-fill ph-stethoscope"></i>
+            </div>
+            <div class="login-title">Đăng ký bệnh nhân</div>
+            <div class="login-subtitle">Tạo tài khoản để đặt lịch khám</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger" style="margin-bottom: 16px;">@Model.ErrorMessage</div>
+        }
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="Input.HoTen">
+                    Họ và tên <span class="required-mark">*</span>
+                </label>
+                <input class="form-input" asp-for="Input.HoTen" placeholder="Nguyễn Văn A" autocomplete="name" />
+                <span asp-validation-for="Input.HoTen" class="form-error"></span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.TenDangNhap">
+                        Tên đăng nhập <span class="required-mark">*</span>
+                    </label>
+                    <input class="form-input" asp-for="Input.TenDangNhap" placeholder="nguyenvana" autocomplete="username" />
+                    <span asp-validation-for="Input.TenDangNhap" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.SoDienThoai">
+                        Số điện thoại <span class="required-mark">*</span>
+                    </label>
+                    <input class="form-input" asp-for="Input.SoDienThoai" placeholder="09xxxxxxxx" autocomplete="tel" />
+                    <span asp-validation-for="Input.SoDienThoai" class="form-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="Input.Email">
+                    Email <span class="required-mark">*</span>
+                </label>
+                <input class="form-input" asp-for="Input.Email" type="email" placeholder="email@domain.com" autocomplete="email" />
+                <span asp-validation-for="Input.Email" class="form-error"></span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.MatKhau">
+                        Mật khẩu <span class="required-mark">*</span>
+                    </label>
+                    <input class="form-input" asp-for="Input.MatKhau" type="password" placeholder="Ít nhất 6 ký tự" autocomplete="new-password" />
+                    <span asp-validation-for="Input.MatKhau" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.XacNhanMatKhau">
+                        Nhập lại mật khẩu <span class="required-mark">*</span>
+                    </label>
+                    <input class="form-input" asp-for="Input.XacNhanMatKhau" type="password" placeholder="Nhập lại" autocomplete="new-password" />
+                    <span asp-validation-for="Input.XacNhanMatKhau" class="form-error"></span>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.NgaySinh">Ngày sinh</label>
+                    <input class="form-input" asp-for="Input.NgaySinh" type="date" />
+                    <span asp-validation-for="Input.NgaySinh" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Input.GioiTinh">Giới tính</label>
+                    <select class="form-select" asp-for="Input.GioiTinh">
+                        <option value="">— Không chọn —</option>
+                        <option value="@((int)GioiTinh.Nam)">Nam</option>
+                        <option value="@((int)GioiTinh.Nu)">Nữ</option>
+                        <option value="@((int)GioiTinh.Khac)">Khác</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="Input.Cccd">CCCD / CMND (tuỳ chọn)</label>
+                <input class="form-input" asp-for="Input.Cccd" placeholder="Số CCCD/CMND" />
+                <span asp-validation-for="Input.Cccd" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="Input.DiaChi">Địa chỉ (tuỳ chọn)</label>
+                <input class="form-input" asp-for="Input.DiaChi" placeholder="Địa chỉ liên hệ" autocomplete="street-address" />
+                <span asp-validation-for="Input.DiaChi" class="form-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                <i class="ph ph-user-plus"></i>
+                Tạo tài khoản
+            </button>
+        </form>
+
+        <div style="margin-top: 20px; text-align: center; font-size: 14px; color: var(--color-text-secondary);">
+            Đã có tài khoản?
+            <a href="/Auth/DangNhap" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">
+                Đăng nhập
+            </a>
+        </div>
+    </div>
+</div>

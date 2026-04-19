@@ -1,7 +1,7 @@
 # Tiến độ Module 1 — Đặt lịch hẹn & Hàng chờ
 
-> Cập nhật: 2026-04-17 (Wave 3 complete)  
-> Owner: User + Claude (shared)  
+> Cập nhật: 2026-04-19 (Web Portal partial, chờ Module 2)
+> Owner: User + Claude (shared)
 > Branch: `feature/module1/wave2`
 
 ---
@@ -173,3 +173,111 @@ Test Run Successful. Total tests: 2, Passed: 2
 | `GiuCho.SoSlot` semantics | PM | Chưa rõ ordinal hay quantity — chốt trước khi viết `TaoGiuCho` |
 | `ICaLamViecQueryService` contract | Module 2 | Module 2 implement thật, replace stub |
 | `INotificationService` contract | Module 4 | Module 4 implement thật, replace stub |
+
+---
+
+## Wave 5 — Web Portal (Razor Pages) 🔶 ĐANG LÀM
+
+**Bối cảnh**: Trong lúc chờ team Module 2/3/4, bổ sung UI Razor Pages (`ClinicBooking.Web`) để demo luồng end-to-end với stub. Portal dùng **Cookie Authentication** (không JWT), reuse MediatR handler đã có từ Wave 2/3.
+
+### 5.1 Hạ tầng Web
+
+| Hạng mục | Trạng thái | Ghi chú |
+|---|---|---|
+| `Program.cs` — AddRazorPages, Cookie auth, middleware pipeline | ✅ | `UseHttpsRedirection` chỉ bật ở production |
+| `Pages/Shared/_Layout.cshtml` — sidebar điều hướng theo vai trò | ✅ | Render menu item dựa vào `User.FindFirstValue(ClaimTypes.Role)` |
+| `Pages/Shared/_LoginLayout.cshtml` — layout riêng cho Auth | ✅ | |
+| `Helpers/BadgeHelper.cs` — render HTML badge trạng thái | ✅ | Dùng cho bảng lịch hẹn / hàng chờ |
+| `_ViewImports.cshtml` — `@using ClinicBooking.Web.Helpers` | ✅ | Fix build error "BadgeHelper does not exist" |
+| CSS system: `common.css`, `components.css`, `layout.css` + Phosphor Icons CDN | ✅ | Xem `docs/huong-dan-phat-trien-ui.md` |
+| `Pages/Index.cshtml(.cs)` — redirect theo vai trò | ✅ | admin → `/Admin/Dashboard`, letan → `/LeTan/Dashboard`, bacsi → `/BacSi/HangCho`, benhnhan → `/BenhNhan/DanhSachLichHen` |
+
+### 5.2 Trang theo vai trò
+
+| Vai trò | Trang | Trạng thái | Ghi chú |
+|---|---|---|---|
+| Auth | `Pages/Auth/DangNhap.cshtml(.cs)` | ✅ | Cookie sign-in, redirect theo `VaiTroConstants` |
+| Auth | `Pages/Auth/DangKy.cshtml(.cs)` | ✅ | Bệnh nhân tự đăng ký qua `DangKyCommand` |
+| Auth | `Pages/Auth/DangXuat.cshtml(.cs)` | ✅ | `SignOutAsync` → redirect `/Auth/DangNhap`. Form dùng `asp-page` để auto-inject antiforgery token |
+| Auth | `Pages/Auth/TuChoi.cshtml` | ✅ | Access denied page |
+| Admin | `Pages/Admin/Dashboard.cshtml(.cs)` | 🔶 placeholder | Landing page riêng cho admin (không dùng chung `/LeTan/Dashboard`). Chờ Module 4 làm UI quản trị thật |
+| Lễ tân | `Pages/LeTan/Dashboard.cshtml(.cs)` | ✅ | Thống kê lịch hẹn hôm nay + action Xác nhận / Check-in |
+| Lễ tân | `Pages/LeTan/QuanLyLichHen.cshtml(.cs)` | ✅ | Danh sách lịch hẹn theo ngày, filter trạng thái |
+| Bác sĩ | `Pages/BacSi/HangCho.cshtml(.cs)` | ✅ | Hàng chờ trong ca, gọi bệnh nhân kế tiếp, hoàn thành lượt khám |
+| Bệnh nhân | `Pages/BenhNhan/DanhSachLichHen.cshtml(.cs)` | ✅ | Danh sách lịch khám của tôi + modal huỷ lịch |
+| Bệnh nhân | `Pages/BenhNhan/DatLich.cshtml(.cs)` | ⏸️ **BLOCKED** | Chờ Module 2 — xem mục 5.4 bên dưới |
+
+### 5.3 Dev fixture seed
+
+Mở rộng `DatabaseSeeder` để seed tài khoản dev idempotent (chỉ chạy khi `Admin:DevFixture:Enabled=true`):
+
+| File | Mô tả |
+|---|---|
+| `Infrastructure/Persistence/AdminSeederSettings.cs` | Thêm `DevFixtureSettings` + `FixtureTaiKhoan` nested classes |
+| `Infrastructure/Persistence/DatabaseSeeder.cs` | Thêm `SeedDevFixtureAsync` — insert `TaiKhoan` + `LeTan` nếu chưa có |
+| `ClinicBooking.Web/appsettings.json` | Bật `Admin.DevFixture.LeTan` — seed `letan / Letan@123456` |
+
+Tài khoản seed hiện có:
+- `admin / Admin@123456` (qua migration + `FixMatKhauAdminAsync`)
+- `letan / Letan@123456` (qua `SeedDevFixtureAsync`)
+
+Chưa có fixture: `bac_si`, `benh_nhan` — có thể mở rộng `DevFixture` khi cần.
+
+### 5.4 Vì sao `DatLich` (đặt lịch mới) chưa làm được
+
+Trang đặt lịch phía bệnh nhân cần flow 3 cấp dropdown + xác nhận:
+
+```
+Chuyên khoa → Bác sĩ theo CK → Ca làm việc khả dụng → TaoLichHenCommand
+ (đã seed 6)    (chưa seed)       (chưa seed)          (handler xong)
+```
+
+Trong đó:
+- **Chuyên khoa**: đã seed 6 chuyên khoa (Tim mạch, Nhi, Nội, Ngoại, TMH, Da liễu).
+- **Danh sách bác sĩ theo chuyên khoa**: **Module 2 chủ sở hữu** — cần handler `DanhSachBacSiTheoChuyenKhoa`. Module 1 không nên tự viết handler đọc vì đây là domain của Module 2.
+- **Danh sách ca làm việc khả dụng**: **Module 2 chủ sở hữu** — cần handler `DanhSachCaLamViecKhaDungCuaBacSi(idBacSi, tuNgay, denNgay)`. `ICaLamViecQueryService.LayThongTinCaAsync` hiện chỉ lấy 1 ca theo id, không list.
+- **Tạo lịch hẹn**: `TaoLichHenCommand` + handler **đã xong** (Wave 3) — backend sẵn sàng.
+
+**Quyết định**: không viết `DatLich` theo hướng "bypass Module 2 đọc thẳng `IAppDbContext`" — vì dropdown bác sĩ/ca là domain Module 2, viết tạm rồi vứt đi sẽ lãng phí. Chờ Module 2 ship:
+1. Handler query danh sách bác sĩ theo chuyên khoa
+2. Handler query ca làm việc khả dụng
+3. Seed fixture CaLamViec + BacSi (hoặc coordinate Module 1 seed)
+
+Khi Module 2 xong → viết `DatLich.cshtml(.cs)` với `IMediator.Send(query)` + gọi `TaoLichHenCommand` ở submit.
+
+**Tạm thời**: sidebar `/BenhNhan/DatLich` vẫn link (404 khi bấm). Cân nhắc ẩn tab hoặc disable cho đến khi có Module 2 — để đó reminder cũng được.
+
+### 5.5 Bug đã phát hiện & fix trong Wave 5
+
+| Bug | File báo cáo | Root cause | Trạng thái |
+|---|---|---|---|
+| Login Web fail `IDX10703: key length is zero` | `docs/bao-cao-loi-dang-nhap-jwt-key.md` | `appsettings.json` Web có section `Jwt` với tên property sai (`SecretKey` thay vì `Key`, `AccessTokenExpiryMinutes` thay vì `AccessTokenExpirationMinutes`) → binding `IOptions<JwtSettings>` fail → `Key` rỗng | ✅ Fixed |
+| 404 tại `http://localhost:5181/` | — | Orphan `Index.cshtml.cs` không có view | ✅ Fixed (tạo Index.cshtml) |
+| Build fail: "BadgeHelper does not exist" × 7 file | — | Thiếu `@using ClinicBooking.Web.Helpers` trong `_ViewImports.cshtml` | ✅ Fixed |
+| HTTP 400 khi POST `/Auth/DangXuat` | — | Form trong `_Layout.cshtml` dùng `action="/Auth/DangXuat"` (raw HTML) → không auto-inject antiforgery token | ✅ Fixed (dùng `asp-page`) |
+| `/Auth/DangXuat` trả 404 | — | Có `.cs` nhưng chưa có `.cshtml` → Razor Pages không đăng ký route | ✅ Fixed |
+| Warning `Failed to determine the https port` | — | `UseHttpsRedirection` bật ở dev nhưng launchSettings không có HTTPS port | ✅ Fixed (chỉ bật ở prod) |
+| Admin bị redirect về `/LeTan/Dashboard` | — | Logic redirect cũ | ✅ Fixed (tạo `/Admin/Dashboard` placeholder riêng) |
+
+### 5.6 Tài khoản test
+
+| Vai trò | Tên đăng nhập | Mật khẩu | Landing page |
+|---|---|---|---|
+| Admin | `admin` | `Admin@123456` | `/Admin/Dashboard` (placeholder) |
+| Lễ tân | `letan` | `Letan@123456` | `/LeTan/Dashboard` |
+| Bệnh nhân | tự đăng ký qua `/Auth/DangKy` | tuỳ user | `/BenhNhan/DanhSachLichHen` |
+| Bác sĩ | **chưa có seed** | — | — |
+
+---
+
+## Việc cần làm tiếp (theo thứ tự ưu tiên)
+
+1. **Chờ Module 2** ship:
+   - Handler `DanhSachBacSiTheoChuyenKhoa` (Query)
+   - Handler `DanhSachCaLamViecKhaDungCuaBacSi` (Query)
+   - Seed fixture: 2-3 bác sĩ + vài ca làm việc `DaDuyet` cho dev
+2. Khi có Module 2 → viết `Pages/BenhNhan/DatLich.cshtml(.cs)` (wizard 3 bước).
+3. Bổ sung **unit tests** chi tiết từng handler Wave 2/3 trước khi merge `develop` (xem note cuối Wave 2, Wave 3).
+4. Cân nhắc ẩn tab "Đặt lịch mới" trong sidebar cho đến khi `DatLich` có thật — hoặc để đó làm reminder.
+5. Dọn `Jwt:Key` trong `appsettings.json` (cả Api + Web) → chuyển sang User Secrets / env var trước khi deploy production. Xem `docs/bao-cao-loi-dang-nhap-jwt-key.md` mục 5 (action items).
+6. **Wave 4** vẫn blocked trên team: Hangfire job, reconciliation job, integration test Testcontainers — không thể làm trước vì cần Module 2/4 real implementation.

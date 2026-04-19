@@ -1,19 +1,29 @@
+using ClinicBooking.Application.Common.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace ClinicBooking.Web.Pages;
 
 public class IndexModel : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
+    public IActionResult OnGet()
     {
-        _logger = logger;
-    }
+        // Chua dang nhap -> ve trang dang nhap
+        if (!(User.Identity?.IsAuthenticated ?? false))
+        {
+            return RedirectToPage("/Auth/DangNhap");
+        }
 
-    public void OnGet()
-    {
-
+        // Da dang nhap -> redirect theo vai tro
+        var vaiTro = User.FindFirst(ClaimTypes.Role)?.Value;
+        return vaiTro switch
+        {
+            VaiTroConstants.Admin    => RedirectToPage("/Admin/Dashboard"),
+            VaiTroConstants.LeTan    => RedirectToPage("/LeTan/Dashboard"),
+            VaiTroConstants.BacSi    => RedirectToPage("/BacSi/HangCho"),
+            VaiTroConstants.BenhNhan => RedirectToPage("/BenhNhan/DanhSachLichHen"),
+            _                        => RedirectToPage("/Auth/DangNhap")
+        };
     }
 }
