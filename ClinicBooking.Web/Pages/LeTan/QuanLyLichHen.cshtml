@@ -1,0 +1,130 @@
+@page
+@model ClinicBooking.Web.Pages.LeTan.QuanLyLichHenModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Quản lý lịch hẹn";
+}
+
+<div class="page-header">
+    <h1 class="page-title">Quản lý lịch hẹn</h1>
+</div>
+
+<!-- Filter bar -->
+<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
+    <form method="get" class="search-bar" style="margin-bottom:0;">
+        <input type="date" class="form-input" name="ngay" value="@Model.NgayLoc.ToString("yyyy-MM-dd")" style="width:180px;" />
+        <select class="form-select" name="trangThai" style="width:200px;">
+            <option value="">Tất cả trạng thái</option>
+            @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+            {
+                <option value="@tt" selected="@(Model.TrangThaiLoc == tt ? "selected" : null)">
+                    @BadgeHelper.TrangThaiText(tt)
+                </option>
+            }
+        </select>
+        <button type="submit" class="btn btn-secondary">
+            <i class="ph ph-funnel"></i> Lọc
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">
+            Ngày @Model.NgayLoc.ToString("dd/MM/yyyy")
+            — @Model.DanhSach.Count lịch hẹn
+        </span>
+    </div>
+
+    @if (!Model.DanhSach.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
+            <p>Không tìm thấy lịch hẹn nào.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã LH</th>
+                    <th>Bệnh nhân</th>
+                    <th>Dịch vụ</th>
+                    <th>Ca / Giờ</th>
+                    <th>Slot</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lh in Model.DanhSach)
+                {
+                    <tr>
+                        <td><span class="table-code">@lh.MaLichHen</span></td>
+                        <td>@lh.HoTenBenhNhan</td>
+                        <td>@lh.TenDichVu</td>
+                        <td>@lh.GioBatDau.ToString("HH:mm")</td>
+                        <td>@lh.SoSlot</td>
+                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
+                        <td class="table-actions">
+                            @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan)
+                            {
+                                <form method="post" asp-page-handler="XacNhan" style="display:inline;">
+                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                    <button class="btn btn-sm btn-secondary">Xác nhận</button>
+                                </form>
+                            }
+                            @if (lh.TrangThai == TrangThaiLichHen.DaXacNhan)
+                            {
+                                <form method="post" asp-page-handler="CheckIn" style="display:inline;">
+                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                    <button class="btn btn-sm btn-primary">Check-in</button>
+                                </form>
+                            }
+                            @if (lh.TrangThai is TrangThaiLichHen.ChoXacNhan or TrangThaiLichHen.DaXacNhan)
+                            {
+                                <button class="btn btn-sm btn-danger"
+                                        onclick="setHuyTarget(@lh.IdLichHen); openModal('modal-huy');">
+                                    Huỷ
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<!-- Modal huỷ lịch -->
+<div class="modal-overlay" id="modal-huy">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Huỷ lịch hẹn</span>
+            <button class="modal-close" onclick="closeModal('modal-huy')">✕</button>
+        </div>
+        <form method="post" asp-page-handler="Huy">
+            <div class="modal-body">
+                <input type="hidden" name="idLichHen" id="huy-id" />
+                <div class="form-group">
+                    <label class="form-label">Lý do huỷ <span class="required-mark">*</span></label>
+                    <textarea class="form-input" name="lyDo" rows="3"
+                              placeholder="Nhập lý do huỷ lịch..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-huy')">Đóng</button>
+                <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function setHuyTarget(id) {
+    document.getElementById('huy-id').value = id;
+}
+</script>
+}
