@@ -513,6 +513,38 @@ Trang `BenhNhan/DatLich` cần:
 
 ## 10. Chạy project
 
+### 10.1 Kiem tra ket noi CSDL truoc khi chay
+
+`ClinicBooking.Web` va `ClinicBooking.Api` phai tro cung mot DB trong local dev.
+Neu lech connection string, Web co the fail startup tai buoc seeding voi loi nhu:
+
+- `Cannot open database ... requested by the login`
+- `Login failed for user ...`
+
+Kiem tra va dong bo khoa sau trong 2 file:
+
+- `ClinicBooking.Web/appsettings.json`
+- `ClinicBooking.Api/appsettings.json`
+
+```json
+"ConnectionStrings": {
+    "DefaultConnection": "Server=POTATO;Database=ClinicBooking;Trusted_Connection=True;TrustServerCertificate=True"
+}
+```
+
+Neu khong muon sua file theo may, co the override bang environment variable truoc khi chay:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection="Server=POTATO;Database=ClinicBooking;Trusted_Connection=True;TrustServerCertificate=True"
+dotnet run --project ClinicBooking.Web
+```
+
+Checklist nhanh:
+
+1. Dam bao ten `Server` va `Database` cua Web khop voi DB dang ton tai tren SQL Server.
+2. Chay `dotnet run --project ClinicBooking.Web`.
+3. Neu app len `Now listening on: ...` thi cau hinh da dung.
+
 ```bash
 # Từ root của solution
 dotnet run --project ClinicBooking.Web
@@ -524,4 +556,4 @@ Tài khoản seed mặc định (dev only) xem trong `DatabaseSeeder.cs`.
 
 ---
 
-*Cập nhật lần cuối: 2026-04-18 — Module 1 Wave 3 hoàn tất.*
+*Cập nhật lần cuối: 2026-04-19 — Bo sung huong dan dong bo connection string Web/API truoc khi chay local.*

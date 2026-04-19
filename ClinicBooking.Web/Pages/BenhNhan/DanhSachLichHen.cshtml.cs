@@ -36,7 +36,7 @@ public class DanhSachLichHenModel : PageModel
     {
         try
         {
-            await _mediator.Send(new HuyLichHenCommand(idLichHen, lyDo));
+            await _mediator.Send(new HuyLichHenCommand(idLichHen, lyDo ?? string.Empty));
             TempData["SuccessMessage"] = "Đã huỷ lịch hẹn thành công.";
         }
         catch (Exception ex)

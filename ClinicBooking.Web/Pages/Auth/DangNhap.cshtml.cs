@@ -18,10 +18,12 @@ public class DangNhapInputModel
 public class DangNhapModel : PageModel
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<DangNhapModel> _logger;
 
-    public DangNhapModel(IMediator mediator)
+    public DangNhapModel(IMediator mediator, ILogger<DangNhapModel> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     [BindProperty]
@@ -75,8 +77,9 @@ public class DangNhapModel : PageModel
             ErrorMessage = ex.Message;
             return Page();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Loi khi xu ly dang nhap cho '{DinhDanh}'", Input.TenDangNhapHoacEmail);
             ErrorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại.";
             return Page();
         }
@@ -87,11 +90,11 @@ public class DangNhapModel : PageModel
         vaiTro ??= User.FindFirstValue(ClaimTypes.Role);
         return vaiTro switch
         {
+            VaiTroConstants.Admin    => RedirectToPage("/Admin/Dashboard"),
             VaiTroConstants.LeTan    => RedirectToPage("/LeTan/Dashboard"),
             VaiTroConstants.BacSi    => RedirectToPage("/BacSi/HangCho"),
             VaiTroConstants.BenhNhan => RedirectToPage("/BenhNhan/DanhSachLichHen"),
-            VaiTroConstants.Admin    => RedirectToPage("/LeTan/Dashboard"),
-            _                        => RedirectToPage("/LeTan/Dashboard")
+            _                        => RedirectToPage("/Auth/DangNhap")
         };
     }
 }
