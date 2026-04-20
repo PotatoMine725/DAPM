@@ -111,10 +111,9 @@ public class DoiLichHenHandler : IRequestHandler<DoiLichHenCommand, LichHenRespo
         // Chiem slot o ca moi truoc khi huy ca cu (de neu het slot thi khong mat lich cu).
         var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
             request.IdCaLamViecMoi, 1, cancellationToken);
-        if (soSlotMoi > thongTinCaMoi.SoSlotToiDa)
+        if (soSlotMoi is null)
         {
-            try { await _caLamViecQueryService.IncrementSoSlotDaDatAsync(request.IdCaLamViecMoi, -1, cancellationToken); }
-            catch { /* reconciliation Wave 4 */ }
+            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back.
             throw new ConflictException("Ca lam viec moi da het slot.");
         }
 
@@ -126,7 +125,7 @@ public class DoiLichHenHandler : IRequestHandler<DoiLichHenCommand, LichHenRespo
             IdBenhNhan = lichHenCu.IdBenhNhan,
             IdCaLamViec = request.IdCaLamViecMoi,
             IdDichVu = idDichVuMoi,
-            SoSlot = soSlotMoi,
+            SoSlot = soSlotMoi.Value,
             HinhThucDat = lichHenCu.HinhThucDat,
             IdBacSiMongMuon = request.IdBacSiMongMuon ?? lichHenCu.IdBacSiMongMuon,
             BacSiMongMuonNote = request.BacSiMongMuonNote ?? lichHenCu.BacSiMongMuonNote,

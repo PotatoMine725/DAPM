@@ -81,10 +81,9 @@ public class TaoGiuChoHandler : IRequestHandler<TaoGiuChoCommand, GiuChoResponse
         var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
             request.IdCaLamViec, 1, cancellationToken);
 
-        if (soSlotMoi > thongTinCa.SoSlotToiDa)
+        if (soSlotMoi is null)
         {
-            try { await _caLamViecQueryService.IncrementSoSlotDaDatAsync(request.IdCaLamViec, -1, cancellationToken); }
-            catch { /* reconciliation Wave 4 */ }
+            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back.
             throw new ConflictException("Ca lam viec da het slot.");
         }
 
@@ -92,7 +91,7 @@ public class TaoGiuChoHandler : IRequestHandler<TaoGiuChoCommand, GiuChoResponse
         {
             IdCaLamViec = request.IdCaLamViec,
             IdBenhNhan = request.IdBenhNhan,
-            SoSlot = soSlotMoi,
+            SoSlot = soSlotMoi.Value,
             GioHetHan = now.AddMinutes(_options.GiuChoThoiHanPhut),
             DaGiaiPhong = false,
             NgayTao = now
