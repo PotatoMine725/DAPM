@@ -1,15 +1,25 @@
 using ClinicBooking.Api.Contracts.DanhMuc;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatChuyenKhoa;
+using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatDichVu;
+using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatPhong;
 using ClinicBooking.Application.Features.DanhMuc.Commands.TaoChuyenKhoa;
+using ClinicBooking.Application.Features.DanhMuc.Commands.TaoDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.TaoDichVu;
+using ClinicBooking.Application.Features.DanhMuc.Commands.TaoPhong;
 using ClinicBooking.Application.Features.DanhMuc.Commands.XoaChuyenKhoa;
+using ClinicBooking.Application.Features.DanhMuc.Commands.XoaDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.XoaDichVu;
+using ClinicBooking.Application.Features.DanhMuc.Commands.XoaPhong;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachChuyenKhoa;
+using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
+using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachPhong;
 using ClinicBooking.Application.Features.DanhMuc.Queries.LayChuyenKhoaById;
+using ClinicBooking.Application.Features.DanhMuc.Queries.LayDinhNghiaCaById;
 using ClinicBooking.Application.Features.DanhMuc.Queries.LayDichVuById;
+using ClinicBooking.Application.Features.DanhMuc.Queries.LayPhongById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -186,6 +196,164 @@ public class DanhMucController : ControllerBase
         CancellationToken cancellationToken)
     {
         await _mediator.Send(new XoaDichVuCommand(idDichVu), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("phong")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(typeof(TaoPhongResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<TaoPhongResponse>> TaoPhong(
+        [FromBody] TaoPhongRequest request,
+        CancellationToken cancellationToken)
+    {
+        var id = await _mediator.Send(
+            new TaoPhongCommand(
+                request.MaPhong,
+                request.TenPhong,
+                request.SucChua,
+                request.TrangBi,
+                request.TrangThai),
+            cancellationToken);
+
+        return StatusCode(StatusCodes.Status201Created, new TaoPhongResponse(id));
+    }
+
+    [HttpGet("phong")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan},{VaiTroConstants.BacSi}")]
+    [ProducesResponseType(typeof(IReadOnlyList<PhongDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<PhongDto>>> DanhSachPhong(
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        [FromQuery] bool? trangThai = null,
+        [FromQuery] string? tuKhoa = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new DanhSachPhongQuery(soTrang, kichThuocTrang, trangThai, tuKhoa),
+            cancellationToken);
+
+        return Ok(result.Select(x => x.TuDto()).ToList());
+    }
+
+    [HttpGet("phong/{idPhong:int}")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan},{VaiTroConstants.BacSi}")]
+    [ProducesResponseType(typeof(PhongDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PhongDto>> LayPhongById(
+        int idPhong,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new LayPhongByIdQuery(idPhong), cancellationToken);
+        return Ok(result.TuDto());
+    }
+
+    [HttpPut("phong/{idPhong:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> CapNhatPhong(
+        int idPhong,
+        [FromBody] CapNhatPhongRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(
+            new CapNhatPhongCommand(
+                idPhong,
+                request.MaPhong,
+                request.TenPhong,
+                request.SucChua,
+                request.TrangBi,
+                request.TrangThai),
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpDelete("phong/{idPhong:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> XoaPhong(
+        int idPhong,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new XoaPhongCommand(idPhong), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("dinh-nghia-ca")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(typeof(TaoDinhNghiaCaResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<TaoDinhNghiaCaResponse>> TaoDinhNghiaCa(
+        [FromBody] TaoDinhNghiaCaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var id = await _mediator.Send(
+            new TaoDinhNghiaCaCommand(
+                request.TenCa,
+                request.GioBatDauMacDinh,
+                request.GioKetThucMacDinh,
+                request.MoTa,
+                request.TrangThai),
+            cancellationToken);
+
+        return StatusCode(StatusCodes.Status201Created, new TaoDinhNghiaCaResponse(id));
+    }
+
+    [HttpGet("dinh-nghia-ca")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan},{VaiTroConstants.BacSi}")]
+    [ProducesResponseType(typeof(IReadOnlyList<DinhNghiaCaDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<DinhNghiaCaDto>>> DanhSachDinhNghiaCa(
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        [FromQuery] bool? trangThai = null,
+        [FromQuery] string? tuKhoa = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new DanhSachDinhNghiaCaQuery(soTrang, kichThuocTrang, trangThai, tuKhoa),
+            cancellationToken);
+
+        return Ok(result.Select(x => x.TuDto()).ToList());
+    }
+
+    [HttpGet("dinh-nghia-ca/{idDinhNghiaCa:int}")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan},{VaiTroConstants.BacSi}")]
+    [ProducesResponseType(typeof(DinhNghiaCaDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<DinhNghiaCaDto>> LayDinhNghiaCaById(
+        int idDinhNghiaCa,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new LayDinhNghiaCaByIdQuery(idDinhNghiaCa), cancellationToken);
+        return Ok(result.TuDto());
+    }
+
+    [HttpPut("dinh-nghia-ca/{idDinhNghiaCa:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> CapNhatDinhNghiaCa(
+        int idDinhNghiaCa,
+        [FromBody] CapNhatDinhNghiaCaRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(
+            new CapNhatDinhNghiaCaCommand(
+                idDinhNghiaCa,
+                request.TenCa,
+                request.GioBatDauMacDinh,
+                request.GioKetThucMacDinh,
+                request.MoTa,
+                request.TrangThai),
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpDelete("dinh-nghia-ca/{idDinhNghiaCa:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> XoaDinhNghiaCa(
+        int idDinhNghiaCa,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new XoaDinhNghiaCaCommand(idDinhNghiaCa), cancellationToken);
         return NoContent();
     }
 }
