@@ -122,21 +122,31 @@ public class CaLamViecQueryServiceStub : ICaLamViecQueryService
                 cancellationToken);
     }
 
-    public async Task<int> IncrementSoSlotDaDatAsync(
+    public async Task<int?> IncrementSoSlotDaDatAsync(
         int idCaLamViec, int delta, CancellationToken cancellationToken = default)
     {
         // Atomic UPDATE — khong Read-Modify-Write tu client.
         // SQL Server dam bao nguyen tu bang row-level lock tren UPDATE statement.
-        await _db.CaLamViec
+        // Ap constraint: SoSlotDaDat + delta khong duoc < 0 hoac > SoSlotToiDa.
+        var rowsAffected = await _db.CaLamViec
             .Where(c => c.IdCaLamViec == idCaLamViec)
+            .Where(c => c.SoSlotDaDat + delta >= 0 && c.SoSlotDaDat + delta <= c.SoSlotToiDa)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(c => c.SoSlotDaDat, c => c.SoSlotDaDat + delta),
                 cancellationToken);
 
+        // Neu khong co row nao duoc update, co nghia la:
+        // - Khong tim thay CaLamViec tuong ung, hoac
+        // - delta khien SoSlotDaDat vuot khoi [0, SoSlotToiDa]
+        if (rowsAffected == 0)
+        {
+            return null;
+        }
+
         // Doc lai gia tri moi (sau UPDATE da commit)
         return await _db.CaLamViec
             .Where(c => c.IdCaLamViec == idCaLamViec)
-            .Select(c => c.SoSlotDaDat)
+            .Select(c => (int?)c.SoSlotDaDat)
             .FirstAsync(cancellationToken);
     }
 
