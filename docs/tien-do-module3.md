@@ -11,8 +11,8 @@ Nhanh lam viec: `feature/module3`
 
 - Thuoc CRUD (Application + API + UnitTests)
 - BenhNhan (ho so cua toi + danh sach + walk-in, tao tai khoan he thong cho walk-in)
+- HoSoKham (tao/cap nhat + lich su kham)
 
 ## Ke hoach tiep theo
 
-- HoSoKham: tao/cap nhat + lich su kham
 - ToaThuoc: ke don + xem toa cua toi
