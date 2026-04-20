@@ -14,6 +14,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails(options =>
@@ -75,11 +76,14 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "ClinicBooking API v1");
 });
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
+app.MapGet("/", () => Results.Redirect("/module2/chuyen-khoa"));
 
 app.Run();

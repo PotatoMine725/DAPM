@@ -1,0 +1,261 @@
+:root {
+    --primary: #1a5fa8;
+    --primary-dark: #155190;
+    --primary-light: #e6f1fb;
+    --primary-mid: #378add;
+
+    --bg-white: #ffffff;
+    --bg-page: #f5f6f8;
+    --bg-subtle: #eef1f5;
+
+    --success-bg: #eaf3de;
+    --warning-bg: #faeeda;
+    --danger-bg: #fcebeb;
+    --neutral-bg: #f1efe8;
+
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f6368;
+    --text-disabled: #9aa0a6;
+
+    --border: #d9e2ec;
+    --shadow: 0 8px 20px rgba(26, 95, 168, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.container {
+    width: min(1320px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.topbar {
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+    color: #fff;
+    border-bottom: 3px solid var(--primary-mid);
+}
+
+.topbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 0;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.muted {
+    margin: 4px 0 0;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.swagger-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.page-content {
+    padding: 24px 0 40px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+}
+
+.card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.card h2,
+.card h3 {
+    margin-top: 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    border: 1px solid #c7d4e2;
+    border-radius: 8px;
+    background: var(--bg-white);
+    color: var(--text-primary);
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-mid);
+    outline: 2px solid var(--primary-light);
+}
+
+textarea {
+    min-height: 88px;
+    resize: vertical;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+}
+
+.btn-danger {
+    background: #d74949;
+    color: #fff;
+}
+
+.status-banner {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+.status-success {
+    background: var(--success-bg);
+}
+
+.status-error {
+    background: var(--danger-bg);
+}
+
+.table-wrap {
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 840px;
+}
+
+th,
+td {
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 14px;
+}
+
+tr:hover td {
+    background: var(--bg-subtle);
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge-success {
+    background: var(--success-bg);
+}
+
+.badge-neutral {
+    background: var(--neutral-bg);
+}
+
+.row-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+details {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #fff;
+}
+
+summary {
+    cursor: pointer;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.small {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+@media (max-width: 1080px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
