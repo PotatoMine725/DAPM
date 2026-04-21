@@ -16,18 +16,18 @@ public sealed class CapNhatPhongHandlerTests
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        var entity = new Phong { MaPhong = "P701", TenPhong = "Phong cu", TrangThai = true };
+        var entity = new Phong { MaPhong = TestSeedSafeValues.MaPhongCapNhatGoc, TenPhong = "Phong cu", TrangThai = true };
         db.Phong.Add(entity);
         await db.SaveChangesAsync();
 
         var handler = new CapNhatPhongHandler(db);
         var result = await handler.Handle(
-            new CapNhatPhongCommand(entity.IdPhong, "P701A", "Phong moi", 25, "May ECG", false),
+            new CapNhatPhongCommand(entity.IdPhong, TestSeedSafeValues.MaPhongCapNhatMoi, "Phong moi", 25, "May ECG", false),
             CancellationToken.None);
 
         result.Should().Be(Unit.Value);
         var updated = await db.Phong.AsNoTracking().FirstAsync(x => x.IdPhong == entity.IdPhong);
-        updated.MaPhong.Should().Be("P701A");
+        updated.MaPhong.Should().Be(TestSeedSafeValues.MaPhongCapNhatMoi);
         updated.TenPhong.Should().Be("Phong moi");
         updated.TrangThai.Should().BeFalse();
     }
@@ -39,15 +39,15 @@ public sealed class CapNhatPhongHandlerTests
         using var db = factory.CreateContext();
 
         db.Phong.AddRange(
-            new Phong { MaPhong = "P711", TenPhong = "Phong 401", TrangThai = true },
-            new Phong { MaPhong = "P712", TenPhong = "Phong 402", TrangThai = true });
+            new Phong { MaPhong = TestSeedSafeValues.MaPhongTrungA, TenPhong = "Phong 401", TrangThai = true },
+            new Phong { MaPhong = TestSeedSafeValues.MaPhongTrungB, TenPhong = "Phong 402", TrangThai = true });
         await db.SaveChangesAsync();
 
-        var target = await db.Phong.FirstAsync(x => x.MaPhong == "P711");
+        var target = await db.Phong.FirstAsync(x => x.MaPhong == TestSeedSafeValues.MaPhongTrungA);
         var handler = new CapNhatPhongHandler(db);
 
         var act = async () => await handler.Handle(
-            new CapNhatPhongCommand(target.IdPhong, "P712", "Phong doi", null, null, true),
+            new CapNhatPhongCommand(target.IdPhong, TestSeedSafeValues.MaPhongTrungB, "Phong doi", null, null, true),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>()

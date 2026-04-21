@@ -57,6 +57,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var swaggerRoutePrefix = builder.Configuration["Swagger:RoutePrefix"];
+var swaggerRootPath = string.IsNullOrWhiteSpace(swaggerRoutePrefix) || swaggerRoutePrefix == "/"
+    ? "/swagger"
+    : $"/{swaggerRoutePrefix.Trim('/')}";
+
 // MediatR va cac handler yeu cau Application layer tham chieu den Infrastructure
 // cho DbContext, nen dam bao AddInfrastructure chay truoc AddApplication.
 
@@ -82,6 +87,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapGet("/", () => Results.Redirect(swaggerRootPath));
 
 app.Run();
