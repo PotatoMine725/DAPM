@@ -210,8 +210,17 @@ public class AppDbContext : DbContext, IAppDbContext
             e.Property(x => x.HinhThucDat).HasConversion<string>();
             e.Property(x => x.TrangThai).HasConversion<string>();
 
-            // Module 1: concurrency token bao ve race condition huy/doi lich dong thoi
-            e.Property(x => x.RowVersion).IsRowVersion();
+            // Module 1: concurrency token bao ve race condition huy/doi lich dong thoi.
+            // SQLite khong ho tro rowversion (se fail NOT NULL khi test) -> skip IsRowVersion khi test.
+            // Production dung SQL Server nen van duoc bat.
+            if (Database.ProviderName != "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                e.Property(x => x.RowVersion).IsRowVersion();
+            }
+            else
+            {
+                e.Property(x => x.RowVersion).IsConcurrencyToken();
+            }
 
             // Module 1: unique (IdCaLamViec, SoSlot) chong double-book
             // Xac nhan tu clinic.dbml dong 203: SoSlot la ordinal position trong ca
