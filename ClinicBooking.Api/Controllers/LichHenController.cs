@@ -2,8 +2,11 @@ using ClinicBooking.Api.Contracts.LichHen;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.HangCho.Dtos;
 using ClinicBooking.Application.Features.LichHen.Commands.CheckInLichHen;
+using ClinicBooking.Application.Features.LichHen.Commands.DoiLichHen;
 using ClinicBooking.Application.Features.LichHen.Commands.GiaiPhongGiuCho;
 using ClinicBooking.Application.Features.LichHen.Commands.HuyLichHen;
+using ClinicBooking.Application.Features.LichHen.Commands.TaoGiuCho;
+using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
 using ClinicBooking.Application.Features.LichHen.Commands.XacNhanLichHen;
 using ClinicBooking.Application.Features.LichHen.Dtos;
 using ClinicBooking.Application.Features.LichHen.Queries.DanhSachLichHenCuaToi;
@@ -26,6 +29,56 @@ public class LichHenController : ControllerBase
     public LichHenController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpPost("tao-lich-hen")]
+    [Authorize(Roles = $"{VaiTroConstants.BenhNhan},{VaiTroConstants.LeTan},{VaiTroConstants.Admin}")]
+    [ProducesResponseType(typeof(LichHenResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<LichHenResponse>> Tao(
+        [FromBody] TaoLichHenRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new TaoLichHenCommand(
+            request.IdCaLamViec,
+            request.IdDichVu,
+            request.IdBenhNhan,
+            request.IdBacSiMongMuon,
+            request.BacSiMongMuonNote,
+            request.TrieuChung);
+        var result = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(Xem), new { idLichHen = result.IdLichHen }, result);
+    }
+
+    [HttpPost("{idLichHen:int}/doi-lich")]
+    [Authorize(Roles = $"{VaiTroConstants.BenhNhan},{VaiTroConstants.LeTan},{VaiTroConstants.Admin}")]
+    [ProducesResponseType(typeof(LichHenResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<LichHenResponse>> DoiLich(
+        int idLichHen,
+        [FromBody] DoiLichHenRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new DoiLichHenCommand(
+            idLichHen,
+            request.IdCaLamViecMoi,
+            request.IdDichVuMoi,
+            request.IdBacSiMongMuon,
+            request.BacSiMongMuonNote,
+            request.TrieuChung,
+            request.LyDo);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("tao-giu-cho")]
+    [Authorize(Roles = $"{VaiTroConstants.LeTan},{VaiTroConstants.Admin}")]
+    [ProducesResponseType(typeof(GiuChoResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<GiuChoResponse>> TaoGiuCho(
+        [FromBody] TaoGiuChoRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new TaoGiuChoCommand(request.IdCaLamViec, request.IdBenhNhan);
+        var result = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GiaiPhongGiuCho), new { idGiuCho = result.IdGiuCho }, result);
     }
 
     [HttpPost("{idLichHen:int}/xac-nhan")]
