@@ -54,3 +54,5 @@ appsettings.local.json
 node_modules/
 dist/
 build/
+
+.fake
