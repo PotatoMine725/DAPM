@@ -66,9 +66,9 @@ public sealed class XoaDinhNghiaCaHandlerTests
 
         var taiKhoan = new TaiKhoan
         {
-            TenDangNhap = "bacsi_ut",
-            Email = "bacsi_ut@test.local",
-            SoDienThoai = "0900000000",
+            TenDangNhap = "bacsi_phamminh",
+            Email = "bacsi.phamminh@phongkham.local",
+            SoDienThoai = "0911222333",
             MatKhau = "hash",
             VaiTro = VaiTro.BacSi,
             TrangThai = true,
