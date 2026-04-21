@@ -113,18 +113,9 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
         var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
             request.IdCaLamViec, 1, cancellationToken);
 
-        if (soSlotMoi > thongTinCa.SoSlotToiDa)
+        if (soSlotMoi is null)
         {
-            // Het slot — roll back counter.
-            try
-            {
-                await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-                    request.IdCaLamViec, -1, cancellationToken);
-            }
-            catch
-            {
-                // Reconciliation job (Wave 4) se phat hien drift.
-            }
+            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back vi UPDATE khong chay.
             throw new ConflictException("Ca lam viec da het slot.");
         }
 
@@ -137,7 +128,7 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             IdBenhNhan = idBenhNhan,
             IdCaLamViec = request.IdCaLamViec,
             IdDichVu = request.IdDichVu,
-            SoSlot = soSlotMoi,
+            SoSlot = soSlotMoi.Value,
             HinhThucDat = hinhThucDat,
             IdBacSiMongMuon = request.IdBacSiMongMuon,
             BacSiMongMuonNote = request.BacSiMongMuonNote,
