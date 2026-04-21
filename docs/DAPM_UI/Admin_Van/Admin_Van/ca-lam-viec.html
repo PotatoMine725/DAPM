@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ca làm việc — MedAdmin</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+/* ===== VIEW SWITCHER ===== */
+.view-switcher{display:flex;gap:2px;background:var(--page-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:3px}
+.view-btn{padding:6px 14px;border-radius:4px;font-size:12.5px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:.18s;display:flex;align-items:center;gap:6px}
+.view-btn.active{background:var(--white);color:var(--primary);box-shadow:var(--shadow-sm)}
+.view-btn:hover:not(.active){color:var(--text-primary)}
+
+/* ===== WEEK CALENDAR ===== */
+.week-nav{display:flex;align-items:center;gap:12px}
+.week-nav .week-label{font-family:'Lexend';font-size:14px;font-weight:700;min-width:200px;text-align:center}
+.week-nav button{width:32px;height:32px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--white);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s}
+.week-nav button:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary-mid)}
+
+.calendar-grid{display:grid;grid-template-columns:80px repeat(7,1fr);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--white)}
+.cal-header{background:var(--page-bg);border-bottom:1px solid var(--border);display:contents}
+.cal-header-cell{padding:10px 8px;text-align:center;font-size:11.5px;font-weight:700;color:var(--text-secondary);letter-spacing:.4px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--page-bg)}
+.cal-header-cell:last-child{border-right:none}
+.cal-header-cell.today-col{background:var(--primary-light);color:var(--primary)}
+.cal-header-cell .day-num{font-family:'Lexend';font-size:18px;font-weight:700;display:block;margin-bottom:2px}
+.cal-header-cell.today-col .day-num{color:var(--primary)}
+
+.cal-time-col{font-size:11px;color:var(--text-disabled);font-weight:600;text-align:right;padding:8px 10px 8px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--subtle);display:flex;align-items:flex-start;justify-content:flex-end}
+.cal-cell{border-right:1px solid var(--subtle);border-bottom:1px solid var(--subtle);min-height:52px;padding:4px;position:relative}
+.cal-cell:last-child{border-right:none}
+.cal-cell.today-col{background:rgba(26,95,168,.03)}
+
+.shift-block{border-radius:6px;padding:5px 8px;cursor:pointer;transition:.15s;margin-bottom:3px;font-size:11.5px;line-height:1.4;border-left:3px solid currentColor;position:relative}
+.shift-block:hover{filter:brightness(.95);transform:translateX(1px)}
+.shift-block.sang{background:#e6f1fb;color:#1a5fa8;border-color:#1a5fa8}
+.shift-block.chieu{background:#e8f5e9;color:#2e7d32;border-color:#2e7d32}
+.shift-block.toi{background:#f3e8ff;color:#7c3aed;border-color:#7c3aed}
+.shift-block .sb-doc{font-weight:700;font-size:11px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shift-block .sb-time{font-size:10px;opacity:.75}
+.shift-block .sb-slots{font-size:10px;margin-top:2px}
+.shift-block .sb-status{position:absolute;top:4px;right:6px;width:7px;height:7px;border-radius:50%}
+.shift-block .sb-status.da_duyet{background:#2e7d32}
+.shift-block .sb-status.cho_duyet{background:#e65100}
+.shift-block .sb-status.hoan_thanh{background:#9aa0a6}
+
+/* ===== LIST VIEW ===== */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+.slot-progress{display:flex;align-items:center;gap:8px;min-width:120px}
+.slot-bar{flex:1;height:6px;background:var(--subtle);border-radius:4px;overflow:hidden}
+.slot-bar-fill{height:100%;border-radius:4px;background:var(--primary);transition:.6s}
+
+/* ===== LEGEND ===== */
+.legend{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--text-secondary)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+</style>
+</head>
+<body data-page="ca-lam-viec">
+<div id="sidebar-slot"></div>
+<div class="main">
+  <div id="header-slot"></div>
+  <div class="page-content">
+
+    <div class="section-title">Ca làm việc</div>
+    <div class="section-sub">Quản lý toàn bộ ca làm việc — cập nhật trạng thái, xem lịch tuần</div>
+
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:flex;align-items:center;gap:11px">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:15px"><i class="fa-solid fa-calendar-week"></i></div>
+        <div><div style="font-family:'Lexend';font-size:20px;font-weight:700" id="num-total">0</div><div style="font-size:11.5px;color:var(--text-secondary)">Tổng ca tuần này</div></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:flex;align-items:center;gap:11px">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--success-bg);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:15px"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div style="font-family:'Lexend';font-size:20px;font-weight:700" id="num-duyet">0</div><div style="font-size:11.5px;color:var(--text-secondary)">Đã duyệt</div></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:flex;align-items:center;gap:11px">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--warning-bg);display:flex;align-items:center;justify-content:center;color:var(--warning);font-size:15px"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div style="font-family:'Lexend';font-size:20px;font-weight:700" id="num-cho">0</div><div style="font-size:11.5px;color:var(--text-secondary)">Chờ duyệt</div></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:flex;align-items:center;gap:11px">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:#f3e8ff;display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:15px"><i class="fa-solid fa-spinner"></i></div>
+        <div><div style="font-family:'Lexend';font-size:20px;font-weight:700" id="num-hoanth">0</div><div style="font-size:11.5px;color:var(--text-secondary)">Hoàn thành</div></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:flex;align-items:center;gap:11px">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--danger-bg);display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:15px"><i class="fa-solid fa-ban"></i></div>
+        <div><div style="font-family:'Lexend';font-size:20px;font-weight:700" id="num-huy">0</div><div style="font-size:11.5px;color:var(--text-secondary)">Đã hủy</div></div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="week-nav">
+          <button onclick="changeWeek(-1)"><i class="fa-solid fa-chevron-left" style="font-size:11px"></i></button>
+          <div class="week-label" id="week-label">Tuần 1 — 7/4/2026</div>
+          <button onclick="changeWeek(1)"><i class="fa-solid fa-chevron-right" style="font-size:11px"></i></button>
+          <button onclick="goToday()" style="padding:0 12px;width:auto;font-size:12px;font-weight:600;color:var(--primary);border-color:var(--primary-mid)">Hôm nay</button>
+        </div>
+        <select class="filter-select" id="filter-bac-si">
+          <option value="">Tất cả bác sĩ</option>
+          <option>BS. Trần Minh Khoa</option>
+          <option>BS. Phạm Thu Hà</option>
+          <option>BS. Nguyễn Hoàng Nam</option>
+          <option>BS. Vũ Đức Thắng</option>
+          <option>BS. Lê Thanh Tâm</option>
+        </select>
+        <select class="filter-select" id="filter-status">
+          <option value="">Tất cả trạng thái</option>
+          <option>Đã duyệt</option>
+          <option>Chờ duyệt</option>
+          <option>Hoàn thành</option>
+          <option>Đã hủy</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <div class="view-switcher">
+          <div class="view-btn active" id="btn-week" onclick="setView('week')"><i class="fa-solid fa-calendar-week"></i> Tuần</div>
+          <div class="view-btn" id="btn-list" onclick="setView('list')"><i class="fa-solid fa-list"></i> Danh sách</div>
+        </div>
+        <button class="btn btn-ghost btn-sm"><i class="fa-solid fa-file-export"></i> Xuất</button>
+        <button class="btn btn-primary" onclick="openModal('modal-add-ca')"><i class="fa-solid fa-plus"></i> Thêm ca</button>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="legend">
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">Ca:</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#e6f1fb;border-left:3px solid #1a5fa8"></div> Sáng</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e8f5e9;border-left:3px solid #2e7d32"></div> Chiều</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f3e8ff;border-left:3px solid #7c3aed"></div> Tối</div>
+        <span style="margin-left:8px;font-size:12px;font-weight:600;color:var(--text-secondary)">Trạng thái:</span>
+        <div class="legend-item"><div style="width:8px;height:8px;border-radius:50%;background:#2e7d32"></div> Đã duyệt</div>
+        <div class="legend-item"><div style="width:8px;height:8px;border-radius:50%;background:#e65100"></div> Chờ duyệt</div>
+        <div class="legend-item"><div style="width:8px;height:8px;border-radius:50%;background:#9aa0a6"></div> Hoàn thành</div>
+      </div>
+    </div>
+
+    <!-- WEEK VIEW -->
+    <div id="view-week">
+      <div class="calendar-grid" id="calGrid">
+        <!-- Built by JS -->
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="view-list" style="display:none">
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Bác sĩ</th>
+              <th>Chuyên khoa</th>
+              <th>Ngày / Ca</th>
+              <th>Phòng</th>
+              <th>Giờ</th>
+              <th>Slot đã đặt</th>
+              <th>Trạng thái</th>
+              <th>Nguồn</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="listBody">
+          </tbody>
+        </table>
+        <div class="pagination">
+          <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+          <span class="page-info">Hiển thị 1–10 / 42 ca</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Thêm / Sửa ca -->
+<div class="modal-overlay" id="modal-add-ca">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-calendar-plus" style="color:var(--primary);margin-right:8px"></i>Thêm ca làm việc</div>
+      <div class="modal-close" onclick="closeModal('modal-add-ca')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bác sĩ <span class="req">*</span></label>
+            <select class="form-control">
+              <option>-- Chọn bác sĩ --</option>
+              <option>BS. Trần Minh Khoa — Tim mạch</option>
+              <option>BS. Phạm Thu Hà — Nhi khoa</option>
+              <option>BS. Nguyễn Hoàng Nam — Thần kinh</option>
+              <option>BS. Vũ Đức Thắng — Da liễu</option>
+            </select>
+            <div class="form-hint">Chỉ hiển thị bác sĩ đang làm việc</div>
+          </div>
+          <div class="form-group">
+            <label>Phòng khám <span class="req">*</span></label>
+            <select class="form-control">
+              <option>-- Chọn phòng --</option>
+              <option>P101 — Phòng Tim mạch</option>
+              <option>P201 — Phòng Nhi khoa</option>
+              <option>P305 — Phòng Thần kinh</option>
+              <option>P401 — Phòng Da liễu</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ngày làm việc <span class="req">*</span></label>
+            <input type="date" class="form-control" value="2026-04-08">
+          </div>
+          <div class="form-group">
+            <label>Ca trực <span class="req">*</span></label>
+            <select class="form-control" id="ca-truc-sel" onchange="updateTimeHint()">
+              <option value="sang">Sáng (07:00 – 12:00)</option>
+              <option value="chieu">Chiều (12:00 – 17:00)</option>
+              <option value="toi">Tối (17:00 – 21:00)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Giờ bắt đầu <span class="req">*</span></label>
+            <input type="time" class="form-control" id="gio-bd" value="07:00">
+          </div>
+          <div class="form-group">
+            <label>Giờ kết thúc <span class="req">*</span></label>
+            <input type="time" class="form-control" id="gio-kt" value="12:00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Thời gian / slot (phút) <span class="req">*</span></label>
+            <select class="form-control" id="slot-time" onchange="calcSlots()">
+              <option value="15">15 phút</option>
+              <option value="20" selected>20 phút</option>
+              <option value="30">30 phút</option>
+              <option value="45">45 phút</option>
+            </select>
+            <div class="form-hint">Sao chép từ mặc định chuyên khoa, có thể điều chỉnh</div>
+          </div>
+          <div class="form-group">
+            <label>Số slot tối đa</label>
+            <input type="text" class="form-control" id="slot-max" value="15" readonly style="background:var(--page-bg);color:var(--primary);font-weight:700">
+            <div class="form-hint">Tính tự động: (kết thúc − bắt đầu) / slot</div>
+          </div>
+        </div>
+        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:10px">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Ca <strong>Sáng</strong> ngày <strong>08/04/2026</strong> — Dự kiến <strong id="preview-slots">15 slot</strong> × 20 phút</span>
+        </div>
+        <div class="form-group">
+          <label>Nguồn tạo ca</label>
+          <select class="form-control">
+            <option value="tu_dong">Tự động (sinh từ lịch nội trú)</option>
+            <option value="bac_si_dang_ky">Bác sĩ đăng ký (hợp đồng)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-ca')">Hủy</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tạo ca làm việc</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Chi tiết ca -->
+<div class="modal-overlay" id="modal-detail-ca">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title"><i class="fa-solid fa-calendar-day" style="color:var(--primary);margin-right:8px"></i>Chi tiết ca làm việc</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">ID: #CA-20260407-012 — Tự động sinh từ lịch nội trú</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('modal-detail-ca')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab-btn active" onclick="switchTab(this,'tab-ca-info')">Thông tin ca</div>
+        <div class="tab-btn" onclick="switchTab(this,'tab-ca-slots')">Danh sách slot</div>
+        <div class="tab-btn" onclick="switchTab(this,'tab-ca-nghi')">Đơn nghỉ phép</div>
+      </div>
+      <div class="tab-pane active" id="tab-ca-info">
+        <div class="info-grid" style="grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:20px">
+          <div class="info-item"><div class="il">Bác sĩ</div><div class="iv" style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm">T</div>BS. Trần Minh Khoa</div></div>
+          <div class="info-item"><div class="il">Chuyên khoa</div><div class="iv"><span class="badge badge-primary">Tim mạch</span></div></div>
+          <div class="info-item"><div class="il">Phòng</div><div class="iv"><i class="fa-solid fa-door-open" style="color:var(--primary);margin-right:4px"></i>P101</div></div>
+          <div class="info-item"><div class="il">Ngày làm việc</div><div class="iv">Thứ Ba, 07/04/2026</div></div>
+          <div class="info-item"><div class="il">Ca trực</div><div class="iv"><span class="badge" style="background:#e6f1fb;color:#1a5fa8">☀ Sáng</span></div></div>
+          <div class="info-item"><div class="il">Giờ làm việc</div><div class="iv">07:00 – 12:00</div></div>
+          <div class="info-item"><div class="il">Thời gian/slot</div><div class="iv">20 phút</div></div>
+          <div class="info-item"><div class="il">Tổng slot</div><div class="iv">15 slot</div></div>
+          <div class="info-item"><div class="il">Slot đã đặt</div><div class="iv" style="color:var(--primary);font-weight:700">11 / 15</div></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12.5px"><span style="font-weight:600">Tỉ lệ đặt lịch</span><span style="color:var(--primary);font-weight:700">73%</span></div>
+          <div class="progress" style="height:10px"><div class="progress-bar" style="width:73%"></div></div>
+        </div>
+        <div style="background:var(--success-bg);border-radius:var(--radius-sm);padding:12px 16px;border:1px solid #c8e6c9;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--success);font-weight:600"><i class="fa-solid fa-circle-check"></i> Trạng thái: Đã duyệt</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Duyệt lúc 06/04/2026 09:15 bởi Admin</div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-danger btn-sm"><i class="fa-solid fa-ban"></i> Hủy ca</button>
+          <button class="btn btn-ghost btn-sm" onclick="switchTab(document.querySelector('[onclick*=tab-ca-nghi]'),'tab-ca-nghi')"><i class="fa-solid fa-file-medical"></i> Xem đơn nghỉ</button>
+          <button class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i> Cập nhật trạng thái</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-ca-slots">
+        <table>
+          <thead><tr><th>Slot</th><th>Giờ</th><th>Bệnh nhân</th><th>Mã lịch hẹn</th><th>Trạng thái</th></tr></thead>
+          <tbody>
+            <tr><td><strong>#1</strong></td><td>07:00</td><td><div style="display:flex;align-items:center;gap:7px"><div class="avatar-circle avatar-sm">N</div>Nguyễn Văn A</div></td><td><code style="font-size:11.5px;color:var(--primary)">LH-260407-001</code></td><td><span class="badge badge-success">Hoàn thành</span></td></tr>
+            <tr><td><strong>#2</strong></td><td>07:20</td><td><div style="display:flex;align-items:center;gap:7px"><div class="avatar-circle avatar-sm" style="background:var(--primary-mid)">L</div>Lê Thị Bình</div></td><td><code style="font-size:11.5px;color:var(--primary)">LH-260407-002</code></td><td><span class="badge badge-success">Hoàn thành</span></td></tr>
+            <tr><td><strong>#3</strong></td><td>07:40</td><td><div style="display:flex;align-items:center;gap:7px"><div class="avatar-circle avatar-sm" style="background:#7c3aed">P</div>Phạm Thanh Hà</div></td><td><code style="font-size:11.5px;color:var(--primary)">LH-260407-003</code></td><td><span class="badge badge-primary">Đang khám</span></td></tr>
+            <tr><td><strong>#4</strong></td><td>08:00</td><td><div style="display:flex;align-items:center;gap:7px"><div class="avatar-circle avatar-sm" style="background:#059669">T</div>Trần Minh Đức</div></td><td><code style="font-size:11.5px;color:var(--primary)">LH-260407-004</code></td><td><span class="badge badge-neutral">Chờ khám</span></td></tr>
+            <tr><td><strong>#5</strong></td><td>08:20</td><td><div style="display:flex;align-items:center;gap:7px"><div class="avatar-circle avatar-sm" style="background:#dc2626">H</div>Hoàng Thị Lan</div></td><td><code style="font-size:11.5px;color:var(--primary)">LH-260407-005</code></td><td><span class="badge badge-warning">Chờ xác nhận</span></td></tr>
+            <tr><td><strong>#6–#11</strong></td><td colspan="4" style="color:var(--text-secondary);font-style:italic">Đã đặt — xem đầy đủ trong quản lý lịch hẹn</td></tr>
+            <tr><td><strong>#12</strong></td><td>10:00</td><td style="color:var(--text-disabled)">— Trống —</td><td>—</td><td><span class="badge badge-neutral">Còn trống</span></td></tr>
+            <tr><td><strong>#13</strong></td><td>10:20</td><td style="color:var(--text-disabled)">— Trống —</td><td>—</td><td><span class="badge badge-neutral">Còn trống</span></td></tr>
+            <tr><td><strong>#14</strong></td><td>10:40</td><td style="color:var(--text-disabled)">— Trống —</td><td>—</td><td><span class="badge badge-neutral">Còn trống</span></td></tr>
+            <tr><td><strong>#15</strong></td><td>11:00</td><td style="color:var(--text-disabled)">— Trống —</td><td>—</td><td><span class="badge badge-neutral">Còn trống</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tab-pane" id="tab-ca-nghi">
+        <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:flex-start;gap:12px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);font-size:18px;flex-shrink:0;margin-top:1px"></i>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;color:var(--warning);margin-bottom:4px">Ca này chưa có đơn xin nghỉ</div>
+            <div style="font-size:13px;color:var(--text-secondary)">Nếu bác sĩ cần nghỉ ca này, họ cần gửi đơn từ tài khoản cá nhân. Admin có thể hủy ca trực tiếp từ tab Thông tin ca.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Hủy ca -->
+<div class="modal-overlay" id="modal-huy-ca">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)"><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px"></i>Xác nhận hủy ca</div>
+      <div class="modal-close" onclick="closeModal('modal-huy-ca')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--danger-bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:18px;font-size:13.5px;color:var(--danger);display:flex;gap:10px;align-items:flex-start">
+        <i class="fa-solid fa-circle-exclamation" style="margin-top:2px;flex-shrink:0"></i>
+        <div>Ca <strong>Sáng Thứ Ba 07/04</strong> của BS. Trần Minh Khoa có <strong>11 lịch hẹn đã đặt</strong>. Hủy ca sẽ tự động thông báo và hoàn trả slot cho bệnh nhân.</div>
+      </div>
+      <div class="form-group">
+        <label>Lý do hủy ca <span class="req">*</span></label>
+        <textarea class="form-control" placeholder="Nhập lý do hủy ca..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-huy-ca')">Không hủy</button>
+      <button class="btn btn-danger" style="background:var(--danger);color:#fff;border-color:var(--danger)"><i class="fa-solid fa-ban"></i> Xác nhận hủy ca</button>
+    </div>
+  </div>
+</div>
+
+<script src="_shared.js"></script>
+<script>
+renderShell('Ca làm việc', 'Lịch làm việc bác sĩ');
+
+// ── DATA ──────────────────────────────────────────────────
+const SHIFTS = [
+  {id:1, bac_si:'BS. Trần Minh Khoa', chuyen_khoa:'Tim mạch', phong:'P101', ngay:0, ca:'sang', gio_bd:'07:00', gio_kt:'12:00', slot_tong:15, slot_dat:11, trang_thai:'da_duyet', nguon:'tu_dong'},
+  {id:2, bac_si:'BS. Phạm Thu Hà',     chuyen_khoa:'Nhi khoa',  phong:'P201', ngay:0, ca:'chieu',gio_bd:'12:00',gio_kt:'17:00', slot_tong:15, slot_dat:9,  trang_thai:'da_duyet', nguon:'tu_dong'},
+  {id:3, bac_si:'BS. Nguyễn Hoàng Nam',chuyen_khoa:'Thần kinh', phong:'P305', ngay:1, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:10, slot_dat:7,  trang_thai:'da_duyet', nguon:'bac_si_dang_ky'},
+  {id:4, bac_si:'BS. Vũ Đức Thắng',    chuyen_khoa:'Da liễu',   phong:'P401', ngay:1, ca:'chieu',gio_bd:'12:00',gio_kt:'17:00', slot_tong:15, slot_dat:4,  trang_thai:'cho_duyet',nguon:'bac_si_dang_ky'},
+  {id:5, bac_si:'BS. Lê Thanh Tâm',    chuyen_khoa:'Tim mạch',  phong:'P102', ngay:2, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:15, slot_dat:15, trang_thai:'hoan_thanh',nguon:'tu_dong'},
+  {id:6, bac_si:'BS. Trần Minh Khoa',  chuyen_khoa:'Tim mạch',  phong:'P101', ngay:2, ca:'chieu',gio_bd:'12:00',gio_kt:'17:00', slot_tong:15, slot_dat:8,  trang_thai:'da_duyet', nguon:'tu_dong'},
+  {id:7, bac_si:'BS. Phạm Thu Hà',     chuyen_khoa:'Nhi khoa',  phong:'P201', ngay:3, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:15, slot_dat:12, trang_thai:'da_duyet', nguon:'tu_dong'},
+  {id:8, bac_si:'BS. Nguyễn Hoàng Nam',chuyen_khoa:'Thần kinh', phong:'P305', ngay:3, ca:'toi',  gio_bd:'17:00',gio_kt:'21:00', slot_tong:8,  slot_dat:0,  trang_thai:'cho_duyet',nguon:'bac_si_dang_ky'},
+  {id:9, bac_si:'BS. Vũ Đức Thắng',    chuyen_khoa:'Da liễu',   phong:'P401', ngay:4, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:15, slot_dat:5,  trang_thai:'da_duyet', nguon:'tu_dong'},
+  {id:10,bac_si:'BS. Lê Thanh Tâm',    chuyen_khoa:'Tim mạch',  phong:'P102', ngay:5, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:10, slot_dat:3,  trang_thai:'cho_duyet',nguon:'bac_si_dang_ky'},
+  {id:11,bac_si:'BS. Trần Minh Khoa',  chuyen_khoa:'Tim mạch',  phong:'P101', ngay:5, ca:'chieu',gio_bd:'12:00',gio_kt:'17:00', slot_tong:15, slot_dat:0,  trang_thai:'da_huy',   nguon:'tu_dong'},
+  {id:12,bac_si:'BS. Phạm Thu Hà',     chuyen_khoa:'Nhi khoa',  phong:'P201', ngay:6, ca:'sang', gio_bd:'07:00',gio_kt:'12:00', slot_tong:10, slot_dat:6,  trang_thai:'da_duyet', nguon:'tu_dong'},
+];
+
+// Count stats
+function updateStats(){
+  document.getElementById('num-total').textContent = SHIFTS.length;
+  document.getElementById('num-duyet').textContent = SHIFTS.filter(s=>s.trang_thai==='da_duyet').length;
+  document.getElementById('num-cho').textContent = SHIFTS.filter(s=>s.trang_thai==='cho_duyet').length;
+  document.getElementById('num-hoanth').textContent = SHIFTS.filter(s=>s.trang_thai==='hoan_thanh').length;
+  document.getElementById('num-huy').textContent = SHIFTS.filter(s=>s.trang_thai==='da_huy').length;
+  [document.getElementById('num-total'),document.getElementById('num-duyet'),
+   document.getElementById('num-cho'),document.getElementById('num-hoanth'),
+   document.getElementById('num-huy')].forEach(el=>{
+    const t=parseInt(el.textContent);el.textContent='0';animateNum(el,t);
+  });
+}
+updateStats();
+
+// ── WEEK CALENDAR ─────────────────────────────────────────
+const DAYS_VI = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật'];
+const DAYS_SHORT = ['T2','T3','T4','T5','T6','T7','CN'];
+let weekOffset = 0;
+
+function getWeekDates(offset){
+  const today = new Date(2026,3,8); // April 8 2026
+  const dow = today.getDay(); // 3 = Wednesday
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow===0?6:dow-1) + offset*7);
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);
+  }
+  return days;
+}
+
+function fmt(d){return `${d.getDate()}/${d.getMonth()+1}`;}
+
+function buildCalendar(){
+  const days = getWeekDates(weekOffset);
+  const todayStr = '8/4'; // April 8
+  document.getElementById('week-label').textContent =
+    `${fmt(days[0])} — ${fmt(days[6])}/${days[6].getFullYear()}`;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML='';
+
+  // Header row
+  const timeHead = document.createElement('div');
+  timeHead.className='cal-header-cell';
+  timeHead.style.cssText='display:flex;align-items:center;justify-content:center';
+  timeHead.innerHTML='<i class="fa-solid fa-clock" style="color:var(--text-disabled);font-size:13px"></i>';
+  grid.appendChild(timeHead);
+
+  days.forEach((d,i)=>{
+    const isToday = fmt(d)===todayStr && weekOffset===0;
+    const cell=document.createElement('div');
+    cell.className='cal-header-cell'+(isToday?' today-col':'');
+    cell.innerHTML=`<span class="day-num">${d.getDate()}</span>${DAYS_SHORT[i]}`;
+    grid.appendChild(cell);
+  });
+
+  // Time rows: Sáng / Chiều / Tối
+  const ROWS = [
+    {label:'Sáng\n07–12', cas:['sang']},
+    {label:'Chiều\n12–17', cas:['chieu']},
+    {label:'Tối\n17–21',  cas:['toi']},
+  ];
+
+  ROWS.forEach(row=>{
+    const timeCell=document.createElement('div');
+    timeCell.className='cal-time-col';
+    timeCell.style.cssText='white-space:pre-line;text-align:center;justify-content:center;font-size:10.5px;padding:8px 4px;';
+    timeCell.textContent=row.label;
+    grid.appendChild(timeCell);
+
+    days.forEach((d,dayIdx)=>{
+      const isToday = fmt(d)===todayStr && weekOffset===0;
+      const cell=document.createElement('div');
+      cell.className='cal-cell'+(isToday?' today-col':'');
+      // Find shifts for this day+ca
+      const matches = SHIFTS.filter(s=> s.ngay===dayIdx && row.cas.includes(s.ca));
+      matches.forEach(s=>{
+        const pct = Math.round(s.slot_dat/s.slot_tong*100);
+        const block=document.createElement('div');
+        block.className=`shift-block ${s.ca}`;
+        block.innerHTML=`
+          <div class="sb-status ${s.trang_thai}"></div>
+          <div class="sb-doc">${s.bac_si.replace('BS. ','')}</div>
+          <div class="sb-time">${s.gio_bd}–${s.gio_kt} · ${s.phong}</div>
+          <div class="sb-slots">${s.slot_dat}/${s.slot_tong} slot (${pct}%)</div>`;
+        block.onclick=()=>openModal('modal-detail-ca');
+        cell.appendChild(block);
+      });
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function changeWeek(dir){weekOffset+=dir;buildCalendar();}
+function goToday(){weekOffset=0;buildCalendar();}
+
+// ── LIST VIEW ──────────────────────────────────────────────
+function buildList(){
+  const STATUS_MAP={
+    da_duyet:{label:'Đã duyệt',cls:'badge-success'},
+    cho_duyet:{label:'Chờ duyệt',cls:'badge-warning'},
+    hoan_thanh:{label:'Hoàn thành',cls:'badge-neutral'},
+    da_huy:{label:'Đã hủy',cls:'badge-danger'},
+  };
+  const CA_MAP={sang:'☀ Sáng',chieu:'⛅ Chiều',toi:'🌙 Tối'};
+  const DAYS_MAP=['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật'];
+  const body=document.getElementById('listBody');
+  body.innerHTML='';
+  SHIFTS.forEach(s=>{
+    const pct=Math.round(s.slot_dat/s.slot_tong*100);
+    const {label,cls}=STATUS_MAP[s.trang_thai];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="color:var(--text-disabled)">#${s.id}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar-circle avatar-sm">${s.bac_si[4]}</div>
+        <div><div style="font-weight:600;font-size:13px">${s.bac_si}</div>
+          <div style="font-size:11.5px;color:var(--text-disabled)">${s.nguon==='tu_dong'?'Nội trú':'Hợp đồng'}</div>
+        </div></div></td>
+      <td><span class="badge badge-primary">${s.chuyen_khoa}</span></td>
+      <td><div style="font-size:13px;font-weight:600">${DAYS_MAP[s.ngay]}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">${CA_MAP[s.ca]}</div></td>
+      <td><i class="fa-solid fa-door-open" style="color:var(--primary);margin-right:4px"></i>${s.phong}</td>
+      <td style="font-size:12.5px">${s.gio_bd} – ${s.gio_kt}</td>
+      <td>
+        <div class="slot-progress">
+          <div class="slot-bar"><div class="slot-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--primary);min-width:36px">${s.slot_dat}/${s.slot_tong}</span>
+        </div>
+      </td>
+      <td><span class="badge ${cls}">${label}</span></td>
+      <td><span class="tag" style="font-size:11px">${s.nguon==='tu_dong'?'Tự động':'Đăng ký'}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')" title="Chi tiết"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-ca')" title="Sửa"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="openModal('modal-huy-ca')" title="Hủy ca"><i class="fa-solid fa-ban"></i></button>
+      </div></td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ── VIEW SWITCH ────────────────────────────────────────────
+function setView(v){
+  document.getElementById('view-week').style.display = v==='week'?'block':'none';
+  document.getElementById('view-list').style.display = v==='list'?'block':'none';
+  document.getElementById('btn-week').classList.toggle('active',v==='week');
+  document.getElementById('btn-list').classList.toggle('active',v==='list');
+}
+
+// ── SLOT CALC ──────────────────────────────────────────────
+function calcSlots(){
+  const bd=document.getElementById('gio-bd').value;
+  const kt=document.getElementById('gio-kt').value;
+  const slot=parseInt(document.getElementById('slot-time').value)||20;
+  if(bd&&kt){
+    const [bh,bm]=bd.split(':').map(Number);
+    const [kh,km]=kt.split(':').map(Number);
+    const mins=(kh*60+km)-(bh*60+bm);
+    const slots=Math.floor(mins/slot);
+    document.getElementById('slot-max').value=slots>0?slots:'—';
+    document.getElementById('preview-slots').textContent=`${slots} slot`;
+  }
+}
+function updateTimeHint(){
+  const map={sang:['07:00','12:00'],chieu:['12:00','17:00'],toi:['17:00','21:00']};
+  const v=document.getElementById('ca-truc-sel').value;
+  if(map[v]){
+    document.getElementById('gio-bd').value=map[v][0];
+    document.getElementById('gio-kt').value=map[v][1];
+    calcSlots();
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────
+buildCalendar();
+buildList();
+</script>
+</body>
+</html>

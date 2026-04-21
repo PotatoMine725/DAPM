@@ -14,7 +14,6 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
-builder.Services.AddRazorPages();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails(options =>
@@ -58,6 +57,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var swaggerRoutePrefix = builder.Configuration["Swagger:RoutePrefix"];
+var swaggerRootPath = string.IsNullOrWhiteSpace(swaggerRoutePrefix) || swaggerRoutePrefix == "/"
+    ? "/swagger"
+    : $"/{swaggerRoutePrefix.Trim('/')}";
+
 // MediatR va cac handler yeu cau Application layer tham chieu den Infrastructure
 // cho DbContext, nen dam bao AddInfrastructure chay truoc AddApplication.
 
@@ -83,7 +87,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapRazorPages();
-app.MapGet("/", () => Results.Redirect("/module2/chuyen-khoa"));
+app.MapGet("/", () => Results.Redirect(swaggerRootPath));
 
 app.Run();

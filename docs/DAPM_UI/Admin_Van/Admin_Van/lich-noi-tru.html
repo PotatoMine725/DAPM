@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch bác sĩ nội trú — MedAdmin</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+.layout-2col{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+.bs-list-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s;border:1.5px solid transparent}
+.bs-list-item:hover{background:var(--primary-light)}
+.bs-list-item.active{background:var(--primary-light);border-color:var(--primary-mid);color:var(--primary)}
+.bs-list-item .bs-ava{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0}
+.schedule-table td{text-align:center;vertical-align:middle;padding:12px 8px}
+.schedule-table thead th{text-align:center}
+.shift-label{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block}
+</style>
+</head>
+<body data-page="lich-noi-tru">
+<div id="sidebar-slot"></div>
+<div class="main">
+  <div id="header-slot"></div>
+  <div class="page-content">
+
+    <div class="section-title">Thiết lập lịch bác sĩ nội trú</div>
+    <div class="section-sub">Cấu hình mẫu lịch tuần cho bác sĩ nội trú — hệ thống tự sinh ca làm việc hàng tuần</div>
+
+    <div style="background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--primary)">
+      <i class="fa-solid fa-circle-info fa-lg"></i>
+      <div>Mẫu lịch này được dùng để <strong>tự động tạo ca làm việc hàng tuần</strong> cho bác sĩ nội trú. Thay đổi mẫu không ảnh hưởng đến ca đã tạo trước đó.</div>
+    </div>
+
+    <div class="layout-2col">
+      <!-- Left: Doctor list -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Bác sĩ nội trú</div></div>
+        <div class="card-body-pad" style="display:flex;flex-direction:column;gap:4px">
+          <div class="search-box" style="width:100%;margin-bottom:8px"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Tìm bác sĩ..."></div>
+
+          <div class="bs-list-item active" onclick="selectDoctor(this,'Trần Minh Khoa','Tim mạch','P101')">
+            <div class="bs-ava" style="background:var(--primary)">K</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:600">BS. Trần Minh Khoa</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">Tim mạch · P101</div>
+            </div>
+            <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+          </div>
+
+          <div class="bs-list-item" onclick="selectDoctor(this,'Phạm Thu Hà','Nhi khoa','P203')">
+            <div class="bs-ava" style="background:#059669">H</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:600">BS. Phạm Thu Hà</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">Nhi khoa · P203</div>
+            </div>
+            <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+          </div>
+
+          <div class="bs-list-item" onclick="selectDoctor(this,'Vũ Đức Thắng','Da liễu','P102')">
+            <div class="bs-ava" style="background:#dc2626">V</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:600">BS. Vũ Đức Thắng</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">Da liễu · P102</div>
+            </div>
+            <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+          </div>
+
+          <div class="bs-list-item" onclick="selectDoctor(this,'Phùng Minh Đức','Tim mạch','P101')">
+            <div class="bs-ava" style="background:#0891b2">P</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:600">BS. Phùng Minh Đức</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">Tim mạch · P101</div>
+            </div>
+            <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Schedule grid -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="sched-title">Mẫu lịch tuần — BS. Trần Minh Khoa</div>
+            <div class="card-sub" id="sched-sub">Phòng mặc định: P101 · Tim mạch</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="resetAll()"><i class="fa-solid fa-rotate-left"></i> Đặt lại</button>
+            <button class="btn btn-primary btn-sm" onclick="saveSchedule()"><i class="fa-solid fa-floppy-disk"></i> Lưu mẫu</button>
+          </div>
+        </div>
+        <div class="card-body-pad">
+          <table class="schedule-table" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:10px 16px;width:100px;font-size:11.5px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px">Ca làm</th>
+                <th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th><th>CN</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody">
+              <tr>
+                <td style="text-align:left;padding:12px 16px"><span class="shift-label" style="background:var(--primary-light);color:var(--primary)">☀ Sáng</span></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;padding:12px 16px"><span class="shift-label" style="background:var(--success-bg);color:var(--success)">🌤 Chiều</span></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              </tr>
+              <tr>
+                <td style="text-align:left;padding:12px 16px"><span class="shift-label" style="background:var(--warning-bg);color:var(--warning)">🌙 Tối</span></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Summary row -->
+          <div style="margin-top:18px;padding:14px;background:var(--page-bg);border-radius:var(--radius-sm);display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+            <div style="font-size:13px;font-weight:600;color:var(--text-secondary)"><i class="fa-solid fa-circle-info" style="color:var(--primary)"></i> Tổng mẫu:</div>
+            <div style="display:flex;gap:12px">
+              <div style="font-size:13px"><span style="font-family:'Lexend';font-weight:700;color:var(--primary)">7</span> ca/tuần</div>
+              <div style="font-size:13px"><span style="font-family:'Lexend';font-weight:700;color:var(--success)">4</span> ca sáng</div>
+              <div style="font-size:13px"><span style="font-family:'Lexend';font-weight:700;color:#059669">3</span> ca chiều</div>
+              <div style="font-size:13px"><span style="font-family:'Lexend';font-weight:700;color:var(--warning)">0</span> ca tối</div>
+            </div>
+          </div>
+
+          <!-- Phòng & giờ mặc định -->
+          <div style="margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="font-size:12.5px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Cấu hình ca mặc định</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+              <div class="form-group"><label>Phòng mặc định</label><select class="form-control"><option selected>P101 — Tim mạch 1</option><option>P102 — Da liễu</option></select></div>
+              <div class="form-group"><label>Slot mặc định (phút)</label><select class="form-control"><option>15</option><option>20</option><option selected>30</option></select></div>
+              <div class="form-group"><label>Slot tối đa / ca</label><input type="number" class="form-control" value="8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lịch nghỉ phép -->
+    <div style="margin-top:20px">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Đơn xin nghỉ phép</div><div class="card-sub">Các ca cụ thể bác sĩ nội trú muốn nghỉ</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-don-nghi')"><i class="fa-solid fa-plus"></i> Tạo đơn</button>
+        </div>
+        <table>
+          <thead><tr><th>Bác sĩ</th><th>Loại nghỉ</th><th>Ca liên quan</th><th>Lý do</th><th>Trạng thái</th><th>Gửi lúc</th><th>Thao tác</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm">K</div>BS. Trần Minh Khoa</div></td>
+              <td><span class="badge badge-primary">Có kế hoạch</span></td>
+              <td style="font-size:12.5px">T2 Sáng · 20/03/2025</td>
+              <td style="font-size:12.5px;color:var(--text-secondary)">Dự hội thảo tim mạch quốc tế</td>
+              <td><span class="badge badge-warning">Chờ duyệt</span></td>
+              <td style="font-size:12px;color:var(--text-secondary)">08/03 07:30</td>
+              <td><div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm"><i class="fa-solid fa-check"></i> Duyệt</button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-reject-leave')"><i class="fa-solid fa-times"></i></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm" style="background:#059669">H</div>BS. Phạm Thu Hà</div></td>
+              <td><span class="badge badge-danger">Đột xuất</span></td>
+              <td style="font-size:12.5px">T5 Sáng · 14/03/2025</td>
+              <td style="font-size:12.5px;color:var(--text-secondary)">Bệnh đột xuất</td>
+              <td><span class="badge badge-success">Đã duyệt</span></td>
+              <td style="font-size:12px;color:var(--text-secondary)">14/03 06:15</td>
+              <td><div style="font-size:12px;color:var(--text-disabled)">Đã xử lý</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Tạo đơn nghỉ -->
+<div class="modal-overlay" id="modal-don-nghi">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-file-medical" style="color:var(--primary);margin-right:8px"></i>Tạo đơn xin nghỉ phép</div>
+      <div class="modal-close" onclick="closeModal('modal-don-nghi')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Bác sĩ <span class="req">*</span></label><select class="form-control"><option>-- Chọn bác sĩ --</option><option>BS. Trần Minh Khoa</option><option>BS. Phạm Thu Hà</option></select></div>
+        <div class="form-group"><label>Ca cần nghỉ <span class="req">*</span></label><select class="form-control"><option>-- Chọn ca --</option><option>T2 Sáng 20/03</option><option>T4 Chiều 22/03</option></select></div>
+        <div class="form-group"><label>Loại nghỉ <span class="req">*</span></label>
+          <select class="form-control"><option>co_ke_hoach (báo trước ≥ 3 ngày)</option><option>dot_xuat</option></select>
+        </div>
+        <div class="form-group"><label>Lý do <span class="req">*</span></label><textarea class="form-control" placeholder="Nhập lý do xin nghỉ..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-don-nghi')">Hủy</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Gửi đơn</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Từ chối nghỉ phép -->
+<div class="modal-overlay" id="modal-reject-leave">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-circle-xmark" style="color:var(--danger);margin-right:8px"></i>Từ chối đơn nghỉ phép</div>
+      <div class="modal-close" onclick="closeModal('modal-reject-leave')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;font-size:13px">
+        BS. Trần Minh Khoa · T2 Sáng 20/03/2025
+      </div>
+      <div class="form-group"><label>Lý do từ chối <span class="req">*</span></label><textarea class="form-control" placeholder="Nhập lý do từ chối để thông báo cho bác sĩ..." style="min-height:100px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reject-leave')">Hủy</button>
+      <button class="btn btn-danger" onclick="closeModal('modal-reject-leave')"><i class="fa-solid fa-times"></i> Xác nhận từ chối</button>
+    </div>
+  </div>
+</div>
+
+<script src="_shared.js"></script>
+<script>
+renderShell('Lịch bác sĩ nội trú', 'Thiết lập mẫu lịch tuần');
+
+function selectDoctor(el, name, spec, room) {
+  document.querySelectorAll('.bs-list-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sched-title').textContent = `Mẫu lịch tuần — BS. ${name}`;
+  document.getElementById('sched-sub').textContent = `Phòng mặc định: ${room} · ${spec}`;
+}
+
+function resetAll() {
+  document.querySelectorAll('#scheduleBody input[type=checkbox]').forEach(cb => cb.checked = false);
+}
+
+function saveSchedule() {
+  const toast = document.createElement('div');
+  toast.textContent = '✓ Đã lưu mẫu lịch thành công!';
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:12px 20px;border-radius:8px;font-size:13.5px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:fadeIn .3s ease';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>
