@@ -68,7 +68,7 @@ public sealed class XoaDinhNghiaCaHandlerTests
         {
             TenDangNhap = "bacsi_ut",
             Email = "bacsi_ut@test.local",
-            SoDienThoai = "0900000000",
+            SoDienThoai = "0901111111",
             MatKhau = "hash",
             VaiTro = VaiTro.BacSi,
             TrangThai = true,

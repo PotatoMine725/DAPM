@@ -16,7 +16,7 @@ public sealed class CapNhatPhongHandlerTests
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        var entity = new Phong { MaPhong = "P301", TenPhong = "Phong cu", TrangThai = true };
+        var entity = new Phong { MaPhong = "UT-P301", TenPhong = "Phong cu", TrangThai = true };
         db.Phong.Add(entity);
         await db.SaveChangesAsync();
 
