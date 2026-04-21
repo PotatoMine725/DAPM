@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — MedAdmin</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:22px 24px;border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;transition:.2s;}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-card .sc-top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-card .sc-label{font-size:12.5px;color:var(--text-secondary);font-weight:500}
+.stat-card .sc-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-card .sc-value{font-family:'Lexend',sans-serif;font-size:28px;font-weight:700;color:var(--text-primary);line-height:1}
+.stat-card .sc-footer{display:flex;align-items:center;gap:6px;font-size:12px}
+.stat-card .sc-footer .up{color:var(--success)}
+.stat-card .sc-footer .down{color:var(--danger)}
+.stat-card .sc-footer span{color:var(--text-disabled)}
+.sc-blue .sc-icon{background:var(--primary-light);color:var(--primary)}
+.sc-green .sc-icon{background:var(--success-bg);color:var(--success)}
+.sc-orange .sc-icon{background:var(--warning-bg);color:var(--warning)}
+.sc-red .sc-icon{background:var(--danger-bg);color:var(--danger)}
+.dashboard-grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+.mini-bar{display:flex;align-items:flex-end;gap:8px;height:100px;margin-top:8px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar-col .bar{background:var(--primary-light);border-radius:4px 4px 0 0;width:100%;transition:.6s ease;position:relative;overflow:visible}
+.bar-col .bar-inner{position:absolute;bottom:0;left:0;right:0;background:var(--primary);border-radius:4px 4px 0 0;transition:.8s ease;}
+.bar-col .bar-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--primary);white-space:nowrap}
+.bar-col .bl{font-size:11px;color:var(--text-disabled)}
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="dashboard">
+<div id="sidebar-slot"></div>
+<div class="main">
+  <div id="header-slot"></div>
+  <div class="page-content">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card sc-blue">
+        <div class="sc-top"><div><div class="sc-label">Tổng lịch hẹn hôm nay</div></div><div class="sc-icon"><i class="fa-solid fa-calendar-check"></i></div></div>
+        <div class="sc-value" data-val="84">0</div>
+        <div class="sc-footer"><i class="fa-solid fa-arrow-trend-up up"></i><span class="up">+12%</span><span>so với hôm qua</span></div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="sc-top"><div><div class="sc-label">Bệnh nhân đã khám</div></div><div class="sc-icon"><i class="fa-solid fa-user-check"></i></div></div>
+        <div class="sc-value" data-val="61">0</div>
+        <div class="sc-footer"><i class="fa-solid fa-circle-check up"></i><span class="up">Hoàn thành</span><span>72.6%</span></div>
+      </div>
+      <div class="stat-card sc-orange">
+        <div class="sc-top"><div><div class="sc-label">Ca chờ duyệt</div></div><div class="sc-icon"><i class="fa-solid fa-clock"></i></div></div>
+        <div class="sc-value" data-val="5">0</div>
+        <div class="sc-footer"><i class="fa-solid fa-arrow-trend-up" style="color:var(--warning)"></i><span style="color:var(--warning)">Cần xử lý</span></div>
+      </div>
+      <div class="stat-card sc-red">
+        <div class="sc-top"><div><div class="sc-label">Lịch bị hủy hôm nay</div></div><div class="sc-icon"><i class="fa-solid fa-calendar-xmark"></i></div></div>
+        <div class="sc-value" data-val="7">0</div>
+        <div class="sc-footer"><i class="fa-solid fa-arrow-trend-down down"></i><span class="down">-3 so với</span><span>hôm qua</span></div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Recent appointments -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Lịch hẹn gần đây</div><div class="card-sub">Cập nhật lúc 09:42 SA</div></div>
+          <a href="ca-lam-viec.html" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-right"></i> Xem tất cả</a>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Mã lịch</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Giờ</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary)">LH-240315-001</code></td>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm">N</div>Nguyễn Văn A</div></td>
+                <td>BS. Trần Minh Khoa</td><td>08:00</td>
+                <td><span class="badge badge-success">Hoàn thành</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary)">LH-240315-002</code></td>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm" style="background:var(--primary-mid)">L</div>Lê Thị Bình</div></td>
+                <td>BS. Phạm Thu Hà</td><td>08:30</td>
+                <td><span class="badge badge-primary">Đang khám</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary)">LH-240315-003</code></td>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm" style="background:#7c3aed">P</div>Phan Trọng Đức</div></td>
+                <td>BS. Nguyễn Hoàng Nam</td><td>09:00</td>
+                <td><span class="badge badge-warning">Chờ xác nhận</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary)">LH-240315-004</code></td>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm" style="background:#059669">H</div>Hoàng Lan Anh</div></td>
+                <td>BS. Vũ Đức Thắng</td><td>09:30</td>
+                <td><span class="badge badge-neutral">Chờ khám</span></td>
+              </tr>
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary)">LH-240315-005</code></td>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar-circle avatar-sm" style="background:#dc2626">T</div>Trương Minh Tuấn</div></td>
+                <td>BS. Trần Minh Khoa</td><td>10:00</td>
+                <td><span class="badge badge-danger">Đã hủy</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Lịch hẹn 7 ngày qua</div></div>
+          <div style="padding:20px 24px">
+            <div class="mini-bar" id="miniBar"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-disabled)">
+              <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Ca chờ duyệt</div>
+            <a href="duyet-ca.html" class="btn btn-primary btn-sm">Duyệt ngay</a>
+          </div>
+          <div class="card-body-pad" style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--warning-bg);border-radius:var(--radius-sm);border:1px solid #f5ddb0">
+              <div><div style="font-size:13px;font-weight:600">BS. Nguyễn Hải Long</div><div style="font-size:12px;color:var(--text-secondary)">Thứ 3 — Sáng — P201</div></div>
+              <span class="badge badge-warning">Chờ duyệt</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--warning-bg);border-radius:var(--radius-sm);border:1px solid #f5ddb0">
+              <div><div style="font-size:13px;font-weight:600">BS. Lê Thanh Tâm</div><div style="font-size:12px;color:var(--text-secondary)">Thứ 4 — Chiều — P305</div></div>
+              <span class="badge badge-warning">Chờ duyệt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="_shared.js"></script>
+<script>
+renderShell('Dashboard', 'Tổng quan hệ thống');
+
+// Bar chart
+const barData = [
+  {v:65},{v:80},{v:72},{v:90},{v:84},{v:45},{v:20}
+];
+const maxV = Math.max(...barData.map(d=>d.v));
+const container = document.getElementById('miniBar');
+barData.forEach(d => {
+  const h = Math.round(d.v / maxV * 90);
+  const col = document.createElement('div');
+  col.className = 'bar-col';
+  col.innerHTML = `<div class="bar" style="height:90px;width:100%;position:relative">
+    <div class="bar-inner" style="height:0%" data-h="${h}"></div>
+    <div class="bar-val" style="top:-18px">${d.v}</div>
+  </div>`;
+  container.appendChild(col);
+});
+setTimeout(() => {
+  container.querySelectorAll('.bar-inner').forEach(b => {
+    b.style.height = b.dataset.h + 'px';
+  });
+}, 150);
+
+// Animate stats
+document.querySelectorAll('.sc-value[data-val]').forEach(el => {
+  const target = parseInt(el.dataset.val);
+  let cur = 0; const step = target / 40;
+  const id = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = Math.round(cur).toLocaleString('vi-VN');
+    if(cur >= target) clearInterval(id);
+  }, 20);
+});
+</script>
+</body>
+</html>

@@ -6,6 +6,8 @@ using ClinicBooking.Application.Features.Auth.Dtos;
 using ClinicBooking.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 
 namespace ClinicBooking.Application.Features.Auth.Commands.DangNhap;
 
@@ -15,17 +17,20 @@ public class DangNhapHandler : IRequestHandler<DangNhapCommand, XacThucResponse>
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ILogger<DangNhapHandler> _logger;
 
     public DangNhapHandler(
         IAppDbContext db,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        ILogger<DangNhapHandler> logger)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _dateTimeProvider = dateTimeProvider;
+        _logger = logger;
     }
 
     public async Task<XacThucResponse> Handle(

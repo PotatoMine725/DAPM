@@ -1,0 +1,103 @@
+@page
+@model ClinicBooking.Web.Pages.LeTan.DashboardModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Tổng quan";
+}
+
+<div class="page-header">
+    <h1 class="page-title">Tổng quan hệ thống</h1>
+    <span style="font-size:13px; color:var(--color-text-secondary);">
+        <i class="ph ph-calendar"></i> @Model.NgayHienTai.ToString("dddd, dd/MM/yyyy")
+    </span>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid" style="grid-template-columns: repeat(3,1fr);">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);">
+            <i class="ph ph-calendar-check"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.TongLichHen</div>
+            <div class="stat-label">Tổng lịch hẹn hôm nay</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);">
+            <i class="ph ph-clock-countdown"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.SoChoXacNhan</div>
+            <div class="stat-label">Chờ xác nhận</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
+            <i class="ph ph-users-three"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.SoDaXacNhan</div>
+            <div class="stat-label">Đã xác nhận, chờ khám</div>
+        </div>
+    </div>
+</div>
+
+<!-- Lịch hẹn cần xử lý hôm nay -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Lịch hẹn hôm nay — cần xử lý</span>
+        <a href="/LeTan/QuanLyLichHen" class="btn btn-secondary btn-sm">Xem tất cả</a>
+    </div>
+
+    @if (!Model.LichHenHomNay.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="ph ph-calendar-blank"></i></div>
+            <p>Không có lịch hẹn nào hôm nay.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã LH</th>
+                    <th>Bệnh nhân</th>
+                    <th>Dịch vụ</th>
+                    <th>Giờ</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lh in Model.LichHenHomNay.Take(10))
+                {
+                    <tr>
+                        <td><span class="table-code">@lh.MaLichHen</span></td>
+                        <td>@lh.HoTenBenhNhan</td>
+                        <td>@lh.TenDichVu</td>
+                        <td>@lh.GioBatDau.ToString("HH:mm")</td>
+                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
+                        <td class="table-actions">
+                            @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan)
+                            {
+                                <form method="post" asp-page-handler="XacNhan" style="display:inline;">
+                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                    <button type="submit" class="btn btn-sm btn-secondary">Xác nhận</button>
+                                </form>
+                            }
+                            @if (lh.TrangThai == TrangThaiLichHen.DaXacNhan)
+                            {
+                                <form method="post" asp-page-handler="CheckIn" style="display:inline;">
+                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                    <button type="submit" class="btn btn-sm btn-primary">Check-in</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -77,7 +77,7 @@ public class DangKyHandler : IRequestHandler<DangKyCommand, XacThucResponse>
             NgayTao = now
         };
 
-        var benhNhan = new BenhNhan
+        var benhNhan = new ClinicBooking.Domain.Entities.BenhNhan
         {
             TaiKhoan = taiKhoan,
             HoTen = request.HoTen,

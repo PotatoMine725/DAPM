@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — ClinicBooking</title>
+    <link rel="stylesheet" href="~/css/common.css" />
+    <link rel="stylesheet" href="~/css/components.css" />
+    <link rel="stylesheet" href="~/css/layout.css" />
+    <script src="https://unpkg.com/@@phosphor-icons/web" defer></script>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a class="sidebar-logo" href="/">
+            <div class="sidebar-logo-icon">
+                <i class="ph-fill ph-stethoscope"></i>
+            </div>
+            MediCare
+        </a>
+
+        @{
+            var vaiTro = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            var currentPath = ViewContext.HttpContext.Request.Path.Value ?? "";
+        }
+
+        <ul class="sidebar-nav">
+            @if (vaiTro == "le_tan" || vaiTro == "admin")
+            {
+                <li class="sidebar-section-label">Lễ tân</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/Dashboard") ? "active" : "")"
+                       href="/LeTan/Dashboard">
+                        <i class="ph ph-squares-four"></i> Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/QuanLyLichHen") ? "active" : "")"
+                       href="/LeTan/QuanLyLichHen">
+                        <i class="ph ph-calendar-blank"></i> Quản lý lịch hẹn
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HangCho") ? "active" : "")"
+                       href="/LeTan/HangCho">
+                        <i class="ph ph-users-three"></i> Hàng chờ khám
+                    </a>
+                </li>
+            }
+
+            @if (vaiTro == "bac_si")
+            {
+                <li class="sidebar-section-label">Bác sĩ</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/HangCho") ? "active" : "")"
+                       href="/BacSi/HangCho">
+                        <i class="ph ph-clipboard-text"></i> Hàng chờ của tôi
+                    </a>
+                </li>
+            }
+
+            @if (vaiTro == "benh_nhan")
+            {
+                <li class="sidebar-section-label">Bệnh nhân</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BenhNhan/DanhSachLichHen") ? "active" : "")"
+                       href="/BenhNhan/DanhSachLichHen">
+                        <i class="ph ph-calendar-check"></i> Lịch khám của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BenhNhan/DatLich") ? "active" : "")"
+                       href="/BenhNhan/DatLich">
+                        <i class="ph ph-calendar-plus"></i> Đặt lịch mới
+                    </a>
+                </li>
+            }
+        </ul>
+
+        <div class="sidebar-footer">
+            <form method="post" asp-page="/Auth/DangXuat">
+                <button type="submit" class="sidebar-nav-item" style="width:100%; border:none; background:none; cursor:pointer;">
+                    <i class="ph ph-sign-out"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <span class="topbar-title">@(ViewData["Title"] ?? "ClinicBooking")</span>
+            <div class="topbar-right">
+                @{
+                    var tenDangNhap = User.Identity?.Name ?? "Người dùng";
+                    var initials = string.Concat(tenDangNhap.Split(' ').Take(2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : ""));
+                    if (string.IsNullOrEmpty(initials)) initials = tenDangNhap.Length >= 2 ? tenDangNhap[..2].ToUpper() : tenDangNhap.ToUpper();
+                }
+                <div class="user-chip">
+                    <div class="avatar avatar-blue">@initials</div>
+                    <div>
+                        <div class="user-chip-name">@tenDangNhap</div>
+                        <div class="user-chip-role">
+                            @(vaiTro switch {
+                                "le_tan"    => "Lễ tân",
+                                "bac_si"    => "Bác sĩ",
+                                "benh_nhan" => "Bệnh nhân",
+                                "admin"     => "Quản trị",
+                                _           => vaiTro
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area fade-in">
+            @if (TempData["SuccessMessage"] is string successMsg)
+            {
+                <div class="alert alert-success" style="margin-bottom: 16px;">@successMsg</div>
+            }
+            @if (TempData["ErrorMessage"] is string errorMsg)
+            {
+                <div class="alert alert-danger" style="margin-bottom: 16px;">@errorMsg</div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="~/js/app.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
