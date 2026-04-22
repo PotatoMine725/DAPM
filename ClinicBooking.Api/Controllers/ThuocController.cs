@@ -13,7 +13,7 @@ namespace ClinicBooking.Api.Controllers;
 
 [ApiController]
 [Route("api/thuoc")]
-[Authorize(Roles = VaiTroConstants.Admin)]
+[Authorize]
 public class ThuocController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,6 +24,7 @@ public class ThuocController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = VaiTroConstants.Admin)]
     [ProducesResponseType(typeof(TaoThuocResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<TaoThuocResponse>> TaoThuoc(
         [FromBody] TaoThuocRequest request,
@@ -37,6 +38,7 @@ public class ThuocController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.BacSi}")]
     [ProducesResponseType(typeof(IReadOnlyList<ThuocDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<ThuocDto>>> DanhSachThuoc(
         [FromQuery] int soTrang = 1,
@@ -52,6 +54,7 @@ public class ThuocController : ControllerBase
     }
 
     [HttpGet("{idThuoc:int}")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.BacSi}")]
     [ProducesResponseType(typeof(ThuocDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<ThuocDto>> LayThuocById(int idThuoc, CancellationToken cancellationToken)
     {
@@ -60,6 +63,7 @@ public class ThuocController : ControllerBase
     }
 
     [HttpPut("{idThuoc:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> CapNhatThuoc(
         int idThuoc,
@@ -73,6 +77,7 @@ public class ThuocController : ControllerBase
     }
 
     [HttpDelete("{idThuoc:int}")]
+    [Authorize(Roles = VaiTroConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> XoaThuoc(int idThuoc, CancellationToken cancellationToken)
     {
