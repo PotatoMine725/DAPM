@@ -13,8 +13,10 @@ using ClinicBooking.Application.Features.DanhMuc.Commands.XoaDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.XoaDichVu;
 using ClinicBooking.Application.Features.DanhMuc.Commands.XoaPhong;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachChuyenKhoa;
+using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachChuyenKhoaCongKhai;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
+using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVuCongKhai;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachPhong;
 using ClinicBooking.Application.Features.DanhMuc.Queries.LayChuyenKhoaById;
 using ClinicBooking.Application.Features.DanhMuc.Queries.LayDinhNghiaCaById;
@@ -36,6 +38,39 @@ public class DanhMucController : ControllerBase
     public DanhMucController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet("chuyen-khoa/cong-khai")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<ChuyenKhoaCongKhaiDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ChuyenKhoaCongKhaiDto>>> DanhSachChuyenKhoaCongKhai(
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        [FromQuery] string? tuKhoa = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new DanhSachChuyenKhoaCongKhaiQuery(soTrang, kichThuocTrang, tuKhoa),
+            cancellationToken);
+
+        return Ok(result.Select(x => x.TuDto()).ToList());
+    }
+
+    [HttpGet("dich-vu/cong-khai")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<DichVuCongKhaiDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<DichVuCongKhaiDto>>> DanhSachDichVuCongKhai(
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        [FromQuery] int? idChuyenKhoa = null,
+        [FromQuery] string? tuKhoa = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new DanhSachDichVuCongKhaiQuery(soTrang, kichThuocTrang, idChuyenKhoa, tuKhoa),
+            cancellationToken);
+
+        return Ok(result.Select(x => x.TuDto()).ToList());
     }
 
     [HttpPost("chuyen-khoa")]
