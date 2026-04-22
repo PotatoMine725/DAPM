@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  # ── SQL Server ──────────────────────────────────────────────────────
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: clinicbooking-db
+    environment:
+      SA_PASSWORD: "${DB_SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$SA_PASSWORD -Q 'SELECT 1' -No -C || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ── API ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clinicbooking-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Production}"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ClinicBooking;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True"
+      Jwt__Key: "${JWT_KEY}"
+      Jwt__Issuer: "${JWT_ISSUER:-ClinicBooking}"
+      Jwt__Audience: "${JWT_AUDIENCE:-ClinicBookingClients}"
+      Jwt__AccessTokenMinutes: "${JWT_ACCESS_TOKEN_MINUTES:-60}"
+      Jwt__RefreshTokenDays: "${JWT_REFRESH_TOKEN_DAYS:-7}"
+      Admin__MatKhauMacDinh: "${ADMIN_MAT_KHAU_MAC_DINH}"
+      # Email settings (Tuan 3 Module 4 se dung)
+      Email__SmtpHost: "${EMAIL_SMTP_HOST:-}"
+      Email__SmtpPort: "${EMAIL_SMTP_PORT:-587}"
+      Email__TenNguoiGui: "${EMAIL_TEN_NGUOI_GUI:-ClinicBooking}"
+      Email__DiaChiGui: "${EMAIL_DIA_CHI_GUI:-}"
+      Email__TenDangNhap: "${EMAIL_TEN_DANG_NHAP:-}"
+      Email__MatKhau: "${EMAIL_MAT_KHAU:-}"
+    ports:
+      - "${API_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+    name: clinicbooking_sqlserver_data

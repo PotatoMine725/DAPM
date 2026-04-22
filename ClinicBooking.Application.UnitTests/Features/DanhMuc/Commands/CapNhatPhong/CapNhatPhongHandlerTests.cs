@@ -17,6 +17,7 @@ public sealed class CapNhatPhongHandlerTests
         using var db = factory.CreateContext();
 
         var entity = new Phong { MaPhong = TestSeedSafeValues.MaPhongCapNhatGoc, TenPhong = "Phong cu", TrangThai = true };
+
         db.Phong.Add(entity);
         await db.SaveChangesAsync();
 
@@ -45,7 +46,6 @@ public sealed class CapNhatPhongHandlerTests
 
         var target = await db.Phong.FirstAsync(x => x.MaPhong == TestSeedSafeValues.MaPhongTrungA);
         var handler = new CapNhatPhongHandler(db);
-
         var act = async () => await handler.Handle(
             new CapNhatPhongCommand(target.IdPhong, TestSeedSafeValues.MaPhongTrungB, "Phong doi", null, null, true),
             CancellationToken.None);
