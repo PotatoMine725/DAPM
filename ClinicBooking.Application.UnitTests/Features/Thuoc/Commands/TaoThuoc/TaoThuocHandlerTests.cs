@@ -16,12 +16,12 @@ public sealed class TaoThuocHandlerTests
         var handler = new TaoThuocHandler(db);
 
         var id = await handler.Handle(
-            new TaoThuocCommand("Paracetamol 500mg", "Paracetamol", "Vien", "Sau an"),
+            new TaoThuocCommand("THUOC-UT-Paracetamol-500mg-20260422", "Paracetamol", "Vien", "Sau an"),
             CancellationToken.None);
 
         id.Should().BeGreaterThan(0);
         var entity = await db.Thuoc.AsNoTracking().FirstAsync(x => x.IdThuoc == id);
-        entity.TenThuoc.Should().Be("Paracetamol 500mg");
+        entity.TenThuoc.Should().Be("THUOC-UT-Paracetamol-500mg-20260422");
     }
 
     [Fact]
@@ -29,12 +29,12 @@ public sealed class TaoThuocHandlerTests
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Paracetamol-500mg-20260422-Existing" });
         await db.SaveChangesAsync();
 
         var handler = new TaoThuocHandler(db);
         var act = async () => await handler.Handle(
-            new TaoThuocCommand("Paracetamol 500mg", null, null, null),
+            new TaoThuocCommand("THUOC-UT-Paracetamol-500mg-20260422-Existing", null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>()

@@ -26,9 +26,10 @@ public sealed class LayToaTheoHoSoKhamHandlerTests
             NgayTao = now
         };
         db.HoSoKham.Add(hoSo);
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
+        var thuoc = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-LayToaTheoHSK-20260422" };
+        db.Thuoc.Add(thuoc);
         await db.SaveChangesAsync();
-        var idThuoc = db.Thuoc.Select(x => x.IdThuoc).First();
+        var idThuoc = thuoc.IdThuoc;
 
         db.ToaThuoc.Add(new ClinicBooking.Domain.Entities.ToaThuoc
         {
@@ -46,7 +47,7 @@ public sealed class LayToaTheoHoSoKhamHandlerTests
         var result = await handler.Handle(new LayToaTheoHoSoKhamQuery(hoSo.IdHoSoKham), CancellationToken.None);
 
         result.Should().HaveCount(1);
-        result[0].TenThuoc.Should().Be("Paracetamol 500mg");
+        result[0].TenThuoc.Should().Be("THUOC-UT-LayToaTheoHSK-20260422");
     }
 
     [Fact]

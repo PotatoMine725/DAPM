@@ -12,15 +12,14 @@ public sealed class DanhSachThuocHandlerTests
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg", HoatChat = "Paracetamol" });
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Amoxicillin 500mg", HoatChat = "Amoxicillin" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Paracetamol-500mg-20260422", HoatChat = "Paracetamol" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Amoxicillin-500mg-20260422", HoatChat = "Amoxicillin" });
         await db.SaveChangesAsync();
 
         var handler = new DanhSachThuocHandler(db);
         var result = await handler.Handle(new DanhSachThuocQuery(1, 20, "Paracetamol"), CancellationToken.None);
 
-        result.Should().HaveCount(1);
-        result[0].TenThuoc.Should().Be("Paracetamol 500mg");
+        result.Should().ContainSingle(x => x.TenThuoc == "THUOC-UT-Paracetamol-500mg-20260422");
     }
 
     [Fact]

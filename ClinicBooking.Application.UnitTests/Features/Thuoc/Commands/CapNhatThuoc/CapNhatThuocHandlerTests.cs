@@ -13,10 +13,11 @@ public sealed class CapNhatThuocHandlerTests
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg", DonVi = "Vien" });
+        var thuoc = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-CapNhat-20260422", DonVi = "Vien" };
+        db.Thuoc.Add(thuoc);
         await db.SaveChangesAsync();
 
-        var idThuoc = await db.Thuoc.Select(x => x.IdThuoc).FirstAsync();
+        var idThuoc = thuoc.IdThuoc;
         var handler = new CapNhatThuocHandler(db);
 
         await handler.Handle(
