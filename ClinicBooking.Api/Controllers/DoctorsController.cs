@@ -10,11 +10,11 @@ namespace ClinicBooking.Api.Controllers;
 [ApiController]
 [Route("api/bac-si")]
 [Authorize]
-public class DoctorsController : ControllerBase
+public class BacSiController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public DoctorsController(IMediator mediator)
+    public BacSiController(IMediator mediator)
     {
         _mediator = mediator;
     }
