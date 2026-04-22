@@ -22,6 +22,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandler : IRequestHandler<DanhSachC
             .Include(x => x.BacSi)
             .Include(x => x.Phong)
             .Include(x => x.ChuyenKhoa)
+            .Where(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
             .AsQueryable();
 
         if (request.IdBacSi.HasValue)
@@ -47,11 +48,6 @@ public sealed class DanhSachCaLamViecCongKhaiHandler : IRequestHandler<DanhSachC
         if (request.DenNgay.HasValue)
         {
             query = query.Where(x => x.NgayLamViec <= request.DenNgay.Value);
-        }
-
-        if (request.TrangThaiDuyet.HasValue)
-        {
-            query = query.Where(x => x.TrangThaiDuyet == request.TrangThaiDuyet.Value);
         }
 
         if (request.ConTrong.HasValue)

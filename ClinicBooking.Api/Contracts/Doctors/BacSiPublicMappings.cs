@@ -11,8 +11,5 @@ public static class BacSiPublicMappings
         response.AnhDaiDien,
         response.BangCap,
         response.NamKinhNghiem,
-        response.TieuSu,
-        response.LoaiHopDong,
-        response.TrangThai,
         response.TenChuyenKhoa);
 }

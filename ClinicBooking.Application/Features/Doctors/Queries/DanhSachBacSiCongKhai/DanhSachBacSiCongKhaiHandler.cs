@@ -22,14 +22,11 @@ public sealed class DanhSachBacSiCongKhaiHandler : IRequestHandler<DanhSachBacSi
             .Include(x => x.ChuyenKhoa)
             .AsQueryable();
 
+        query = query.Where(x => x.TrangThai == TrangThaiBacSi.DangLam && x.ChuyenKhoa.HienThi);
+
         if (request.IdChuyenKhoa.HasValue)
         {
             query = query.Where(x => x.IdChuyenKhoa == request.IdChuyenKhoa.Value);
-        }
-
-        if (request.DangLamViec.HasValue)
-        {
-            query = query.Where(x => x.TrangThai == (request.DangLamViec.Value ? TrangThaiBacSi.DangLam : TrangThaiBacSi.NghiViec));
         }
 
         if (!string.IsNullOrWhiteSpace(request.TuKhoa))

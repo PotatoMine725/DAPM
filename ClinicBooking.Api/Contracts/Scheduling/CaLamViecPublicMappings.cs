@@ -14,8 +14,6 @@ public static class CaLamViecPublicMappings
         response.GioBatDau,
         response.GioKetThuc,
         response.ThoiGianSlot,
-        response.SoSlotToiDa,
-        response.SoSlotDaDat,
         response.TrangThaiDuyet,
         response.NguonTaoCa,
         response.HoTenBacSi,
