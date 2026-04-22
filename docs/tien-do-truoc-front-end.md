@@ -25,11 +25,19 @@
 - Them 2 test Forbidden cho moi handler; cap nhat 4 test cu dung `ICurrentUserService` mock.
 - Ket qua: **15/15 HangCho tests xanh**.
 
-### Review Module 2 (commit `7513897`, **da gui cho chu Module 2**)
+### Review Module 2 (commit `7513897`, **da gui + chu Module 2 da fix**)
 - File: `docs/review-module2-endpoint-cong-khai.md`.
 - Review commit `5dc7ca6` tren nhanh remote `feature/module2-doctors-scheduling`.
-- 5 blocker (1.1-1.5) + 2 gop y (2.1, 2.2).
-- Trong tam: `BacSiPublicResponse` lo `LoaiHopDong`/`TrangThai`/`TieuSu`, `CaLamViecPublicResponse` lo con so slot tuyet doi, handler khong filter mac dinh, `Enum.Parse` tra 500.
+- **Chu Module 2 da push commit `cb706e4 fix(module2): harden public doctor and schedule endpoints`** — xu ly het 5 blocker + rename controller:
+  - 1.1 `BacSiPublicResponse`: bo `TieuSu`/`LoaiHopDong`/`TrangThai`. ✅
+  - 1.2 `CaLamViecPublicResponse`: bo `SoSlotToiDa`/`SoSlotDaDat`. ✅
+  - 1.3 Handler `DanhSachBacSiCongKhai`: hardcode `TrangThai == DangLam && ChuyenKhoa.HienThi`, bo param `DangLamViec`. ✅
+  - 1.4 Handler `DanhSachCaLamViecCongKhai`: hardcode `TrangThaiDuyet == DaDuyet`, bo param. ✅
+  - 1.5 `SchedulingController`: xoa `Enum.Parse` + param `trangThaiDuyet` (khong tra 500 nua). ✅
+  - 2.1 Controller rename: `DoctorsController` → `BacSiController`, `SchedulingController` → `CaLamViecController`. ✅
+- **Chua xu ly (chap nhan duoc):**
+  - 2.1 Namespace `Features/Doctors/`, `Features/Scheduling/` van giu nguyen (chi rename class, khong rename folder/namespace). Day la gop y mem, khong chan.
+  - 2.2 Rate limit + Cache-Control — thuoc scope ha tang, da flag la follow-up.
 
 ---
 
@@ -43,18 +51,18 @@
 - Tao `Features/DanhMuc/Queries/DanhSachChuyenKhoaCongKhai/` + `DanhSachDichVuCongKhai/`.
 - Filter mac dinh: `HienThi == true`.
 - DTO cong khai: bo field noi bo (vd `NgayTao`, counters).
-- Endpoint: `GET api/cong-khai/chuyen-khoa`, `GET api/cong-khai/dich-vu` voi `[AllowAnonymous]`.
-- Hoac theo huong Module 2 dang di: `GET api/chuyen-khoa/cong-khai` (dong bo voi `api/bac-si/cong-khai` + `api/ca-lam-viec/cong-khai`) — chot convention.
+- **Convention da chot voi Module 2**: `GET api/chuyen-khoa/cong-khai`, `GET api/dich-vu/cong-khai` (dong bo voi `api/bac-si/cong-khai` + `api/ca-lam-viec/cong-khai`). Suffix `/cong-khai` thay vi prefix `api/cong-khai/*`.
+- Handler hardcode filter `HienThi == true`, khong de client toggle — tranh rerun loi 1.3/1.4 cua Module 2.
 
 ### Phan E — Endpoint dac thu theo vai tro (2h)
 
 - `GET api/hang-cho/thu-tu-cua-toi/{idCaLamViec}` cho `BenhNhan` — xem so thu tu cua minh trong hang cho (chi so thu tu va vi tri, khong lo thong tin BN khac).
 - `GET api/lich-hen/theo-ngay/cua-toi?ngay=yyyy-MM-dd` cho `BacSi` — xem lich hen trong ngay cua minh (hien `api/lich-hen/theo-ngay` chi cho LeTan/Admin).
 
-### Phan D (doi Module 2 phan hoi)
+### Phan D — ~~Doi Module 2 phan hoi~~ (DA XONG)
 
-- Sau khi chu Module 2 xu ly review `docs/review-module2-endpoint-cong-khai.md`, pull lai branch va verify 1.1-1.5 da fix.
-- Neu co, test smoke endpoint cong khai BacSi + CaLamViec khi develop da co fix.
+- ✅ Chu Module 2 da push `cb706e4`, 5 blocker + naming controller da fix.
+- Viec con lai: sau khi Module 2 merge vao `develop`, pull ve de verify smoke test truc tiep tren develop (khong bat buoc).
 
 ### Pre-existing test failures (khong chan front-end, nhung can fix)
 
