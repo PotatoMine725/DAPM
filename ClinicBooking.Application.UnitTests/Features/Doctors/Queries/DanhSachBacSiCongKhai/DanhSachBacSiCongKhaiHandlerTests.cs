@@ -20,31 +20,35 @@ public sealed class DanhSachBacSiCongKhaiHandlerTests
         db.ChuyenKhoa.AddRange(chuyenKhoaHienThi, chuyenKhoaAn);
         await db.SaveChangesAsync();
 
+        var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var tk3 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+
         db.BacSi.AddRange(
             new BacSi
             {
-                IdTaiKhoan = 1,
+                IdTaiKhoan = tk1.IdTaiKhoan,
                 IdChuyenKhoa = chuyenKhoaHienThi.IdChuyenKhoa,
                 HoTen = "Bac Si Dang Lam",
-                LoaiHopDong = LoaiHopDong.ChinhThuc,
+                LoaiHopDong = LoaiHopDong.NoiTru,
                 TrangThai = TrangThaiBacSi.DangLam,
                 NgayTao = DateTime.UtcNow
             },
             new BacSi
             {
-                IdTaiKhoan = 2,
+                IdTaiKhoan = tk2.IdTaiKhoan,
                 IdChuyenKhoa = chuyenKhoaHienThi.IdChuyenKhoa,
                 HoTen = "Bac Si Nghi Viec",
-                LoaiHopDong = LoaiHopDong.ChinhThuc,
+                LoaiHopDong = LoaiHopDong.HopDong,
                 TrangThai = TrangThaiBacSi.NghiViec,
                 NgayTao = DateTime.UtcNow
             },
             new BacSi
             {
-                IdTaiKhoan = 3,
+                IdTaiKhoan = tk3.IdTaiKhoan,
                 IdChuyenKhoa = chuyenKhoaAn.IdChuyenKhoa,
                 HoTen = "Bac Si ChuyenKhoa An",
-                LoaiHopDong = LoaiHopDong.ChinhThuc,
+                LoaiHopDong = LoaiHopDong.NoiTru,
                 TrangThai = TrangThaiBacSi.DangLam,
                 NgayTao = DateTime.UtcNow
             });
@@ -70,9 +74,12 @@ public sealed class DanhSachBacSiCongKhaiHandlerTests
         db.ChuyenKhoa.AddRange(chuyenKhoa1, chuyenKhoa2);
         await db.SaveChangesAsync();
 
+        var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+
         db.BacSi.AddRange(
-            new BacSi { IdTaiKhoan = 1, IdChuyenKhoa = chuyenKhoa1.IdChuyenKhoa, HoTen = "BS1", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow },
-            new BacSi { IdTaiKhoan = 2, IdChuyenKhoa = chuyenKhoa2.IdChuyenKhoa, HoTen = "BS2", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow });
+            new BacSi { IdTaiKhoan = tk1.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa1.IdChuyenKhoa, HoTen = "BS1", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow },
+            new BacSi { IdTaiKhoan = tk2.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa2.IdChuyenKhoa, HoTen = "BS2", LoaiHopDong = LoaiHopDong.HopDong, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow });
         await db.SaveChangesAsync();
 
         var handler = new DanhSachBacSiCongKhaiHandler(db);
