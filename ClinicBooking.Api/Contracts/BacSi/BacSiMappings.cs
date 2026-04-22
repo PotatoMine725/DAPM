@@ -16,4 +16,17 @@ public static class BacSiMappings
         response.LoaiHopDong,
         response.TrangThai,
         response.TenChuyenKhoa);
+
+    public static BacSiProfileDto TuProfileDto(this BacSiResponse response) => new(
+        response.IdBacSi,
+        response.IdTaiKhoan,
+        response.IdChuyenKhoa,
+        response.HoTen,
+        response.AnhDaiDien,
+        response.BangCap,
+        response.NamKinhNghiem,
+        response.TieuSu,
+        response.LoaiHopDong,
+        response.TrangThai,
+        response.TenChuyenKhoa);
 }
