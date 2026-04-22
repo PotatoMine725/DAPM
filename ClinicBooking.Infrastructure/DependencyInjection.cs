@@ -47,8 +47,7 @@ public static class DependencyInjection
         services.Configure<LichHenOptions>(
             configuration.GetSection(LichHenOptions.SectionName));
 
-        // TODO: Thay CaLamViecQueryServiceStub bang impl Module 2 khi code duoc day len
-        services.AddScoped<ICaLamViecQueryService, CaLamViecQueryServiceStub>();
+        services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
 
         // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
         services.AddScoped<INotificationService, NotificationServiceStub>();

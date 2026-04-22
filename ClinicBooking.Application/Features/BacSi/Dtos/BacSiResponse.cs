@@ -1,22 +1,30 @@
 using BacSiEntity = ClinicBooking.Domain.Entities.BacSi;
 
-namespace ClinicBooking.Application.Features.Doctors.Dtos;
+namespace ClinicBooking.Application.Features.BacSi.Dtos;
 
-public sealed record BacSiPublicResponse(
+public sealed record BacSiResponse(
     int IdBacSi,
+    int IdTaiKhoan,
     int IdChuyenKhoa,
     string HoTen,
     string? AnhDaiDien,
     string? BangCap,
     int? NamKinhNghiem,
+    string? TieuSu,
+    string LoaiHopDong,
+    string TrangThai,
     string TenChuyenKhoa)
 {
-    public static BacSiPublicResponse TuEntity(BacSiEntity entity) => new(
+    public static BacSiResponse TuEntity(BacSiEntity entity) => new(
         entity.IdBacSi,
+        entity.IdTaiKhoan,
         entity.IdChuyenKhoa,
         entity.HoTen,
         entity.AnhDaiDien,
         entity.BangCap,
         entity.NamKinhNghiem,
+        entity.TieuSu,
+        entity.LoaiHopDong.ToString(),
+        entity.TrangThai.ToString(),
         entity.ChuyenKhoa.TenChuyenKhoa);
 }
