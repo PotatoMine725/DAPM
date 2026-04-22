@@ -9,9 +9,6 @@ public sealed record BacSiPublicResponse(
     string? AnhDaiDien,
     string? BangCap,
     int? NamKinhNghiem,
-    string? TieuSu,
-    string LoaiHopDong,
-    string TrangThai,
     string TenChuyenKhoa)
 {
     public static BacSiPublicResponse TuEntity(BacSi entity) => new(
@@ -21,8 +18,5 @@ public sealed record BacSiPublicResponse(
         entity.AnhDaiDien,
         entity.BangCap,
         entity.NamKinhNghiem,
-        entity.TieuSu,
-        entity.LoaiHopDong.ToString(),
-        entity.TrangThai.ToString(),
         entity.ChuyenKhoa.TenChuyenKhoa);
 }

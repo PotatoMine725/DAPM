@@ -7,7 +7,4 @@ public record BacSiPublicDto(
     string? AnhDaiDien,
     string? BangCap,
     int? NamKinhNghiem,
-    string? TieuSu,
-    string LoaiHopDong,
-    string TrangThai,
     string TenChuyenKhoa);

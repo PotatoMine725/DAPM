@@ -1,4 +1,3 @@
-using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Features.Doctors.Queries.DanhSachBacSiCongKhai;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
@@ -11,57 +10,22 @@ namespace ClinicBooking.Application.UnitTests.Features.Doctors.Queries.DanhSachB
 public sealed class DanhSachBacSiCongKhaiHandlerTests
 {
     [Fact]
-    public async Task Handle_KhongFilter_TraVeDanhSachPublic()
+    public async Task Handle_MacDinh_ChiTraVeBacSiDangLamVaChuyenKhoaHienThi()
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        var chuyenKhoa = new ChuyenKhoa
-        {
-            TenChuyenKhoa = "Noi Tong Quat UT",
-            ThoiGianSlotMacDinh = 20,
-            HienThi = true
-        };
-        db.ChuyenKhoa.Add(chuyenKhoa);
-        await db.SaveChangesAsync();
-
-        db.BacSi.Add(new BacSi
-        {
-            IdTaiKhoan = 1,
-            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
-            HoTen = "Bac Si A",
-            LoaiHopDong = LoaiHopDong.ChinhThuc,
-            TrangThai = TrangThaiBacSi.DangLam,
-            NgayTao = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync();
-
-        var handler = new DanhSachBacSiCongKhaiHandler(db);
-
-        var result = await handler.Handle(new DanhSachBacSiCongKhaiQuery(), CancellationToken.None);
-
-        result.Should().HaveCount(1);
-        result[0].HoTen.Should().Be("Bac Si A");
-        result[0].TenChuyenKhoa.Should().Be("Noi Tong Quat UT");
-    }
-
-    [Fact]
-    public async Task Handle_FilterTheoChuyenKhoa_ChiTraVeBacSiThuocKhoa()
-    {
-        using var factory = new TestDbContextFactory();
-        using var db = factory.CreateContext();
-
-        var ck1 = new ChuyenKhoa { TenChuyenKhoa = "CK1 UT", ThoiGianSlotMacDinh = 20, HienThi = true };
-        var ck2 = new ChuyenKhoa { TenChuyenKhoa = "CK2 UT", ThoiGianSlotMacDinh = 20, HienThi = true };
-        db.ChuyenKhoa.AddRange(ck1, ck2);
+        var chuyenKhoaHienThi = new ChuyenKhoa { TenChuyenKhoa = "Noi Tong Quat Public", ThoiGianSlotMacDinh = 20, HienThi = true };
+        var chuyenKhoaAn = new ChuyenKhoa { TenChuyenKhoa = "An Public", ThoiGianSlotMacDinh = 20, HienThi = false };
+        db.ChuyenKhoa.AddRange(chuyenKhoaHienThi, chuyenKhoaAn);
         await db.SaveChangesAsync();
 
         db.BacSi.AddRange(
             new BacSi
             {
                 IdTaiKhoan = 1,
-                IdChuyenKhoa = ck1.IdChuyenKhoa,
-                HoTen = "Bac Si A",
+                IdChuyenKhoa = chuyenKhoaHienThi.IdChuyenKhoa,
+                HoTen = "Bac Si Dang Lam",
                 LoaiHopDong = LoaiHopDong.ChinhThuc,
                 TrangThai = TrangThaiBacSi.DangLam,
                 NgayTao = DateTime.UtcNow
@@ -69,8 +33,17 @@ public sealed class DanhSachBacSiCongKhaiHandlerTests
             new BacSi
             {
                 IdTaiKhoan = 2,
-                IdChuyenKhoa = ck2.IdChuyenKhoa,
-                HoTen = "Bac Si B",
+                IdChuyenKhoa = chuyenKhoaHienThi.IdChuyenKhoa,
+                HoTen = "Bac Si Nghi Viec",
+                LoaiHopDong = LoaiHopDong.ChinhThuc,
+                TrangThai = TrangThaiBacSi.NghiViec,
+                NgayTao = DateTime.UtcNow
+            },
+            new BacSi
+            {
+                IdTaiKhoan = 3,
+                IdChuyenKhoa = chuyenKhoaAn.IdChuyenKhoa,
+                HoTen = "Bac Si ChuyenKhoa An",
                 LoaiHopDong = LoaiHopDong.ChinhThuc,
                 TrangThai = TrangThaiBacSi.DangLam,
                 NgayTao = DateTime.UtcNow
@@ -79,9 +52,34 @@ public sealed class DanhSachBacSiCongKhaiHandlerTests
 
         var handler = new DanhSachBacSiCongKhaiHandler(db);
 
-        var result = await handler.Handle(new DanhSachBacSiCongKhaiQuery(IdChuyenKhoa: ck2.IdChuyenKhoa), CancellationToken.None);
+        var result = await handler.Handle(new DanhSachBacSiCongKhaiQuery(), CancellationToken.None);
 
         result.Should().HaveCount(1);
-        result[0].HoTen.Should().Be("Bac Si B");
+        result[0].HoTen.Should().Be("Bac Si Dang Lam");
+        result[0].TenChuyenKhoa.Should().Be("Noi Tong Quat Public");
+    }
+
+    [Fact]
+    public async Task Handle_FilterTheoChuyenKhoa_ChiTraVeDungNguoi()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+
+        var chuyenKhoa1 = new ChuyenKhoa { TenChuyenKhoa = "CK1", ThoiGianSlotMacDinh = 20, HienThi = true };
+        var chuyenKhoa2 = new ChuyenKhoa { TenChuyenKhoa = "CK2", ThoiGianSlotMacDinh = 20, HienThi = true };
+        db.ChuyenKhoa.AddRange(chuyenKhoa1, chuyenKhoa2);
+        await db.SaveChangesAsync();
+
+        db.BacSi.AddRange(
+            new BacSi { IdTaiKhoan = 1, IdChuyenKhoa = chuyenKhoa1.IdChuyenKhoa, HoTen = "BS1", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow },
+            new BacSi { IdTaiKhoan = 2, IdChuyenKhoa = chuyenKhoa2.IdChuyenKhoa, HoTen = "BS2", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        var handler = new DanhSachBacSiCongKhaiHandler(db);
+
+        var result = await handler.Handle(new DanhSachBacSiCongKhaiQuery(IdChuyenKhoa: chuyenKhoa2.IdChuyenKhoa), CancellationToken.None);
+
+        result.Should().HaveCount(1);
+        result[0].HoTen.Should().Be("BS2");
     }
 }
