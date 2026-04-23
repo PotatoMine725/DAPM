@@ -1,7 +1,9 @@
+using ClinicBooking.Api.Contracts.HangCho;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.HangCho.Commands.GoiBenhNhanKeTiep;
 using ClinicBooking.Application.Features.HangCho.Commands.HoanThanhLuotKham;
 using ClinicBooking.Application.Features.HangCho.Dtos;
+using ClinicBooking.Application.Features.HangCho.Queries.ThuTuCuaToi;
 using ClinicBooking.Application.Features.HangCho.Queries.XemHangChoTheoCa;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -46,5 +48,14 @@ public class HangChoController : ControllerBase
     {
         var result = await _mediator.Send(new XemHangChoTheoCaQuery(idCaLamViec), cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("thu-tu-cua-toi/{idCaLamViec:int}")]
+    [Authorize(Roles = VaiTroConstants.BenhNhan)]
+    [ProducesResponseType(typeof(ThuTuHangChoDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ThuTuHangChoDto>> ThuTuCuaToi(int idCaLamViec, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ThuTuCuaToiQuery(idCaLamViec), cancellationToken);
+        return Ok(result.ToDto());
     }
 }

@@ -281,3 +281,13 @@ Khi Module 2 xong → viết `DatLich.cshtml(.cs)` với `IMediator.Send(query)`
 4. Cân nhắc ẩn tab "Đặt lịch mới" trong sidebar cho đến khi `DatLich` có thật — hoặc để đó làm reminder.
 5. Dọn `Jwt:Key` trong `appsettings.json` (cả Api + Web) → chuyển sang User Secrets / env var trước khi deploy production. Xem `docs/bao-cao-loi-dang-nhap-jwt-key.md` mục 5 (action items).
 6. **Wave 4** vẫn blocked trên team: Hangfire job, reconciliation job, integration test Testcontainers — không thể làm trước vì cần Module 2/4 real implementation.
+
+---
+
+## Log chốt mốc ngày 2026-04-23
+
+- Thêm endpoint bệnh nhân xem thứ tự hàng chờ: `GET /api/hang-cho/thu-tu-cua-toi/{idCaLamViec}`.
+- Thêm endpoint bác sĩ xem lịch hẹn theo ngày của riêng mình: `GET /api/lich-hen/theo-ngay/cua-toi?ngay=yyyy-MM-dd`.
+- Bổ sung handler/query/validator và mapping DTO cho 2 endpoint trên.
+- Bổ sung test cho luồng bác sĩ xem lịch hẹn theo ngày; rà lint không phát sinh lỗi mới.
+- Rà soát lại scope Module 1 trước khi chốt mốc; chỉ stage phần code Module 1 và ghi nhận tiến độ vào docs.
