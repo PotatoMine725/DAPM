@@ -10,25 +10,29 @@
 </div>
 
 <!-- Bộ lọc -->
-<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
-        <label class="form-label" style="margin:0; white-space:nowrap;">Trạng thái:</label>
-        <select class="form-select" name="trangThai" style="width:180px;">
-            <option value="">— Tất cả —</option>
-            @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+<div class="card section-stack">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:180px;">
+            <label class="form-label" for="trangThai">Trạng thái:</label>
+            <select class="form-select" name="trangThai" id="trangThai">
+                <option value="">— Tất cả —</option>
+                @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+                {
+                    <option value="@((int)tt)" selected="@(Model.TrangThaiFilter == tt ? "selected" : null)">
+                        @BadgeHelper.TrangThaiText(tt)
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-secondary">
+                <i class="ph ph-funnel"></i> Lọc
+            </button>
+            @if (Model.TrangThaiFilter.HasValue)
             {
-                <option value="@((int)tt)" selected="@(Model.TrangThaiFilter == tt ? "selected" : null)">
-                    @BadgeHelper.TrangThaiText(tt)
-                </option>
+                <a href="/BenhNhan/DanhSachLichHen" class="btn btn-ghost">Xoá lọc</a>
             }
-        </select>
-        <button type="submit" class="btn btn-secondary">
-            <i class="ph ph-funnel"></i> Lọc
-        </button>
-        @if (Model.TrangThaiFilter.HasValue)
-        {
-            <a href="/BenhNhan/DanhSachLichHen" class="btn btn-ghost">Xoá lọc</a>
-        }
+        </div>
     </form>
 </div>
 
@@ -72,6 +76,9 @@
                         <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
                         <td>@lh.NgayTao.ToString("dd/MM/yyyy")</td>
                         <td class="table-actions">
+                            <a class="btn btn-sm btn-secondary" href="/BenhNhan/LichHen/@lh.IdLichHen">
+                                <i class="ph ph-eye"></i> Chi tiết
+                            </a>
                             @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan ||
                                  lh.TrangThai == TrangThaiLichHen.DaXacNhan)
                             {
@@ -90,8 +97,8 @@
                                                 <i class="ph ph-x"></i>
                                             </button>
                                         </div>
-                                        <div style="padding: var(--space-4) var(--space-5);">
-                                            <p style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">
+                                        <div class="modal-body">
+                                            <p class="form-hint" style="margin-bottom: var(--space-4);">
                                                 Bạn có chắc muốn huỷ lịch hẹn <strong>@lh.MaLichHen</strong>?
                                                 Hành động này không thể hoàn tác.
                                             </p>
@@ -102,7 +109,7 @@
                                                     <input type="text" class="form-input" name="lyDo"
                                                            placeholder="Nhập lý do..." maxlength="200" />
                                                 </div>
-                                                <div style="display:flex; gap:var(--space-3); justify-content:flex-end; margin-top:var(--space-4);">
+                                                <div class="modal-footer" style="padding-left:0; padding-right:0; border-top:none; background:transparent;">
                                                     <button type="button" class="btn btn-ghost"
                                                             onclick="closeModal('modal-huy-@lh.IdLichHen')">Đóng</button>
                                                     <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
