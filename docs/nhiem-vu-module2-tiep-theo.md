@@ -10,6 +10,28 @@ Cam on ban da xu ly nhanh 5 blocker trong review `docs/review-module2-endpoint-c
 
 ---
 
+## 0. Ngu canh nghiep vu — 2 loai bac si cua phong kham
+
+Phong kham chi co **2 loai bac si**, phan biet boi `LoaiHopDong` (`ClinicBooking.Domain/Enums/LoaiHopDong.cs`):
+
+| Loai | Enum value | Mo ta nghiep vu | Cach tao ca lam viec |
+|------|-----------|-----------------|---------------------|
+| **Bac si noi tru** | `NoiTru` | Thuong truc tai phong kham theo lich co dinh hang tuan. Lich duoc Admin thiet lap trong bang `lich_noi_tru` (ngay trong tuan + khung ca + phong). | `NguonTaoCa = TuDong` — he thong tu dong sinh `CaLamViec` tu mau `LichNoiTru` dang hieu luc (`NgayKetThuc IS NULL`). |
+| **Bac si hop dong** | `HopDong` | Lam viec theo ca da dang ky. Bac si tu chon ngay + khung ca + phong roi gui yeu cau; Admin duyet hoac tu choi. | `NguonTaoCa = BacSiDangKy` — bac si tu tao `CaLamViec` voi `TrangThaiDuyet = ChoDuyet`, Admin duyet thi chuyen `DaDuyet`. |
+
+**Luu y quan trong cho Module 2:**
+
+1. **Khong co loai bac si nao khac** ngoai 2 loai tren. Enum `LoaiHopDong` chi co `NoiTru` va `HopDong` — **khong co** gia tri `ChinhThuc`, `NgoaiTru`, `PartTime`, hay bat ky gia tri nao khac.
+2. **`NguonTaoCa`** chi co `TuDong` (tu mau noi tru) va `BacSiDangKy` (hop dong tu dang ky) — **khong co** `Admin`.
+3. **Lien he giua `LoaiHopDong` va `NguonTaoCa`:**
+   - Bac si `NoiTru` → ca cua ho duoc sinh `TuDong` tu `LichNoiTru`.
+   - Bac si `HopDong` → ca cua ho do chinh ho dang ky (`BacSiDangKy`), can Admin duyet.
+   - Ngoai le: Admin cung co the tao ca thu cong cho bac si noi tru (vd: ca phat sinh ngoai lich co dinh) — luc do `NguonTaoCa` van la `TuDong` hoac tuy vao flow Admin.
+4. **`LichNoiTru`** (entity + bang `lich_noi_tru`) chi ap dung cho bac si `NoiTru`. Bang nay luu lich co dinh theo tuan (`NgayTrongTuan` 0-6 = Thu 2 → Chu nhat) va duoc version hoa bang `NgayApDung`/`NgayKetThuc`. He thong dung mau nay de sinh `CaLamViec` tu dong cho tung tuan.
+5. Bac si `HopDong` co the dang ky gio lam **lech so voi gio mac dinh** cua `DinhNghiaCa` (vd: DinhNghiaCa "sang" la 7h-12h, nhung bac si hop dong dang ky 8h-11h). Day la ly do `CaLamViec` luu `GioBatDau`/`GioKetThuc` rieng, khong lay thang tu `DinhNghiaCa`.
+
+---
+
 ## 1. Bat buoc fix truoc khi PR vao `develop`
 
 Khi minh merge `origin/feature/module2-doctors-scheduling` vao nhanh Module 1 de dong bo, phat hien 2 loi khien **test project khong bien dich duoc** tren develop hien tai. Doan minh ban chua chay `dotnet test` tren nhanh sau khi rebase/merge develop.
@@ -26,13 +48,15 @@ error CS0117: 'LoaiHopDong' does not contain a definition for 'ChinhThuc'
 error CS0117: 'NguonTaoCa' does not contain a definition for 'Admin'
 ```
 
-**Nguyen nhan:** enum hien tai trong `ClinicBooking.Domain/Enums/`:
-- `LoaiHopDong`: chi co `NoiTru`, `HopDong` (khong co `ChinhThuc`).
-- `NguonTaoCa`: chi co `TuDong`, `BacSiDangKy` (khong co `Admin`).
+**Nguyen nhan:** enum hien tai trong `ClinicBooking.Domain/Enums/` phan anh dung nghiep vu phong kham (xem muc 0):
+- `LoaiHopDong` (`LoaiHopDong.cs`): chi co `NoiTru` (bac si thuong truc lich co dinh), `HopDong` (bac si lam viec theo ca dang ky). **Khong co `ChinhThuc`** — day la gia tri test tu dat, khong phu hop voi domain.
+- `NguonTaoCa` (`NguonTaoCa.cs`): chi co `TuDong` (he thong sinh tu `LichNoiTru`), `BacSiDangKy` (bac si hop dong tu dang ky ca). **Khong co `Admin`**.
 
-**Fix:**
-- `LoaiHopDong.ChinhThuc` → `LoaiHopDong.NoiTru` (hoac `HopDong` tuy ngu canh test).
-- `NguonTaoCa.Admin` → `NguonTaoCa.TuDong` (hoac `BacSiDangKy`).
+**Fix — chon gia tri enum dung voi ngu canh nghiep vu cua test:**
+- `LoaiHopDong.ChinhThuc` → `LoaiHopDong.NoiTru` (neu test mo phong bac si thuong truc) hoac `LoaiHopDong.HopDong` (neu test mo phong bac si hop dong lam theo ca dang ky).
+- `NguonTaoCa.Admin` → `NguonTaoCa.TuDong` (neu test mo phong ca sinh tu dong tu mau noi tru) hoac `NguonTaoCa.BacSiDangKy` (neu test mo phong ca do bac si hop dong tu dang ky).
+
+**Goi y:** voi `DanhSachBacSiCongKhai` test (list bac si cong khai), dung `LoaiHopDong.NoiTru` la phu hop nhat vi da so bac si hien thi cong khai la noi tru. Voi `DanhSachCaLamViecCongKhai` test, `NguonTaoCa.TuDong` phu hop vi ca cong khai thuong la ca da duoc he thong sinh tu dong va Admin duyet.
 
 ### 1.2. Hardcode `IdTaiKhoan` gay FK constraint fail
 
@@ -126,8 +150,8 @@ Minh se lam trong nhanh Module 1 sau khi hoan tat 1.x + merge cua ban.
 
 Truoc khi PR vao `develop`:
 
-- [ ] 1.1 Doi `LoaiHopDong.ChinhThuc` → gia tri enum that.
-- [ ] 1.1 Doi `NguonTaoCa.Admin` → gia tri enum that.
+- [ ] 1.1 Doi `LoaiHopDong.ChinhThuc` → `LoaiHopDong.NoiTru` (bac si thuong truc, lich co dinh) hoac `LoaiHopDong.HopDong` (bac si lam viec theo ca dang ky) — chon theo ngu canh test.
+- [ ] 1.1 Doi `NguonTaoCa.Admin` → `NguonTaoCa.TuDong` (ca sinh tu mau noi tru) hoac `NguonTaoCa.BacSiDangKy` (ca do bac si hop dong dang ky) — chon theo ngu canh test.
 - [ ] 1.2 Thay hardcode `IdTaiKhoan = 1, 2, 3` bang `TestDataSeeder.SeedTaiKhoan(...).IdTaiKhoan`.
 - [ ] Chay `dotnet test ClinicBooking.Application.UnitTests` → 4/4 test `DanhSachBacSiCongKhai` + `DanhSachCaLamViecCongKhai` xanh.
 - [ ] PR vao `develop`.
