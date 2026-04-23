@@ -12,9 +12,17 @@
 - Tách các thay đổi docs/config còn treo sang nhánh riêng `docs/module1-notes-wip`.
 - Chuẩn hóa lại log Module 1 để phản ánh đúng trạng thái “code đã xong, docs còn tiếp tục”.
 
+## Mốc UI vừa thực hiện
+
+- Chuẩn hóa phần lọc của `BenhNhan/DanhSachLichHen` theo design system.
+- Tạo trang `BenhNhan/LichHen` để xem chi tiết lịch hẹn.
+- Tạo trang `BenhNhan/ThuTuHangCho` để xem thứ tự của mình trong hàng chờ.
+- Bổ sung các helper layout CSS dùng chung cho UI Module 1 (`section-stack`, `filter-bar`, `filter-actions`, `action-bar`, `panel-grid-2`, `panel-grid-3`).
+- Thêm điều hướng sidebar cho mục “Thứ tự hàng chờ”.
+
 ## Ý nghĩa của mốc
 
-Mốc này khép lại phần code trực tiếp của Module 1 đã làm gần nhất. Từ đây trở đi, phần còn lại chủ yếu là chuẩn hóa tài liệu và ghi chú tiến độ trên nhánh docs riêng, không ảnh hưởng tới `develop`.
+Mốc này khép lại phần code trực tiếp của Module 1 đã làm gần nhất và mở thêm lớp UI đầu tiên cho bệnh nhân. Từ đây trở đi, phần còn lại sẽ tiếp tục theo hướng chuẩn hóa giao diện, nâng cấp các màn lễ tân/bác sĩ và mở rộng các flow thao tác, nhưng vẫn không ảnh hưởng tới `develop`.
 
 ## Trạng thái nhánh
 
