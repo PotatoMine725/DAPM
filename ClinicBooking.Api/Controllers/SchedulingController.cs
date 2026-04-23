@@ -9,11 +9,11 @@ namespace ClinicBooking.Api.Controllers;
 [ApiController]
 [Route("api/ca-lam-viec")]
 [Authorize]
-public class SchedulingController : ControllerBase
+public class CaLamViecController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public SchedulingController(IMediator mediator)
+    public CaLamViecController(IMediator mediator)
     {
         _mediator = mediator;
     }
@@ -29,14 +29,9 @@ public class SchedulingController : ControllerBase
         [FromQuery] int? idPhong = null,
         [FromQuery] DateOnly? tuNgay = null,
         [FromQuery] DateOnly? denNgay = null,
-        [FromQuery] string? trangThaiDuyet = null,
         [FromQuery] bool? conTrong = null,
         CancellationToken cancellationToken = default)
     {
-        ClinicBooking.Domain.Enums.TrangThaiDuyetCa? trangThai = string.IsNullOrWhiteSpace(trangThaiDuyet)
-            ? null
-            : Enum.Parse<ClinicBooking.Domain.Enums.TrangThaiDuyetCa>(trangThaiDuyet, ignoreCase: true);
-
         var result = await _mediator.Send(
             new DanhSachCaLamViecCongKhaiQuery(
                 soTrang,
@@ -46,7 +41,6 @@ public class SchedulingController : ControllerBase
                 idPhong,
                 tuNgay,
                 denNgay,
-                trangThai,
                 conTrong),
             cancellationToken);
 

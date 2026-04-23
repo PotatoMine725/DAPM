@@ -56,3 +56,4 @@ dist/
 build/
 
 .fake
+.gitnexus

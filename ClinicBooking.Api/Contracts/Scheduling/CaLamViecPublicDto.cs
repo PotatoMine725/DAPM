@@ -10,8 +10,6 @@ public record CaLamViecPublicDto(
     TimeOnly GioBatDau,
     TimeOnly GioKetThuc,
     int ThoiGianSlot,
-    int SoSlotToiDa,
-    int SoSlotDaDat,
     string TrangThaiDuyet,
     string NguonTaoCa,
     string HoTenBacSi,

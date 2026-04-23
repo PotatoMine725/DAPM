@@ -16,18 +16,20 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         using var db = factory.CreateContext();
 
         var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK UT", ThoiGianSlotMacDinh = 20, HienThi = true };
+        db.ChuyenKhoa.Add(chuyenKhoa);
+        await db.SaveChangesAsync();
+        var tkBs = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
         var phong = new Phong { MaPhong = "P-UT-001", TenPhong = "Phong UT", SucChua = 1, TrangThai = true };
         var bacSi = new BacSi
         {
-            IdTaiKhoan = 1,
-            IdChuyenKhoa = 1,
+            IdTaiKhoan = tkBs.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
             HoTen = "Bac Si UT",
-            LoaiHopDong = LoaiHopDong.ChinhThuc,
+            LoaiHopDong = LoaiHopDong.NoiTru,
             TrangThai = TrangThaiBacSi.DangLam,
             NgayTao = DateTime.UtcNow
         };
         var dinhNghiaCa = new DinhNghiaCa { TenCa = "sang_ut", GioBatDauMacDinh = new TimeOnly(7, 0), GioKetThucMacDinh = new TimeOnly(12, 0), TrangThai = true };
-        db.ChuyenKhoa.Add(chuyenKhoa);
         db.Phong.Add(phong);
         db.BacSi.Add(bacSi);
         db.DinhNghiaCa.Add(dinhNghiaCa);
@@ -47,7 +49,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 SoSlotToiDa = 10,
                 SoSlotDaDat = 3,
                 TrangThaiDuyet = TrangThaiDuyetCa.DaDuyet,
-                NguonTaoCa = NguonTaoCa.Admin,
+                NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             },
             new CaLamViec
@@ -63,7 +65,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 SoSlotToiDa = 10,
                 SoSlotDaDat = 10,
                 TrangThaiDuyet = TrangThaiDuyetCa.DaDuyet,
-                NguonTaoCa = NguonTaoCa.Admin,
+                NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
         await db.SaveChangesAsync();
@@ -83,11 +85,14 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         using var db = factory.CreateContext();
 
         var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK UT 2", ThoiGianSlotMacDinh = 20, HienThi = true };
-        var phong = new Phong { MaPhong = "P-UT-002", TenPhong = "Phong UT 2", SucChua = 1, TrangThai = true };
-        var bacSi1 = new BacSi { IdTaiKhoan = 1, IdChuyenKhoa = 1, HoTen = "BS 1", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
-        var bacSi2 = new BacSi { IdTaiKhoan = 2, IdChuyenKhoa = 1, HoTen = "BS 2", LoaiHopDong = LoaiHopDong.ChinhThuc, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
-        var dinhNghiaCa = new DinhNghiaCa { TenCa = "chieu_ut", GioBatDauMacDinh = new TimeOnly(13, 0), GioKetThucMacDinh = new TimeOnly(17, 0), TrangThai = true };
         db.ChuyenKhoa.Add(chuyenKhoa);
+        await db.SaveChangesAsync();
+        var tkBs1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var tkBs2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var phong = new Phong { MaPhong = "P-UT-002", TenPhong = "Phong UT 2", SucChua = 1, TrangThai = true };
+        var bacSi1 = new BacSi { IdTaiKhoan = tkBs1.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 1", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
+        var bacSi2 = new BacSi { IdTaiKhoan = tkBs2.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 2", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
+        var dinhNghiaCa = new DinhNghiaCa { TenCa = "chieu_ut", GioBatDauMacDinh = new TimeOnly(13, 0), GioKetThucMacDinh = new TimeOnly(17, 0), TrangThai = true };
         db.Phong.Add(phong);
         db.BacSi.AddRange(bacSi1, bacSi2);
         db.DinhNghiaCa.Add(dinhNghiaCa);
@@ -107,7 +112,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 SoSlotToiDa = 10,
                 SoSlotDaDat = 0,
                 TrangThaiDuyet = TrangThaiDuyetCa.DaDuyet,
-                NguonTaoCa = NguonTaoCa.Admin,
+                NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             },
             new CaLamViec
@@ -123,7 +128,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 SoSlotToiDa = 10,
                 SoSlotDaDat = 0,
                 TrangThaiDuyet = TrangThaiDuyetCa.DaDuyet,
-                NguonTaoCa = NguonTaoCa.Admin,
+                NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
         await db.SaveChangesAsync();
