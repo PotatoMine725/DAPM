@@ -413,6 +413,14 @@
   margin: var(--space-5) 0;
 }
 
+/* ---- Layout helpers ---- */
+.section-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.filter-bar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: end; justify-content: space-between; }
+.filter-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.action-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.panel-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-4); }
+.panel-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+
 /* ---- Empty state ---- */
 .empty-state {
   text-align: center;
