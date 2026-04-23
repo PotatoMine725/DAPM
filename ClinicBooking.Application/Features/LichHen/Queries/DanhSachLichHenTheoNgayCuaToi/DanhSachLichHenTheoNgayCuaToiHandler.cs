@@ -2,6 +2,7 @@ using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.LichHen.Dtos;
+using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ public sealed class DanhSachLichHenTheoNgayCuaToiHandler
             throw new ForbiddenException("Ban khong co quyen xem lich hen nay.");
         }
 
-        IQueryable<LichHen> query = _db.LichHen
+        IQueryable<ClinicBooking.Domain.Entities.LichHen> query = _db.LichHen
             .AsNoTracking()
             .Where(x => x.CaLamViec.NgayLamViec == request.Ngay);
 
