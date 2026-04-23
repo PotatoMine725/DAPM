@@ -107,8 +107,45 @@ Noi dung huu ich:
   - `45dfb05` fix(tests): module 2 public endpoint tests bien dich + chay (replay `a60922a` — se drop khi Module 2 PR `f674394`)
   - `4f2f628` docs: nhiem vu tiep theo cho chu Module 2
 - Backup: `backup/phan-a-before-rebase` (truoc khi rebase, de phong).
-- Recommend khi quay lai:
-  1. Doi chu Module 2 PR `d12f55b` → develop.
-  2. Rebase lai, drop `d588fa4` + `45dfb05` (2 replay cua work Module 2).
-  3. Push + PR `feature/module1/phan-a-quyen-truy-cap` → develop cho Phan A + B + docs.
-  4. Bat dau Wave 2 plan Module 1 (handler `TaoLichHen`, `HuyLichHen`, `XacNhanLichHen`, etc.) — dung stub `CaLamViecQueryService` + `NotificationService` da co san tren develop.
+---
+
+## Next actions (thu tu uu tien khi quay lai)
+
+### Uu tien 1 — Khong blocker, co the lam ngay (khong can doi ai)
+
+- [ ] **Push nhanh + tao PR `feature/module1/phan-a-quyen-truy-cap` → `develop`** cho Phan A + B + docs. Dung doi chu Module 2 — 2 commit replay (`d588fa4`, `45dfb05`) se duoc GitHub xu ly sach khi merge (va phia Module 2 merge sau se khong conflict vi cung noi dung).
+- [ ] Chay `dotnet test ClinicBooking.Application.UnitTests --filter "FullyQualifiedName~HangCho"` truoc khi push, xac nhan 15/15 xanh.
+
+### Uu tien 2 — Sau khi Module 2 PR `d12f55b` vao develop
+
+- [ ] `git fetch origin && git rebase origin/develop` tren nhanh hien tai → drop `d588fa4` + `45dfb05` (2 replay cua Module 2).
+- [ ] Force-push neu PR da tao (kem `--force-with-lease`); hoac merge PR truoc roi rebase branch moi.
+
+### Uu tien 3 — Bat dau Wave 2 plan Module 1 (main dev work)
+
+**Context**: Wave 1 cua plan `docs/Module_1_plan.md` ban goc yeu cau tu tao `ICaLamViecQueryService` + `INotificationService` + stub. Nhung develop gio **da co san 100%** (qua Module 2 PR + sap co them tu Module 4). Nen Wave 1 chi con:
+
+- [ ] Migration `Module1_ThemRangBuocLichHen`: unique index `(IdCaLamViec, SoSlot)` tren `LichHen`, `RowVersion` byte[] tren `LichHen`, unique `(IdCaLamViec, SoThuTu)` tren `HangCho`, composite index `(IdCaLamViec, TrangThai, SoThuTu)` cho "goi tiep", index `GiuCho(IdCaLamViec, DaGiaiPhong, GioHetHan)`, index `LichSuLichHen(IdLichHen)`.
+- [ ] `LichHenOptions` binding tu `appsettings.json` section `"LichHen"` (`HuyMuonTruocGio`, `GiuChoThoiHanPhut`, `MaLichHenPrefix`).
+- [ ] `IMaLichHenGenerator` — format `LH-{yyyyMMdd}-{seq6}`, dung `MAX(MaLichHen)` + parse + 1, retry 3 lan.
+- [ ] Test project `ClinicBooking.Application.UnitTests` scaffold (neu chua co — verify da ton tai).
+
+Sau do vao **Wave 2** handler (uu tien theo plan):
+
+1. `TaoLichHen` (command) — critical path, dung `ICaLamViecQueryService.IncrementSoSlotDaDatAsync` + unique index backstop.
+2. `HuyLichHen` (command) — notification fire-and-forget + decrement counter.
+3. `XacNhanLichHen` (command).
+4. `CheckInLichHen` (command) — insert `HangCho` voi `SoThuTu = MAX+1` retry.
+5. Query handlers: `XemLichHen`, `DanhSachLichHenCuaToi`, `DanhSachLichHenTheoNgay`.
+6. `DoiLichHen`, `TaoGiuCho`, `GiaiPhongGiuCho`.
+
+### Uu tien 4 — Phan E (endpoint dac thu vai tro)
+
+- [ ] `GET api/hang-cho/thu-tu-cua-toi/{idCaLamViec}` cho `BenhNhan`.
+- [ ] `GET api/lich-hen/theo-ngay/cua-toi?ngay=yyyy-MM-dd` cho `BacSi`.
+- Co the lam ngay sau Phan A+B merge, truoc hoac song song Wave 2 tuy nhu cau front-end.
+
+### Uu tien 5 — Cleanup (khi co thoi gian, khong chan gi)
+
+- [ ] Debug 11 test Thuoc/ToaThuoc fail tren develop (pre-existing, co the bi anh huong boi work cua Module 3).
+- [ ] Xem xet chuyen nhanh Module 4 (`feature/module4-week1-email-integration`) — nhac chu Module 4 rebase truoc PR.
