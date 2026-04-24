@@ -17,9 +17,10 @@ public class PasswordHasher : IPasswordHasher
         {
             return BCrypt.Net.BCrypt.Verify(matKhauThuong, matKhauHash);
         }
-        catch (BCrypt.Net.SaltParseException)
+        catch (Exception)
         {
             // Hash khong dung dinh dang BCrypt (vi du hash gia lap trong seed data).
+            // Loi verify se duoc xem nhu dang nhap khong hop le thay vi nem 500.
             return false;
         }
     }

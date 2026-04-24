@@ -32,13 +32,22 @@ public class DevFixtureSettings
     public bool Enabled { get; set; } = false;
 
     /// <summary>
-    /// Mat khau dung chung cho cac tai khoan fixture (le_tan, bac_si mau).
+    /// Mat khau dung chung cho cac tai khoan fixture.
     /// Neu khong dat, se fallback ve AdminSeederSettings.MatKhauMacDinh.
     /// </summary>
     public string? MatKhauChung { get; set; }
 
+    /// <summary>Tai khoan benh nhan mau. Null = bo qua.</summary>
+    public FixtureTaiKhoan? BenhNhan { get; set; }
+
+    /// <summary>Tai khoan bac si mau. Null = bo qua.</summary>
+    public FixtureTaiKhoan? BacSi { get; set; }
+
     /// <summary>Tai khoan le_tan mau. Null = bo qua.</summary>
     public FixtureTaiKhoan? LeTan { get; set; }
+
+    /// <summary>Tai khoan admin mau. Null = bo qua.</summary>
+    public FixtureTaiKhoan? Admin { get; set; }
 }
 
 public class FixtureTaiKhoan
