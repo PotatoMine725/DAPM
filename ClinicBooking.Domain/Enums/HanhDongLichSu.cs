@@ -7,5 +7,10 @@ public enum HanhDongLichSu
     DoiLich,
     HuyBenhNhan,
     HuyPhongKham,
-    CheckIn
+    CheckIn,
+    /// <summary>
+    /// Ca lam viec da ket thuc, lich hen tu dong chuyen sang DaQuaHan.
+    /// Ghi boi background job ChuyenLichHenDaQuaHanJob.
+    /// </summary>
+    QuaHan
 }

@@ -4,6 +4,7 @@ using ClinicBooking.Application.Abstractions.Scheduling;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Options;
 using ClinicBooking.Application.Common.Services;
+using ClinicBooking.Infrastructure.BackgroundJobs;
 using ClinicBooking.Infrastructure.Identity;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Security;
@@ -54,6 +55,12 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationServiceStub>();
 
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
+
+        // --- Module 1: Background jobs ---
+        // TODO Wave 4: khi Module 4 (Hangfire) len, xoa 2 dong AddHostedService nay
+        //              va dang ky recurring job tuong duong trong Hangfire.
+        services.AddHostedService<QuetGiuChoHetHanJob>();
+        services.AddHostedService<ChuyenLichHenDaQuaHanJob>();
 
         return services;
     }
