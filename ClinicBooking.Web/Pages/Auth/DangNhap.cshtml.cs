@@ -80,7 +80,7 @@ public class DangNhapModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Loi khi xu ly dang nhap cho '{DinhDanh}'", Input.TenDangNhapHoacEmail);
-            ErrorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại.";
+            ErrorMessage = $"Đã có lỗi xảy ra. Vui lòng thử lại. [DEBUG] {ex.GetType().Name}: {ex.Message}";
             return Page();
         }
     }
