@@ -82,6 +82,18 @@
                         <i class="ph ph-calendar-plus"></i> Đặt lịch mới
                     </a>
                 </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BenhNhan/HoSoCaNhan") ? "active" : "")"
+                       href="/BenhNhan/HoSoCaNhan">
+                        <i class="ph ph-user-gear"></i> Hồ sơ cá nhân
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BenhNhan/ThongBao") ? "active" : "")"
+                       href="/BenhNhan/ThongBao">
+                        <i class="ph ph-bell"></i> Thông báo
+                    </a>
+                </li>
             }
         </ul>
 
