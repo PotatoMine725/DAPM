@@ -1,5 +1,34 @@
 # Kế hoạch triển khai Module 1 — Đặt lịch hẹn & Hàng chờ
 
+## Trạng thái hiện tại
+
+- Branch docs hiện tại: `docs/module1-notes-wip`
+- `develop` đã được giữ sạch và đồng bộ với `origin/develop`.
+- Code Module 1 ở mốc gần nhất đã được commit, push, PR và merge thủ công trên GitHub.
+- Phần ghi chú/tài liệu còn lại đang được chuẩn hóa riêng trên nhánh docs, không ảnh hưởng `develop`.
+
+## Nhật ký thực thi gần nhất
+
+### Đã hoàn tất
+
+1. Thêm endpoint cho bệnh nhân xem thứ tự của mình trong hàng chờ:
+   - `GET /api/hang-cho/thu-tu-cua-toi/{idCaLamViec}`
+2. Thêm endpoint cho bác sĩ xem lịch hẹn theo ngày của chính mình:
+   - `GET /api/lich-hen/theo-ngay/cua-toi?ngay=yyyy-MM-dd`
+3. Bổ sung validator, handler, DTO mapping và unit test cho các luồng mới.
+4. Commit thay đổi code Module 1 và push lên remote.
+5. Mở PR vào `develop` và chỉnh base đúng về `develop` để tránh merge nhầm vào `main`.
+6. Merge PR thủ công trên GitHub.
+7. Đồng bộ local với `origin/develop` sau khi merge.
+8. Tách và giữ phần docs/config còn treo trên nhánh riêng `docs/module1-notes-wip`.
+
+### Ghi chú vận hành
+
+- Khi làm tiếp Module 1, ưu tiên cập nhật trên nhánh docs riêng, không chỉnh `develop` trực tiếp.
+- Nếu có thay đổi code mới thuộc Module 1, nên chốt thành một mốc rõ ràng trước khi commit/push/PR.
+- Các file docs/config chưa chuẩn hóa sẽ được xử lý ở nhánh docs riêng để tránh nhiễu lịch sử code.
+- Không đụng vào `.mcp.json` và `.opencode.json` nữa; đây là cấu hình plugin được giữ nguyên.
+
 ## Context
 
 Dự án `ClinicBooking` (`D:\Code\C#\DatLichPhongKham`) đã chốt split 4 module theo `docs/phan-chia-module-va-huong-dan-du-an.md`; Module 1 do **tôi + Claude** đồng sở hữu, 3 module còn lại do 3 thành viên khác phụ trách và chưa được đẩy lên GitHub. Hiện tại Module 1 hoàn toàn trống phần Application (chỉ có Auth đã xong làm template), nhưng các entity `LichHen`, `LichSuLichHen`, `GiuCho`, `HangCho` + enums + Fluent API mapping đã tồn tại.

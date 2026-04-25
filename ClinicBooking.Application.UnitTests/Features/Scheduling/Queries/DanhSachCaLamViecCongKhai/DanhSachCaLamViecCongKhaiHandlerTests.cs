@@ -19,6 +19,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK-UT-1", ThoiGianSlotMacDinh = 20, HienThi = true };
         var phong = new Phong { MaPhong = "P-UT-001", TenPhong = "Phong UT", SucChua = 1, TrangThai = true };
         var dinhNghiaCa = new DinhNghiaCa { TenCa = "sang_ut", GioBatDauMacDinh = new TimeOnly(7, 0), GioKetThucMacDinh = new TimeOnly(12, 0), TrangThai = true };
+
         db.ChuyenKhoa.Add(chuyenKhoa);
         db.Phong.Add(phong);
         db.DinhNghiaCa.Add(dinhNghiaCa);
@@ -34,6 +35,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
             TrangThai = TrangThaiBacSi.DangLam,
             NgayTao = DateTime.UtcNow
         };
+
         db.BacSi.Add(bacSi);
         await db.SaveChangesAsync();
 
@@ -70,6 +72,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
+
         await db.SaveChangesAsync();
 
         var handler = new DanhSachCaLamViecCongKhaiHandler(db);
@@ -88,6 +91,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK-UT-2", ThoiGianSlotMacDinh = 20, HienThi = true };
         var phong = new Phong { MaPhong = "P-UT-002", TenPhong = "Phong UT 2", SucChua = 1, TrangThai = true };
         var dinhNghiaCa = new DinhNghiaCa { TenCa = "chieu_ut", GioBatDauMacDinh = new TimeOnly(13, 0), GioKetThucMacDinh = new TimeOnly(17, 0), TrangThai = true };
+
         db.ChuyenKhoa.Add(chuyenKhoa);
         db.Phong.Add(phong);
         db.DinhNghiaCa.Add(dinhNghiaCa);
@@ -95,8 +99,27 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
 
         var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
         var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
-        var bacSi1 = new BacSiEntity { IdTaiKhoan = tk1.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 1", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
-        var bacSi2 = new BacSiEntity { IdTaiKhoan = tk2.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 2", LoaiHopDong = LoaiHopDong.HopDong, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
+
+        var bacSi1 = new BacSiEntity
+        {
+            IdTaiKhoan = tk1.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS 1",
+            LoaiHopDong = LoaiHopDong.NoiTru,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = DateTime.UtcNow
+        };
+
+        var bacSi2 = new BacSiEntity
+        {
+            IdTaiKhoan = tk2.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS 2",
+            LoaiHopDong = LoaiHopDong.HopDong,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = DateTime.UtcNow
+        };
+
         db.BacSi.AddRange(bacSi1, bacSi2);
         await db.SaveChangesAsync();
 
@@ -133,6 +156,7 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
+
         await db.SaveChangesAsync();
 
         var handler = new DanhSachCaLamViecCongKhaiHandler(db);

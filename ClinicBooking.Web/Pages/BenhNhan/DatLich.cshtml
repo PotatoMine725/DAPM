@@ -1,0 +1,161 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.DatLichModel
+@{
+    ViewData["Title"] = "Đặt lịch khám";
+}
+
+<div class="page-header">
+    <h1 class="page-title">Đặt lịch khám mới</h1>
+</div>
+
+@if (TempData["ErrorMessage"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+<!-- Chọn ngày -->
+<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
+    <form method="get" style="display:flex; gap:var(--space-3); align-items:center;">
+        <label class="form-label" style="margin:0; white-space:nowrap;">Chọn ngày khám:</label>
+        <input type="date" class="form-input" name="ngay"
+               value="@Model.NgayChon.ToString("yyyy-MM-dd")"
+               min="@DateOnly.FromDateTime(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")"
+               style="width:180px;" />
+        <button type="submit" class="btn btn-secondary">
+            <i class="ph ph-calendar-blank"></i> Xem ca trống
+        </button>
+    </form>
+</div>
+
+<form method="post" asp-route-ngay="@Model.NgayChon.ToString("yyyy-MM-dd")">
+    <div class="panel-grid-2">
+
+        <!-- Cột trái: chọn ca -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    <i class="ph ph-clock"></i>
+                    Ca làm việc ngày @Model.NgayChon.ToString("dd/MM/yyyy")
+                </span>
+            </div>
+
+            @if (!Model.DanhSachCa.Any())
+            {
+                <div class="empty-state" style="padding: var(--space-6);">
+                    <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
+                    <p>Không có ca làm việc trống cho ngày này.<br/>
+                       Vui lòng chọn ngày khác.</p>
+                </div>
+            }
+            else
+            {
+                <div style="padding: var(--space-3);">
+                    @foreach (var ca in Model.DanhSachCa)
+                    {
+                        <label class="radio-card @(Model.IdCaLamViec == ca.IdCaLamViec ? "radio-card--selected" : "")">
+                            <input type="radio" name="IdCaLamViec" value="@ca.IdCaLamViec"
+                                   @(Model.IdCaLamViec == ca.IdCaLamViec ? "checked" : "")
+                                   style="margin-right: var(--space-2);" />
+                            <div style="flex:1;">
+                                <div style="font-weight:600;">
+                                    @ca.GioBatDau.ToString("HH:mm") – @ca.GioKetThuc.ToString("HH:mm")
+                                </div>
+                                <div style="font-size:13px; color:var(--color-text-secondary);">
+                                    BS. @ca.HoTenBacSi · @ca.TenChuyenKhoa · Phòng @ca.MaPhong
+                                </div>
+                                <div style="font-size:12px; margin-top:2px;">
+                                    <span class="badge badge-success">Còn chỗ</span>
+                                    <span style="color:var(--color-text-secondary); margin-left:6px;">
+                                        Mỗi slot @ca.ThoiGianSlot phút
+                                    </span>
+                                </div>
+                            </div>
+                        </label>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Cột phải: chọn dịch vụ + thông tin bổ sung -->
+        <div class="section-stack">
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><i class="ph ph-first-aid"></i> Dịch vụ khám</span>
+                </div>
+                <div style="padding: var(--space-3);">
+                    @if (!Model.DanhSachDichVu.Any())
+                    {
+                        <p style="color:var(--color-text-secondary); padding: var(--space-3);">
+                            Chưa có dịch vụ nào.
+                        </p>
+                    }
+                    else
+                    {
+                        <select class="form-select" asp-for="IdDichVu" style="width:100%;" required>
+                            <option value="0">— Chọn dịch vụ —</option>
+                            @foreach (var dv in Model.DanhSachDichVu)
+                            {
+                                <option value="@dv.IdDichVu"
+                                        selected="@(Model.IdDichVu == dv.IdDichVu ? "selected" : null)">
+                                    @dv.TenDichVu
+                                    @if (!string.IsNullOrEmpty(dv.TenChuyenKhoa))
+                                    {
+                                        <text> (@dv.TenChuyenKhoa)</text>
+                                    }
+                                </option>
+                            }
+                        </select>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><i class="ph ph-note-pencil"></i> Thông tin bổ sung</span>
+                </div>
+                <div style="padding: var(--space-3);" class="section-stack">
+                    <div class="form-group">
+                        <label class="form-label">Triệu chứng / lý do khám</label>
+                        <textarea class="form-input" asp-for="TrieuChung" rows="3"
+                                  placeholder="Mô tả triệu chứng hoặc lý do muốn khám..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ghi chú về bác sĩ mong muốn</label>
+                        <input type="text" class="form-input" asp-for="BacSiMongMuonNote"
+                               placeholder="Ví dụ: muốn gặp BS. Nguyễn..." />
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:var(--space-3);">
+                <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary" style="flex:1; text-align:center;">
+                    Huỷ bỏ
+                </a>
+                <button type="submit" class="btn btn-primary" style="flex:2;"
+                        @(!Model.DanhSachCa.Any() ? "disabled" : "")>
+                    <i class="ph ph-calendar-check"></i> Xác nhận đặt lịch
+                </button>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<style>
+.radio-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.radio-card:hover { border-color: var(--color-primary); background: var(--color-neutral-bg); }
+.radio-card--selected { border-color: var(--color-primary); background: var(--color-active-bg); }
+</style>
+}

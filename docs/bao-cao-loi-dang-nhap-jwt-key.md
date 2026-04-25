@@ -124,3 +124,43 @@ Vì tên property không khớp, `Configure<JwtSettings>` chỉ bind được `I
 ---
 
 *Người lập báo cáo: Claude — 2026-04-19*
+
+---
+
+## 7. Phan cap nhat sau nay (2026-04-24)
+
+### Loi moi da gap
+
+Trong qua trinh khoi dong API sau khi them bo seed demo, ung dung tiep tuc gap 2 loai loi:
+- `Tai khoan hoac mat khau khong dung.` khi dang nhap bang tai khoan demo.
+- `Hosting failed to start` do port `5212` da bi process khac chiem.
+
+### Ket qua dieu tra moi
+
+- Log runtime cho thay `DatabaseSeeder` da chay va upsert thanh cong cac tai khoan fixture:
+  - `patient001`
+  - `doctor001`
+  - `receptionist001`
+  - `admin001`
+- DB local co tai khoan, nhung hash mat khau fixture cu khong khop voi mat khau demo dang test.
+- Khi upsert lai fixture, API fail do trung unique index `IX_TaiKhoan_SoDienThoai` vi so dien thoai trong config khong trung voi du lieu da co.
+- Sau khi dong bo so dien thoai theo DB local va restart lai, API start tiep tuc fail do cổng `5212` dang bi chinh API instance cu giu.
+
+### Cach xu ly da ap dung
+
+1. Mo rong `DatabaseSeeder` theo kieu upsert de ghi de mat khau hash cho tai khoan demo.
+2. Dong bo `appsettings.Development.json` voi thong tin fixture dang ton tai trong DB local (dung so dien thoai khong trung index).
+3. Build lai API thanh cong.
+4. Khi API fail vi `address already in use`, can dung process dang giu port `5212` roi chay lai `dotnet run --project ClinicBooking.Api`.
+5. Sau khi API start thanh cong, dung lai bo login demo:
+   - `patient001` / `Demo@123456`
+   - `doctor001` / `Demo@123456`
+   - `receptionist001` / `Demo@123456`
+   - `admin001` / `Demo@123456`
+
+### Bieu hien cuoi cung
+
+- Seed chay thanh cong.
+- DB local co du tai khoan demo.
+- API can duoc restart tren mot port con trong.
+- Loi login neu con xay ra thi phai kiem tra lai process dang chay va DB dang ket noi, khong con la loi seed ban dau.

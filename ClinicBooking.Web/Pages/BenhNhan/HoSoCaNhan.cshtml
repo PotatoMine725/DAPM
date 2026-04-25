@@ -1,0 +1,129 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.HoSoCaNhanModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="page-header">
+    <h1 class="page-title">Hồ sơ cá nhân</h1>
+</div>
+
+<div class="panel-grid-2" style="align-items: start;">
+
+    <!-- Cột trái: thông tin tài khoản (chỉ đọc) -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-user-circle"></i> Thông tin tài khoản</span>
+        </div>
+        <div style="padding: var(--space-4);" class="section-stack">
+            @if (Model.HoSo is not null)
+            {
+                <div style="display:flex; justify-content:center; margin-bottom: var(--space-4);">
+                    <div class="avatar avatar-blue" style="width:72px; height:72px; font-size:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                        @{
+                            var initials = Model.HoSo.HoTen.Split(' ').Where(w => w.Length > 0).Select(w => w[0].ToString().ToUpper()).Take(2);
+                        }
+                        @string.Concat(initials)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-input" value="@Model.HoSo.Email" disabled />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-input" value="@Model.HoSo.SoDienThoai" disabled />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày tạo tài khoản</label>
+                    <input type="text" class="form-input" value="@Model.HoSo.NgayTao.ToString("dd/MM/yyyy")" disabled />
+                </div>
+
+                @if (Model.HoSo.BiHanChe)
+                {
+                    <div class="alert alert-danger" style="margin-top: var(--space-2);">
+                        <i class="ph ph-warning"></i>
+                        <strong>Tài khoản bị hạn chế</strong>
+                        @if (Model.HoSo.NgayHetHanChe.HasValue)
+                        {
+                            <span> đến @Model.HoSo.NgayHetHanChe.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        }
+                        <br/>
+                        <small>Số lần huỷ muộn: @Model.HoSo.SoLanHuyMuon</small>
+                    </div>
+                }
+                else if (Model.HoSo.SoLanHuyMuon > 0)
+                {
+                    <div class="alert" style="background:var(--color-warning-bg,#fff8e1); border:1px solid var(--color-warning,#f9a825); border-radius:var(--radius-md); padding:var(--space-3); font-size:13px;">
+                        <i class="ph ph-warning-circle"></i>
+                        Số lần huỷ muộn: <strong>@Model.HoSo.SoLanHuyMuon</strong>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="color:var(--color-text-secondary);">Không thể tải thông tin tài khoản.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Cột phải: form chỉnh sửa hồ sơ -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-pencil-simple"></i> Chỉnh sửa hồ sơ</span>
+        </div>
+        <div style="padding: var(--space-4);">
+            <form method="post" class="section-stack">
+                <div class="form-group">
+                    <label class="form-label" asp-for="HoTen">Họ và tên <span style="color:var(--color-danger);">*</span></label>
+                    <input type="text" class="form-input" asp-for="HoTen" placeholder="Nhập họ và tên đầy đủ" required />
+                    <span asp-validation-for="HoTen" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="NgaySinh">Ngày sinh</label>
+                    <input type="date" class="form-input" asp-for="NgaySinh"
+                           max="@DateOnly.FromDateTime(DateTime.Today.AddDays(-1)).ToString("yyyy-MM-dd")"
+                           style="width:200px;" />
+                    <span asp-validation-for="NgaySinh" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="GioiTinh">Giới tính</label>
+                    <select class="form-select" asp-for="GioiTinh" style="width:200px;">
+                        <option value="">— Chọn —</option>
+                        <option value="@GioiTinh.Nam" selected="@(Model.GioiTinh == GioiTinh.Nam ? "selected" : null)">Nam</option>
+                        <option value="@GioiTinh.Nu" selected="@(Model.GioiTinh == GioiTinh.Nu ? "selected" : null)">Nữ</option>
+                        <option value="@GioiTinh.Khac" selected="@(Model.GioiTinh == GioiTinh.Khac ? "selected" : null)">Khác</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Cccd">Số CCCD</label>
+                    <input type="text" class="form-input" asp-for="Cccd"
+                           placeholder="12 chữ số" maxlength="12"
+                           style="width:220px;" />
+                    <span asp-validation-for="Cccd" class="form-error"></span>
+                    <small style="color:var(--color-text-secondary); display:block; margin-top:4px;">Căn cước công dân 12 số</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="DiaChi">Địa chỉ</label>
+                    <textarea class="form-input" asp-for="DiaChi" rows="3"
+                              placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+                    <span asp-validation-for="DiaChi" class="form-error"></span>
+                </div>
+
+                <div style="display:flex; gap:var(--space-3); margin-top:var(--space-2);">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ph ph-floppy-disk"></i> Lưu thay đổi
+                    </button>
+                    <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">Huỷ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

@@ -1,5 +1,6 @@
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
+using ClinicBooking.Infrastructure.Persistence.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicBooking.Infrastructure.Persistence;
@@ -24,6 +25,7 @@ public static class SeedData
         SeedDichVu(modelBuilder);
         SeedThuoc(modelBuilder);
         SeedMauThongBao(modelBuilder);
+        Module1TestDataSeeder.SeedModule1TestData(modelBuilder);
     }
 
     private static void SeedTaiKhoanAdmin(ModelBuilder modelBuilder)

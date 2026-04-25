@@ -26,4 +26,26 @@ public class LichHenOptions
     /// <c>TrangThaiHangCho.HoanThanh</c> neu luot do dang <c>DangKham</c>.
     /// </summary>
     public bool TuDongHoanThanhLuotHienTai { get; set; } = true;
+
+    /// <summary>Cau hinh background jobs (chu ky chay).</summary>
+    public BackgroundJobOptions BackgroundJob { get; set; } = new();
+
+    public class BackgroundJobOptions
+    {
+        /// <summary>
+        /// Chu ky quet <c>GiuCho</c> het han (phut). Mac dinh 1 phut.
+        /// </summary>
+        public int QuetGiuChoPhut { get; set; } = 1;
+
+        /// <summary>
+        /// Chu ky chuyen <c>LichHen</c> sang <c>DaQuaHan</c> (phut). Mac dinh 30 phut.
+        /// </summary>
+        public int ChuyenDaQuaHanPhut { get; set; } = 30;
+
+        /// <summary>
+        /// Lich hen bi coi la "qua han" khi ca ket thuc hon bao nhieu gio.
+        /// Mac dinh 1 gio (buffer de tranh case ca chua ket thuc han).
+        /// </summary>
+        public int BufferSauKetThucGio { get; set; } = 1;
+    }
 }
