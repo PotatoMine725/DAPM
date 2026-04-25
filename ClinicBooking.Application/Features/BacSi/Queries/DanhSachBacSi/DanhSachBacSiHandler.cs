@@ -1,5 +1,6 @@
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Features.BacSi.Dtos;
+using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,7 @@ public sealed class DanhSachBacSiHandler : IRequestHandler<DanhSachBacSiQuery, I
         var query = _db.BacSi
             .AsNoTracking()
             .Include(x => x.ChuyenKhoa)
+            .Where(x => x.TrangThai == TrangThaiBacSi.DangLam)
             .AsQueryable();
 
         if (request.IdChuyenKhoa.HasValue)

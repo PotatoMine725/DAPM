@@ -15,6 +15,7 @@ public sealed record BacSiResponse(
     string TrangThai,
     string TenChuyenKhoa)
 {
+    /// <remarks>Caller must eager-load ChuyenKhoa navigation.</remarks>
     public static BacSiResponse TuEntity(BacSiEntity entity) => new(
         entity.IdBacSi,
         entity.IdTaiKhoan,
@@ -26,5 +27,5 @@ public sealed record BacSiResponse(
         entity.TieuSu,
         entity.LoaiHopDong.ToString(),
         entity.TrangThai.ToString(),
-        entity.ChuyenKhoa.TenChuyenKhoa);
+        entity.ChuyenKhoa?.TenChuyenKhoa ?? string.Empty);
 }

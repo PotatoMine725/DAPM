@@ -18,10 +18,12 @@ public sealed class TaoBacSiHandler : IRequestHandler<TaoBacSiCommand, int>
 
     public async Task<int> Handle(TaoBacSiCommand request, CancellationToken cancellationToken)
     {
-        var taiKhoanTonTai = await _db.TaiKhoan.AnyAsync(x => x.IdTaiKhoan == request.IdTaiKhoan, cancellationToken);
-        if (!taiKhoanTonTai)
+        var taiKhoan = await _db.TaiKhoan.FirstOrDefaultAsync(x => x.IdTaiKhoan == request.IdTaiKhoan, cancellationToken)
+            ?? throw new NotFoundException("Khong tim thay tai khoan.");
+
+        if (taiKhoan.VaiTro != VaiTro.BacSi)
         {
-            throw new NotFoundException("Khong tim thay tai khoan.");
+            throw new ConflictException("Tai khoan nay khong co vai tro bac si.");
         }
 
         var chuyenKhoaTonTai = await _db.ChuyenKhoa.AnyAsync(x => x.IdChuyenKhoa == request.IdChuyenKhoa, cancellationToken);
