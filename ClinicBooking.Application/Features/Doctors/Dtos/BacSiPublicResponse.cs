@@ -1,4 +1,4 @@
-using ClinicBooking.Domain.Entities;
+using BacSiEntity = ClinicBooking.Domain.Entities.BacSi;
 
 namespace ClinicBooking.Application.Features.Doctors.Dtos;
 
@@ -11,7 +11,7 @@ public sealed record BacSiPublicResponse(
     int? NamKinhNghiem,
     string TenChuyenKhoa)
 {
-    public static BacSiPublicResponse TuEntity(BacSi entity) => new(
+    public static BacSiPublicResponse TuEntity(BacSiEntity entity) => new(
         entity.IdBacSi,
         entity.IdChuyenKhoa,
         entity.HoTen,

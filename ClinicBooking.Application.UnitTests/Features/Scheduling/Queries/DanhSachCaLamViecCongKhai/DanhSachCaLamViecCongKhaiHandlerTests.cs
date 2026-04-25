@@ -1,5 +1,6 @@
 using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
 using ClinicBooking.Application.UnitTests.Common;
+using BacSiEntity = ClinicBooking.Domain.Entities.BacSi;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using FluentAssertions;
@@ -15,24 +16,27 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK UT", ThoiGianSlotMacDinh = 20, HienThi = true };
-        db.ChuyenKhoa.Add(chuyenKhoa);
-        await db.SaveChangesAsync();
-        var tkBs = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK-UT-1", ThoiGianSlotMacDinh = 20, HienThi = true };
         var phong = new Phong { MaPhong = "P-UT-001", TenPhong = "Phong UT", SucChua = 1, TrangThai = true };
-        var bacSi = new BacSi
+        var dinhNghiaCa = new DinhNghiaCa { TenCa = "sang_ut", GioBatDauMacDinh = new TimeOnly(7, 0), GioKetThucMacDinh = new TimeOnly(12, 0), TrangThai = true };
+
+        db.ChuyenKhoa.Add(chuyenKhoa);
+        db.Phong.Add(phong);
+        db.DinhNghiaCa.Add(dinhNghiaCa);
+        await db.SaveChangesAsync();
+
+        var tk = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var bacSi = new BacSiEntity
         {
-            IdTaiKhoan = tkBs.IdTaiKhoan,
+            IdTaiKhoan = tk.IdTaiKhoan,
             IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
             HoTen = "Bac Si UT",
             LoaiHopDong = LoaiHopDong.NoiTru,
             TrangThai = TrangThaiBacSi.DangLam,
             NgayTao = DateTime.UtcNow
         };
-        var dinhNghiaCa = new DinhNghiaCa { TenCa = "sang_ut", GioBatDauMacDinh = new TimeOnly(7, 0), GioKetThucMacDinh = new TimeOnly(12, 0), TrangThai = true };
-        db.Phong.Add(phong);
+
         db.BacSi.Add(bacSi);
-        db.DinhNghiaCa.Add(dinhNghiaCa);
         await db.SaveChangesAsync();
 
         db.CaLamViec.AddRange(
@@ -68,14 +72,14 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
+
         await db.SaveChangesAsync();
 
         var handler = new DanhSachCaLamViecCongKhaiHandler(db);
 
         var result = await handler.Handle(new DanhSachCaLamViecCongKhaiQuery(ConTrong: true), CancellationToken.None);
 
-        result.Should().HaveCount(1);
-        result[0].ConTrong.Should().BeTrue();
+        result.Should().ContainSingle(x => x.ConTrong);
     }
 
     [Fact]
@@ -84,18 +88,39 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
 
-        var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK UT 2", ThoiGianSlotMacDinh = 20, HienThi = true };
-        db.ChuyenKhoa.Add(chuyenKhoa);
-        await db.SaveChangesAsync();
-        var tkBs1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
-        var tkBs2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var chuyenKhoa = new ChuyenKhoa { TenChuyenKhoa = "CK-UT-2", ThoiGianSlotMacDinh = 20, HienThi = true };
         var phong = new Phong { MaPhong = "P-UT-002", TenPhong = "Phong UT 2", SucChua = 1, TrangThai = true };
-        var bacSi1 = new BacSi { IdTaiKhoan = tkBs1.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 1", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
-        var bacSi2 = new BacSi { IdTaiKhoan = tkBs2.IdTaiKhoan, IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa, HoTen = "BS 2", LoaiHopDong = LoaiHopDong.NoiTru, TrangThai = TrangThaiBacSi.DangLam, NgayTao = DateTime.UtcNow };
         var dinhNghiaCa = new DinhNghiaCa { TenCa = "chieu_ut", GioBatDauMacDinh = new TimeOnly(13, 0), GioKetThucMacDinh = new TimeOnly(17, 0), TrangThai = true };
+
+        db.ChuyenKhoa.Add(chuyenKhoa);
         db.Phong.Add(phong);
-        db.BacSi.AddRange(bacSi1, bacSi2);
         db.DinhNghiaCa.Add(dinhNghiaCa);
+        await db.SaveChangesAsync();
+
+        var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+
+        var bacSi1 = new BacSiEntity
+        {
+            IdTaiKhoan = tk1.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS 1",
+            LoaiHopDong = LoaiHopDong.NoiTru,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = DateTime.UtcNow
+        };
+
+        var bacSi2 = new BacSiEntity
+        {
+            IdTaiKhoan = tk2.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS 2",
+            LoaiHopDong = LoaiHopDong.HopDong,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = DateTime.UtcNow
+        };
+
+        db.BacSi.AddRange(bacSi1, bacSi2);
         await db.SaveChangesAsync();
 
         db.CaLamViec.AddRange(
@@ -131,13 +156,13 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
                 NguonTaoCa = NguonTaoCa.TuDong,
                 NgayTao = DateTime.UtcNow
             });
+
         await db.SaveChangesAsync();
 
         var handler = new DanhSachCaLamViecCongKhaiHandler(db);
 
         var result = await handler.Handle(new DanhSachCaLamViecCongKhaiQuery(IdBacSi: bacSi2.IdBacSi), CancellationToken.None);
 
-        result.Should().HaveCount(1);
-        result[0].HoTenBacSi.Should().Be("BS 2");
+        result.Should().ContainSingle(x => x.HoTenBacSi == "BS 2");
     }
 }

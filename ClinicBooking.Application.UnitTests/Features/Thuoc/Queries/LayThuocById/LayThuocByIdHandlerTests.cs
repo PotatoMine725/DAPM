@@ -13,15 +13,16 @@ public sealed class LayThuocByIdHandlerTests
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg", HoatChat = "Paracetamol" });
+        var thuoc = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-LayThuocById-20260422", HoatChat = "Paracetamol" };
+        db.Thuoc.Add(thuoc);
         await db.SaveChangesAsync();
-        var idThuoc = await db.Thuoc.Select(x => x.IdThuoc).FirstAsync();
+        var idThuoc = thuoc.IdThuoc;
 
         var handler = new LayThuocByIdHandler(db);
         var result = await handler.Handle(new LayThuocByIdQuery(idThuoc), CancellationToken.None);
 
         result.IdThuoc.Should().Be(idThuoc);
-        result.TenThuoc.Should().Be("Paracetamol 500mg");
+        result.TenThuoc.Should().Be("THUOC-UT-LayThuocById-20260422");
     }
 
     [Fact]
