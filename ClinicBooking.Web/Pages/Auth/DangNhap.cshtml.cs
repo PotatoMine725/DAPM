@@ -85,6 +85,16 @@ public class DangNhapModel : PageModel
         }
     }
 
+    public IActionResult OnGetRegister()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectBasedOnRole();
+        }
+
+        return Page();
+    }
+
     private IActionResult RedirectBasedOnRole(string? vaiTro = null)
     {
         vaiTro ??= User.FindFirstValue(ClaimTypes.Role);

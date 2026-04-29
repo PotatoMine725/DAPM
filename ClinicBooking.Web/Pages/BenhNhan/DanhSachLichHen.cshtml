@@ -6,14 +6,23 @@
 }
 
 <div class="page-header">
-    <h1 class="page-title">Lịch khám của tôi</h1>
+    <div>
+        <h1 class="page-title">Lịch khám của tôi</h1>
+        <div class="page-subtitle" style="margin-top: var(--space-1); color: var(--color-text-secondary); font-size: 13px;">
+            Theo dõi, đổi và hủy các lịch đã tạo.
+        </div>
+    </div>
+    <div class="action-bar">
+        <a href="/BenhNhan/DatLich" class="btn btn-primary">
+            <i class="ph ph-calendar-plus"></i> Đặt lịch mới
+        </a>
+    </div>
 </div>
 
-<!-- Bộ lọc -->
 <div class="card section-stack">
     <form method="get" class="filter-bar">
-        <div class="form-group" style="margin:0; min-width:180px;">
-            <label class="form-label" for="trangThai">Trạng thái:</label>
+        <div class="form-group" style="margin:0; min-width:220px;">
+            <label class="form-label" for="trangThai">Trạng thái</label>
             <select class="form-select" name="trangThai" id="trangThai">
                 <option value="">— Tất cả —</option>
                 @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
@@ -36,7 +45,6 @@
     </form>
 </div>
 
-<!-- Danh sách lịch hẹn -->
 <div class="card">
     <div class="card-header">
         <span class="card-title">
@@ -125,7 +133,6 @@
             </tbody>
         </table>
 
-        <!-- Phân trang -->
         @if (Model.TongSoTrang > 1)
         {
             <div class="pagination" style="padding: var(--space-3) var(--space-5);">
