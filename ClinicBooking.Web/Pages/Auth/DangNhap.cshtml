@@ -2,25 +2,118 @@
 @model ClinicBooking.Web.Pages.Auth.DangNhapModel
 @{
     Layout = "~/Pages/Shared/_LoginLayout.cshtml";
-    ViewData["Title"] = "Đăng nhập";
+    ViewData["Title"] = "Đăng nhập bệnh nhân";
 }
 
-<div class="login-shell">
-    <div class="login-card">
-        <div class="login-logo">
-            <div class="login-logo-mark">
-                <i class="ph-fill ph-stethoscope"></i>
+<style>
+    .portal-auth-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(320px, 1.05fr) minmax(360px, 0.95fr);
+        gap: 24px;
+        padding: 24px;
+        background: linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+    }
+
+    .portal-auth-hero,
+    .portal-auth-panel {
+        background: #fff;
+        border: 1px solid rgba(26, 95, 168, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 16px 40px rgba(26, 95, 168, 0.08);
+        overflow: hidden;
+    }
+
+    .portal-auth-hero {
+        padding: 44px;
+        background: linear-gradient(145deg, #1a5fa8 0%, #2f79c7 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .portal-auth-brand { display: flex; gap: 14px; align-items: center; }
+    .portal-auth-brand-mark {
+        width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+        background: rgba(255,255,255,0.15); font-size: 26px;
+    }
+    .portal-auth-brand-name { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+    .portal-auth-kicker {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+        background: rgba(255,255,255,0.15); width: fit-content; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .portal-auth-hero h1 { margin: 14px 0 16px; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.08; }
+    .portal-auth-hero p { line-height: 1.7; max-width: 62ch; margin: 0; }
+
+    .portal-auth-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .portal-auth-metric {
+        background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 18px; padding: 16px;
+    }
+    .portal-auth-metric strong { display: block; font-size: 1.4rem; margin-top: 6px; }
+
+    .portal-auth-panel { padding: 32px; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+    .portal-auth-tabs { display: inline-flex; gap: 8px; padding: 6px; background: #eef4fb; border-radius: 999px; width: fit-content; }
+    .portal-auth-tab {
+        border: none; background: transparent; padding: 10px 18px; border-radius: 999px; font-weight: 700; color: var(--color-text-secondary);
+    }
+    .portal-auth-tab.active { background: #fff; color: var(--color-primary-dark); box-shadow: 0 8px 22px rgba(26, 95, 168, 0.14); }
+
+    .portal-auth-form { display: grid; gap: 16px; }
+    .portal-auth-note { border-radius: 16px; padding: 14px 16px; background: #e6f1fb; color: #155190; line-height: 1.6; }
+    .portal-auth-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .portal-auth-action { flex: 1 1 180px; }
+    .register-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+    @@media (max-width: 1080px) { .portal-auth-shell { grid-template-columns: 1fr; } }
+    @@media (max-width: 720px) {
+        .portal-auth-shell { padding: 14px; }
+        .portal-auth-hero, .portal-auth-panel { padding: 20px; border-radius: 20px; }
+        .portal-auth-metrics, .register-grid { grid-template-columns: 1fr; }
+        .portal-auth-actions { flex-direction: column; }
+    }
+</style>
+
+<div class="portal-auth-shell">
+    <section class="portal-auth-hero">
+        <div>
+            <div class="portal-auth-brand">
+                <div class="portal-auth-brand-mark"><i class="ph-fill ph-stethoscope"></i></div>
+                <div>
+                    <div class="portal-auth-kicker">Hệ thống đặt lịch Medibook</div>
+                    <div class="portal-auth-brand-name">Phòng khám Medicare</div>
+                </div>
             </div>
-            <div class="login-title">ClinicBooking</div>
-            <div class="login-subtitle">Hệ thống quản lý phòng khám</div>
+
+            <h1>Portal bệnh nhân mới, gọn hơn, rõ hơn và dễ dùng hơn.</h1>
+            <p>
+                Bệnh nhân có thể đăng nhập, xem lịch hẹn, đặt lịch, theo dõi thông báo và quản lý hồ sơ cá nhân ngay trong cùng một trải nghiệm.
+            </p>
+        </div>
+
+        <div class="portal-auth-metrics">
+            <div class="portal-auth-metric"><span>Đặt lịch</span><strong>Online</strong></div>
+            <div class="portal-auth-metric"><span>Theo dõi</span><strong>Lịch hẹn</strong></div>
+            <div class="portal-auth-metric"><span>Hỗ trợ</span><strong>24/7</strong></div>
+        </div>
+    </section>
+
+    <section class="portal-auth-panel">
+        <div class="portal-auth-tabs" role="tablist">
+            <button class="portal-auth-tab active" data-auth-tab="login" type="button">Đăng nhập</button>
+            <button class="portal-auth-tab" data-auth-tab="register" type="button">Đăng ký</button>
         </div>
 
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
         {
-            <div class="alert alert-danger" style="margin-bottom: 16px;">@Model.ErrorMessage</div>
+            <div class="portal-auth-note" style="background:#fdecec; color:#9c2f2f;">@Model.ErrorMessage</div>
         }
 
-        <form method="post">
+        <form method="post" id="login-form" class="portal-auth-form">
+            <div class="portal-auth-note">Đăng nhập bằng tài khoản của bạn để truy cập portal bệnh nhân.</div>
+
             <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none"></div>
 
             <div class="form-group">
@@ -45,17 +138,54 @@
                 <span asp-validation-for="Input.MatKhau" class="form-error"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
-                <i class="ph ph-sign-in"></i>
-                Đăng nhập
-            </button>
+            <div class="portal-auth-actions">
+                <button type="submit" class="btn btn-primary portal-auth-action">Đăng nhập</button>
+                <button type="button" class="btn btn-ghost portal-auth-action">Quên mật khẩu</button>
+            </div>
         </form>
 
-        <div style="margin-top: 20px; text-align: center; font-size: 14px; color: var(--color-text-secondary);">
-            Chưa có tài khoản?
-            <a href="/Auth/DangKy" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">
-                Đăng ký ngay
-            </a>
-        </div>
-    </div>
+        <form method="post" id="register-form" class="portal-auth-form hidden">
+            <div class="portal-auth-note">
+                Đăng ký mới dành cho bệnh nhân. Hệ thống sẽ tạo tài khoản bệnh nhân với thông tin cơ bản.
+            </div>
+
+            <div class="register-grid">
+                <label class="field"><span>Họ và tên</span><input class="form-input" type="text" name="fullName" placeholder="VD: Nguyễn Văn A" /></label>
+                <label class="field"><span>Số điện thoại</span><input class="form-input" type="tel" name="phone" placeholder="VD: 09xxxxxxxx" /></label>
+                <label class="field"><span>Email</span><input class="form-input" type="email" name="email" placeholder="VD: abc@email.com" /></label>
+                <label class="field"><span>CCCD</span><input class="form-input" type="text" name="cccd" placeholder="VD: 123456789012" /></label>
+                <label class="field"><span>Ngày sinh</span><input class="form-input" type="date" name="dob" /></label>
+                <label class="field"><span>Giới tính</span><select class="form-select" name="gender"><option value="Nam">Nam</option><option value="Nữ">Nữ</option><option value="Khác">Khác</option></select></label>
+                <label class="field"><span>Mật khẩu</span><input class="form-input" type="password" name="password" placeholder="Tối thiểu 8 ký tự" /></label>
+                <label class="field"><span>Nhập lại mật khẩu</span><input class="form-input" type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" /></label>
+            </div>
+
+            <div class="portal-auth-actions">
+                <button type="submit" class="btn btn-primary portal-auth-action">Tạo tài khoản</button>
+                <button type="button" class="btn btn-ghost portal-auth-action" data-auth-tab="login">Quay lại đăng nhập</button>
+            </div>
+        </form>
+    </section>
 </div>
+
+@section Scripts {
+<script>
+(() => {
+    const tabButtons = Array.from(document.querySelectorAll('.portal-auth-tab'));
+    const authTabs = Array.from(document.querySelectorAll('[data-auth-tab]'));
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    function switchTab(tab) {
+        const isLogin = tab === 'login';
+        loginForm.classList.toggle('hidden', !isLogin);
+        registerForm.classList.toggle('hidden', isLogin);
+        tabButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.authTab === tab));
+    }
+
+    authTabs.forEach((btn) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.authTab));
+    });
+})();
+</script>
+}

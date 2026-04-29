@@ -37,6 +37,10 @@ public class DatLichModel : PageModel
     public async Task<IActionResult> OnPostAsync(DateOnly ngay)
     {
         NgayChon = ngay;
+        if (NgayChon == default)
+        {
+            NgayChon = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
+        }
 
         if (!ModelState.IsValid || IdCaLamViec <= 0 || IdDichVu <= 0)
         {
@@ -69,20 +73,16 @@ public class DatLichModel : PageModel
 
     private async Task TaiDuLieuAsync(DateOnly ngay)
     {
-        var caTask = _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
             SoTrang: 1,
             KichThuocTrang: 50,
             TuNgay: ngay,
             DenNgay: ngay,
             ConTrong: true));
 
-        var dvTask = _mediator.Send(new DanhSachDichVuQuery(
+        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(
             SoTrang: 1,
             KichThuocTrang: 100,
             HienThi: true));
-
-        await Task.WhenAll(caTask, dvTask);
-        DanhSachCa = caTask.Result;
-        DanhSachDichVu = dvTask.Result;
     }
 }

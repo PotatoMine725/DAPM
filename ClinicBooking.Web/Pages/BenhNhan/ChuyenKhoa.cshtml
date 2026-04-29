@@ -1,0 +1,62 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.ChuyenKhoaModel
+@{
+    ViewData["Title"] = "Chuyên khoa";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Chuyên khoa</h1>
+        <div class="page-subtitle">Xem thông tin công khai của bác sĩ theo chuyên khoa.</div>
+    </div>
+</div>
+
+<div class="card section-stack">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:240px;">
+            <label class="form-label" for="chuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="chuyenKhoa" name="chuyenKhoa">
+                <option value="">— Tất cả —</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck" selected="@(Model.ChuyenKhoa == ck ? "selected" : null)">@ck</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-secondary"><i class="ph ph-funnel"></i> Lọc</button>
+        </div>
+    </form>
+</div>
+
+<div class="panel-grid-3" style="margin-top: var(--space-4);">
+    @foreach (var bacSi in Model.DanhSachBacSi)
+    {
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    <i class="ph ph-user-md"></i> @bacSi.HoTen
+                </span>
+                <span class="badge badge-success">Công khai</span>
+            </div>
+            <div style="padding: var(--space-4);" class="section-stack">
+                <div class="summary-item">
+                    <span class="summary-label">Chuyên khoa</span>
+                    <span>@bacSi.TenChuyenKhoa</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Kinh nghiệm</span>
+                    <span>@bacSi.KinhNghiem</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Phòng khám</span>
+                    <span>@bacSi.PhongLamViec</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Mô tả</span>
+                    <span>@bacSi.MoTa</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
