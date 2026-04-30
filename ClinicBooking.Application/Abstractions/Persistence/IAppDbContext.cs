@@ -1,10 +1,13 @@
 using ClinicBooking.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ClinicBooking.Application.Abstractions.Persistence;
 
 public interface IAppDbContext
 {
+    DatabaseFacade Database { get; }
+
     DbSet<TaiKhoan> TaiKhoan { get; }
     DbSet<BenhNhan> BenhNhan { get; }
     DbSet<BacSi> BacSi { get; }

@@ -131,8 +131,33 @@ public sealed class DoiLichHenHandlerTests
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec moi da het slot.");
-        // Lich cu van giu nguyen trang thai ChoXacNhan.
         var lhCuSau = await db.LichHen.AsNoTracking().FirstAsync(x => x.IdLichHen == lh.IdLichHen);
         lhCuSau.TrangThai.Should().Be(TrangThaiLichHen.ChoXacNhan);
+        await d.Notif.DidNotReceive().GuiThongBaoDoiLichHenAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_KhongGiaiPhongDuocSlotCaCu_ThrowConflict()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+        var bn = TestDataSeeder.SeedBenhNhan(db);
+        var caCu = TestDataSeeder.SeedCaLamViec(db);
+        var caMoi = TestDataSeeder.SeedCaLamViec(db);
+        var lh = TestDataSeeder.SeedLichHen(db, bn.IdBenhNhan, caCu.IdCaLamViec, trangThai: TrangThaiLichHen.ChoXacNhan);
+        var d = CreateDeps(VaiTro.LeTan);
+        d.Scheduling.LayThongTinCaAsync(caMoi.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinOk(caMoi.IdCaLamViec));
+        d.Scheduling.KiemTraSlotTrongAsync(caMoi.IdCaLamViec, Arg.Any<CancellationToken>())
+            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        d.Scheduling.IncrementSoSlotDaDatAsync(caMoi.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
+        d.Scheduling.IncrementSoSlotDaDatAsync(caCu.IdCaLamViec, -1, Arg.Any<CancellationToken>()).Returns((int?)null);
+
+        var handler = new DoiLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var act = async () => await handler.Handle(
+            new DoiLichHenCommand(lh.IdLichHen, caMoi.IdCaLamViec, null, null, null, null, null),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("Khong the giai phong slot cua ca cu.");
+        await d.Notif.DidNotReceive().GuiThongBaoDoiLichHenAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 }

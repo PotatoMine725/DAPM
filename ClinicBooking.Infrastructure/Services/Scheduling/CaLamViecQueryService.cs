@@ -98,4 +98,56 @@ public class CaLamViecQueryService : ICaLamViecQueryService
             .Select(c => (int?)c.SoSlotDaDat)
             .FirstAsync(cancellationToken);
     }
+
+    public async Task<int> ChayReconSlotAsync(CancellationToken cancellationToken = default)
+    {
+        // Recon rule tam thoi:
+        // - SoSlotDaDat = so LichHen dang ton tai va khong bi Huy/QuaHan/KhongDen/HoanThanh?
+        // - cong them so GiuCho con hieu luc
+        // - neu khac gia tri dang luu thi cap nhat ve gia tri doi soat
+        //
+        // Do concurrency + logic domain phuc tap, job nay chi sua cac truong hop lech ro rang,
+        // con case mo/khac nghia se de lai log de xem tiep.
+
+        var now = _dateTimeProvider.UtcNow;
+
+        var caCanRecon = await _db.CaLamViec
+            .AsNoTracking()
+            .Select(c => new
+            {
+                c.IdCaLamViec,
+                c.SoSlotDaDat,
+                c.SoSlotToiDa,
+                TongLichHen = _db.LichHen.Count(lh => lh.IdCaLamViec == c.IdCaLamViec &&
+                                                     lh.TrangThai != TrangThaiLichHen.HuyBenhNhan &&
+                                                     lh.TrangThai != TrangThaiLichHen.HuyPhongKham &&
+                                                     lh.TrangThai != TrangThaiLichHen.DaQuaHan &&
+                                                     lh.TrangThai != TrangThaiLichHen.KhongDen),
+                TongGiuCho = _db.GiuCho.Count(gc => gc.IdCaLamViec == c.IdCaLamViec && !gc.DaGiaiPhong && gc.GioHetHan > now)
+            })
+            .ToListAsync(cancellationToken);
+
+        var daCapNhat = 0;
+        foreach (var item in caCanRecon)
+        {
+            var soSlotTinhLai = item.TongLichHen + item.TongGiuCho;
+            if (soSlotTinhLai < 0 || soSlotTinhLai > item.SoSlotToiDa)
+            {
+                continue;
+            }
+
+            if (soSlotTinhLai == item.SoSlotDaDat)
+            {
+                continue;
+            }
+
+            daCapNhat += await _db.CaLamViec
+                .Where(c => c.IdCaLamViec == item.IdCaLamViec)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(c => c.SoSlotDaDat, soSlotTinhLai),
+                    cancellationToken);
+        }
+
+        return daCapNhat;
+    }
 }

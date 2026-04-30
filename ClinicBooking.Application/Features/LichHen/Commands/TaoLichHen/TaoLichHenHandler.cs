@@ -109,83 +109,76 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             throw new ConflictException(LyDoTuChoiMessage(ketQuaKiemTra.LyDoTuChoi));
         }
 
-        // 5. Chiem slot bang atomic increment; SoSlot ordinal = gia tri tra ve.
-        var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-            request.IdCaLamViec, 1, cancellationToken);
-
-        if (soSlotMoi is null)
-        {
-            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back vi UPDATE khong chay.
-            throw new ConflictException("Ca lam viec da het slot.");
-        }
-
-        // 6. Sinh MaLichHen + insert LichHen + LichSuLichHen.
-        var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCa.NgayLamViec, cancellationToken);
-
-        var lichHen = new LichHenEntity
-        {
-            MaLichHen = maLichHen,
-            IdBenhNhan = idBenhNhan,
-            IdCaLamViec = request.IdCaLamViec,
-            IdDichVu = request.IdDichVu,
-            SoSlot = soSlotMoi.Value,
-            HinhThucDat = hinhThucDat,
-            IdBacSiMongMuon = request.IdBacSiMongMuon,
-            BacSiMongMuonNote = request.BacSiMongMuonNote,
-            TrieuChung = request.TrieuChung,
-            TrangThai = TrangThaiLichHen.ChoXacNhan,
-            NgayTao = now
-        };
-        _db.LichHen.Add(lichHen);
-
-        _db.LichSuLichHen.Add(new LichSuLichHenEntity
-        {
-            LichHen = lichHen,
-            HanhDong = HanhDongLichSu.DatMoi,
-            IdNguoiThucHien = _currentUser.IdTaiKhoan,
-            NgayTao = now
-        });
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
+            // 5. Chiem slot bang atomic increment; SoSlot ordinal = gia tri tra ve.
+            var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
+                request.IdCaLamViec, 1, cancellationToken);
+
+            if (soSlotMoi is null)
+            {
+                throw new ConflictException("Ca lam viec da het slot.");
+            }
+
+            // 6. Sinh MaLichHen + insert LichHen + LichSuLichHen.
+            var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCa.NgayLamViec, cancellationToken);
+
+            var lichHen = new LichHenEntity
+            {
+                MaLichHen = maLichHen,
+                IdBenhNhan = idBenhNhan,
+                IdCaLamViec = request.IdCaLamViec,
+                IdDichVu = request.IdDichVu,
+                SoSlot = soSlotMoi.Value,
+                HinhThucDat = hinhThucDat,
+                IdBacSiMongMuon = request.IdBacSiMongMuon,
+                BacSiMongMuonNote = request.BacSiMongMuonNote,
+                TrieuChung = request.TrieuChung,
+                TrangThai = TrangThaiLichHen.ChoXacNhan,
+                NgayTao = now
+            };
+            _db.LichHen.Add(lichHen);
+
+            _db.LichSuLichHen.Add(new LichSuLichHenEntity
+            {
+                LichHen = lichHen,
+                HanhDong = HanhDongLichSu.DatMoi,
+                IdNguoiThucHien = _currentUser.IdTaiKhoan,
+                NgayTao = now
+            });
+
             await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            // 7. Notification fire-and-forget.
+            await _notificationService.GuiThongBaoTaoLichHenAsync(lichHen.IdLichHen, cancellationToken);
+
+            return new LichHenResponse(
+                lichHen.IdLichHen,
+                lichHen.MaLichHen,
+                lichHen.IdBenhNhan,
+                benhNhan.HoTen,
+                lichHen.IdCaLamViec,
+                thongTinCa.NgayLamViec,
+                thongTinCa.GioBatDau,
+                thongTinCa.GioKetThuc,
+                lichHen.IdDichVu,
+                dichVu.TenDichVu,
+                lichHen.SoSlot,
+                lichHen.HinhThucDat,
+                lichHen.IdBacSiMongMuon,
+                lichHen.BacSiMongMuonNote,
+                lichHen.TrieuChung,
+                lichHen.TrangThai,
+                lichHen.NgayTao);
         }
-        catch (DbUpdateException)
+        catch
         {
-            // Unique index (IdCaLamViec, SoSlot) backstop — roll back counter va rethrow.
-            try
-            {
-                await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-                    request.IdCaLamViec, -1, cancellationToken);
-            }
-            catch
-            {
-                // Reconciliation job se dong bo sau.
-            }
-            throw new ConflictException("Khong the dat lich do va cham slot. Vui long thu lai.");
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
-
-        // 7. Notification fire-and-forget.
-        await _notificationService.GuiThongBaoTaoLichHenAsync(lichHen.IdLichHen, cancellationToken);
-
-        return new LichHenResponse(
-            lichHen.IdLichHen,
-            lichHen.MaLichHen,
-            lichHen.IdBenhNhan,
-            benhNhan.HoTen,
-            lichHen.IdCaLamViec,
-            thongTinCa.NgayLamViec,
-            thongTinCa.GioBatDau,
-            thongTinCa.GioKetThuc,
-            lichHen.IdDichVu,
-            dichVu.TenDichVu,
-            lichHen.SoSlot,
-            lichHen.HinhThucDat,
-            lichHen.IdBacSiMongMuon,
-            lichHen.BacSiMongMuonNote,
-            lichHen.TrieuChung,
-            lichHen.TrangThai,
-            lichHen.NgayTao);
     }
 
     private static string LyDoTuChoiMessage(LyDoKhongDatDuoc? lyDo) => lyDo switch

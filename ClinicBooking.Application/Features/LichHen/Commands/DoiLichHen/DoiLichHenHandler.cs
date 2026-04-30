@@ -11,6 +11,7 @@ using LichHenEntity = ClinicBooking.Domain.Entities.LichHen;
 using LichSuLichHenEntity = ClinicBooking.Domain.Entities.LichSuLichHen;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ClinicBooking.Application.Features.LichHen.Commands.DoiLichHen;
 
@@ -108,98 +109,97 @@ public class DoiLichHenHandler : IRequestHandler<DoiLichHenCommand, LichHenRespo
             throw new ConflictException(LyDoTuChoiMessage(ketQua.LyDoTuChoi));
         }
 
-        // Chiem slot o ca moi truoc khi huy ca cu (de neu het slot thi khong mat lich cu).
-        var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-            request.IdCaLamViecMoi, 1, cancellationToken);
-        if (soSlotMoi is null)
-        {
-            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back.
-            throw new ConflictException("Ca lam viec moi da het slot.");
-        }
-
-        var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCaMoi.NgayLamViec, cancellationToken);
-
-        var lichHenMoi = new LichHenEntity
-        {
-            MaLichHen = maLichHen,
-            IdBenhNhan = lichHenCu.IdBenhNhan,
-            IdCaLamViec = request.IdCaLamViecMoi,
-            IdDichVu = idDichVuMoi,
-            SoSlot = soSlotMoi.Value,
-            HinhThucDat = lichHenCu.HinhThucDat,
-            IdBacSiMongMuon = request.IdBacSiMongMuon ?? lichHenCu.IdBacSiMongMuon,
-            BacSiMongMuonNote = request.BacSiMongMuonNote ?? lichHenCu.BacSiMongMuonNote,
-            TrieuChung = request.TrieuChung ?? lichHenCu.TrieuChung,
-            TrangThai = TrangThaiLichHen.ChoXacNhan,
-            NgayTao = now
-        };
-        _db.LichHen.Add(lichHenMoi);
-
-        // Huy lich hen cu.
-        lichHenCu.TrangThai = vaiTro == VaiTro.BenhNhan
-            ? TrangThaiLichHen.HuyBenhNhan
-            : TrangThaiLichHen.HuyPhongKham;
-
-        _db.LichSuLichHen.Add(new LichSuLichHenEntity
-        {
-            IdLichHen = lichHenCu.IdLichHen,
-            HanhDong = HanhDongLichSu.DoiLich,
-            IdNguoiThucHien = _currentUser.IdTaiKhoan,
-            LyDo = request.LyDo,
-            NgayTao = now
-        });
-
-        _db.LichSuLichHen.Add(new LichSuLichHenEntity
-        {
-            LichHen = lichHenMoi,
-            HanhDong = HanhDongLichSu.DatMoi,
-            IdNguoiThucHien = _currentUser.IdTaiKhoan,
-            IdLichHenTruoc = lichHenCu.IdLichHen,
-            NgayTao = now
-        });
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
+            // Chiem slot o ca moi truoc khi huy ca cu (de neu het slot thi khong mat lich cu).
+            var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
+                request.IdCaLamViecMoi, 1, cancellationToken);
+            if (soSlotMoi is null)
+            {
+                throw new ConflictException("Ca lam viec moi da het slot.");
+            }
+
+            var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCaMoi.NgayLamViec, cancellationToken);
+
+            var lichHenMoi = new LichHenEntity
+            {
+                MaLichHen = maLichHen,
+                IdBenhNhan = lichHenCu.IdBenhNhan,
+                IdCaLamViec = request.IdCaLamViecMoi,
+                IdDichVu = idDichVuMoi,
+                SoSlot = soSlotMoi.Value,
+                HinhThucDat = lichHenCu.HinhThucDat,
+                IdBacSiMongMuon = request.IdBacSiMongMuon ?? lichHenCu.IdBacSiMongMuon,
+                BacSiMongMuonNote = request.BacSiMongMuonNote ?? lichHenCu.BacSiMongMuonNote,
+                TrieuChung = request.TrieuChung ?? lichHenCu.TrieuChung,
+                TrangThai = TrangThaiLichHen.ChoXacNhan,
+                NgayTao = now
+            };
+            _db.LichHen.Add(lichHenMoi);
+
+            // Huy lich hen cu.
+            lichHenCu.TrangThai = vaiTro == VaiTro.BenhNhan
+                ? TrangThaiLichHen.HuyBenhNhan
+                : TrangThaiLichHen.HuyPhongKham;
+
+            _db.LichSuLichHen.Add(new LichSuLichHenEntity
+            {
+                IdLichHen = lichHenCu.IdLichHen,
+                HanhDong = HanhDongLichSu.DoiLich,
+                IdNguoiThucHien = _currentUser.IdTaiKhoan,
+                LyDo = request.LyDo,
+                NgayTao = now
+            });
+
+            _db.LichSuLichHen.Add(new LichSuLichHenEntity
+            {
+                LichHen = lichHenMoi,
+                HanhDong = HanhDongLichSu.DatMoi,
+                IdNguoiThucHien = _currentUser.IdTaiKhoan,
+                IdLichHenTruoc = lichHenCu.IdLichHen,
+                NgayTao = now
+            });
+
+            // Tra slot ca cu trong cung transaction de ca cu/ca moi luon dong bo.
+            var soSlotCaCu = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
+                lichHenCu.IdCaLamViec, -1, cancellationToken);
+            if (soSlotCaCu is null)
+            {
+                throw new ConflictException("Khong the giai phong slot cua ca cu.");
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException)
-        {
-            try { await _caLamViecQueryService.IncrementSoSlotDaDatAsync(request.IdCaLamViecMoi, -1, cancellationToken); }
-            catch { /* reconciliation Wave 4 */ }
-            throw new ConflictException("Khong the doi lich do va cham slot. Vui long thu lai.");
-        }
+            await transaction.CommitAsync(cancellationToken);
 
-        // Tra slot ca cu — best effort.
-        try
-        {
-            await _caLamViecQueryService.IncrementSoSlotDaDatAsync(lichHenCu.IdCaLamViec, -1, cancellationToken);
+            await _notificationService.GuiThongBaoDoiLichHenAsync(
+                lichHenCu.IdLichHen, lichHenMoi.IdLichHen, cancellationToken);
+
+            return new LichHenResponse(
+                lichHenMoi.IdLichHen,
+                lichHenMoi.MaLichHen,
+                lichHenMoi.IdBenhNhan,
+                lichHenCu.BenhNhan.HoTen,
+                lichHenMoi.IdCaLamViec,
+                thongTinCaMoi.NgayLamViec,
+                thongTinCaMoi.GioBatDau,
+                thongTinCaMoi.GioKetThuc,
+                lichHenMoi.IdDichVu,
+                dichVu.TenDichVu,
+                lichHenMoi.SoSlot,
+                lichHenMoi.HinhThucDat,
+                lichHenMoi.IdBacSiMongMuon,
+                lichHenMoi.BacSiMongMuonNote,
+                lichHenMoi.TrieuChung,
+                lichHenMoi.TrangThai,
+                lichHenMoi.NgayTao);
         }
         catch
         {
-            // Reconciliation job Wave 4 se dong bo.
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
-
-        await _notificationService.GuiThongBaoDoiLichHenAsync(
-            lichHenCu.IdLichHen, lichHenMoi.IdLichHen, cancellationToken);
-
-        return new LichHenResponse(
-            lichHenMoi.IdLichHen,
-            lichHenMoi.MaLichHen,
-            lichHenMoi.IdBenhNhan,
-            lichHenCu.BenhNhan.HoTen,
-            lichHenMoi.IdCaLamViec,
-            thongTinCaMoi.NgayLamViec,
-            thongTinCaMoi.GioBatDau,
-            thongTinCaMoi.GioKetThuc,
-            lichHenMoi.IdDichVu,
-            dichVu.TenDichVu,
-            lichHenMoi.SoSlot,
-            lichHenMoi.HinhThucDat,
-            lichHenMoi.IdBacSiMongMuon,
-            lichHenMoi.BacSiMongMuonNote,
-            lichHenMoi.TrieuChung,
-            lichHenMoi.TrangThai,
-            lichHenMoi.NgayTao);
     }
 
     private static string LyDoTuChoiMessage(LyDoKhongDatDuoc? lyDo) => lyDo switch
