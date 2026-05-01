@@ -18,7 +18,6 @@ public sealed class DanhSachBenhNhanHandler : IRequestHandler<DanhSachBenhNhanQu
     {
         var query = _db.BenhNhan
             .AsNoTracking()
-            .Include(x => x.TaiKhoan)
             .AsQueryable();
 
         if (request.BiHanChe.HasValue)
@@ -39,20 +38,7 @@ public sealed class DanhSachBenhNhanHandler : IRequestHandler<DanhSachBenhNhanQu
             .ThenBy(x => x.IdBenhNhan)
             .Skip((request.SoTrang - 1) * request.KichThuocTrang)
             .Take(request.KichThuocTrang)
-            .Select(x => new BenhNhanResponse(
-                x.IdBenhNhan,
-                x.IdTaiKhoan,
-                x.HoTen,
-                x.TaiKhoan.SoDienThoai,
-                x.TaiKhoan.Email,
-                x.Cccd,
-                x.NgaySinh,
-                x.GioiTinh,
-                x.DiaChi,
-                x.SoLanHuyMuon,
-                x.BiHanChe,
-                x.NgayHetHanChe,
-                x.NgayTao))
+            .Select(BenhNhanResponse.Projection)
             .ToListAsync(cancellationToken);
     }
 }
