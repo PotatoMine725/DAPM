@@ -54,6 +54,8 @@ public sealed class HuyLichHenHandlerTests
 
         var sau = await db.LichHen.AsNoTracking().FirstAsync(x => x.IdLichHen == lh.IdLichHen);
         sau.TrangThai.Should().Be(TrangThaiLichHen.HuyPhongKham);
+        var bnSau = await db.BenhNhan.AsNoTracking().FirstAsync(x => x.IdBenhNhan == bn.IdBenhNhan);
+        bnSau.SoLanHuyMuon.Should().Be(0);
         var lichSu = await db.LichSuLichHen.AsNoTracking().FirstAsync(x => x.IdLichHen == lh.IdLichHen);
         lichSu.HanhDong.Should().Be(HanhDongLichSu.HuyPhongKham);
         lichSu.DanhDauHuyMuon.Should().BeFalse();
