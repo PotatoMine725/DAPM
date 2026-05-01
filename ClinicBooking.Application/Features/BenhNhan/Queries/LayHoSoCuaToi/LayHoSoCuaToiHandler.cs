@@ -23,13 +23,12 @@ public sealed class LayHoSoCuaToiHandler : IRequestHandler<LayHoSoCuaToiQuery, B
         var idTaiKhoan = _currentUser.IdTaiKhoan
             ?? throw new ForbiddenException("Khong xac dinh duoc nguoi dung hien tai.");
 
-        var result = await _db.BenhNhan
+        var entity = await _db.BenhNhan
             .AsNoTracking()
-            .Where(x => x.IdTaiKhoan == idTaiKhoan)
-            .Select(BenhNhanResponse.Projection)
-            .FirstOrDefaultAsync(cancellationToken)
+            .Include(x => x.TaiKhoan)
+            .FirstOrDefaultAsync(x => x.IdTaiKhoan == idTaiKhoan, cancellationToken)
             ?? throw new NotFoundException("Khong tim thay ho so benh nhan tuong ung voi tai khoan.");
 
-        return result;
+        return BenhNhanResponse.TuEntity(entity);
     }
 }

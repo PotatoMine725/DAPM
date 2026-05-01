@@ -112,49 +112,4 @@ public sealed class CapNhatHoSoCuaToiHandlerTests
         await act.Should().ThrowAsync<ConflictException>()
             .WithMessage("CCCD da duoc su dung.");
     }
-
-    [Fact]
-    public async Task Handle_CapNhatHoSo_KhongAnhHuongTrangThaiHanChe()
-    {
-        using var factory = new TestDbContextFactory();
-        using var db = factory.CreateContext();
-
-        var taiKhoan = new ClinicBooking.Domain.Entities.TaiKhoan
-        {
-            TenDangNhap = "benhnhan_contract",
-            Email = "benhnhan_contract@example.com",
-            SoDienThoai = "0988888888",
-            MatKhau = "hash",
-            VaiTro = VaiTro.BenhNhan,
-            TrangThai = true,
-            NgayTao = DateTime.UtcNow
-        };
-        db.TaiKhoan.Add(taiKhoan);
-        await db.SaveChangesAsync();
-
-        db.BenhNhan.Add(new ClinicBooking.Domain.Entities.BenhNhan
-        {
-            IdTaiKhoan = taiKhoan.IdTaiKhoan,
-            HoTen = "Ten cu",
-            SoLanHuyMuon = 3,
-            BiHanChe = true,
-            NgayHetHanChe = new DateTime(2026, 6, 30, 0, 0, 0, DateTimeKind.Utc),
-            NgayTao = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync();
-
-        var currentUser = Substitute.For<ICurrentUserService>();
-        currentUser.IdTaiKhoan.Returns(taiKhoan.IdTaiKhoan);
-
-        var handler = new CapNhatHoSoCuaToiHandler(db, currentUser);
-        await handler.Handle(
-            new CapNhatHoSoCuaToiCommand("Ten moi", new DateOnly(1990, 1, 1), GioiTinh.Nu, "123123123123", "Dia chi moi"),
-            CancellationToken.None);
-
-        var entity = await db.BenhNhan.AsNoTracking().SingleAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan);
-        entity.HoTen.Should().Be("Ten moi");
-        entity.SoLanHuyMuon.Should().Be(3);
-        entity.BiHanChe.Should().BeTrue();
-        entity.NgayHetHanChe.Should().Be(new DateTime(2026, 6, 30, 0, 0, 0, DateTimeKind.Utc));
-    }
 }

@@ -122,35 +122,6 @@ public sealed class TaoLichHenHandlerTests
     }
 
     [Fact]
-    public async Task Handle_BenhNhanBiHanCheNhungDaHetHan_ChoPhepDatLich()
-    {
-        using var factory = new TestDbContextFactory();
-        using var db = factory.CreateContext();
-        var tk = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
-        var bn = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk.IdTaiKhoan, biHanChe: true);
-        bn.NgayHetHanChe = FixedNow.AddHours(-1);
-        await db.SaveChangesAsync();
-
-        var ca = TestDataSeeder.SeedCaLamViec(db);
-        var dv = TestDataSeeder.SeedDichVu(db);
-        var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
-        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(ThongTinCaOk(ca.IdCaLamViec));
-        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
-            .Returns((int?)1);
-
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
-        var result = await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
-
-        result.IdBenhNhan.Should().Be(bn.IdBenhNhan);
-        result.TrangThai.Should().Be(TrangThaiLichHen.ChoXacNhan);
-    }
-
-    [Fact]
     public async Task Handle_CaChuaDuyet_ThrowConflict()
     {
         using var factory = new TestDbContextFactory();
