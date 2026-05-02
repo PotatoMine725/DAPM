@@ -29,4 +29,10 @@ public interface ICaLamViecQueryService
     /// </summary>
     /// <returns>Gia tri moi cua <c>SoSlotDaDat</c> sau khi cong, hoac null neu constraint vi pham.</returns>
     Task<int?> IncrementSoSlotDaDatAsync(int idCaLamViec, int delta, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Doi soat va sua cac ca lam viec co so lieu slot/giu cho bi lech.
+    /// Tra ve so ban ghi da duoc cap nhat.
+    /// </summary>
+    Task<int> ChayReconSlotAsync(CancellationToken cancellationToken = default);
 }

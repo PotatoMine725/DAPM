@@ -11,15 +11,15 @@
     </div>
 </div>
 
-<div class="card section-stack">
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
     <form method="get" class="filter-bar">
         <div class="form-group" style="margin:0; min-width:240px;">
-            <label class="form-label" for="chuyenKhoa">Chuyên khoa</label>
-            <select class="form-select" id="chuyenKhoa" name="chuyenKhoa">
+            <label class="form-label" for="idChuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="idChuyenKhoa" name="idChuyenKhoa">
                 <option value="">— Tất cả —</option>
                 @foreach (var ck in Model.DanhSachChuyenKhoa)
                 {
-                    <option value="@ck" selected="@(Model.ChuyenKhoa == ck ? "selected" : null)">@ck</option>
+                    <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoa == ck.IdChuyenKhoa ? "selected" : null)">@ck.TenChuyenKhoa</option>
                 }
             </select>
         </div>
@@ -29,34 +29,39 @@
     </form>
 </div>
 
-<div class="panel-grid-3" style="margin-top: var(--space-4);">
-    @foreach (var bacSi in Model.DanhSachBacSi)
-    {
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">
-                    <i class="ph ph-user-md"></i> @bacSi.HoTen
-                </span>
-                <span class="badge badge-success">Công khai</span>
-            </div>
-            <div style="padding: var(--space-4);" class="section-stack">
-                <div class="summary-item">
-                    <span class="summary-label">Chuyên khoa</span>
-                    <span>@bacSi.TenChuyenKhoa</span>
+@if (!Model.DanhSachBacSi.Any())
+{
+    <div class="card empty-state" style="padding: var(--space-8);">
+        <div class="empty-state-icon"><i class="ph ph-stethoscope"></i></div>
+        <p>Không có bác sĩ phù hợp với chuyên khoa đã chọn.</p>
+    </div>
+}
+else
+{
+    <div class="panel-grid-2">
+        @foreach (var bacSi in Model.DanhSachBacSi)
+        {
+            <article class="card doctor-card">
+                <div class="doctor-card__top">
+                    <div class="doctor-avatar">@bacSi.HoTen.Split(' ').LastOrDefault()?[0]</div>
+                    <div class="doctor-card__meta">
+                        <div class="doctor-name">@bacSi.HoTen</div>
+                        <div class="doctor-specialty">@bacSi.TenChuyenKhoa</div>
+                    </div>
+                    <span class="badge badge-success">Công khai</span>
                 </div>
-                <div class="summary-item">
-                    <span class="summary-label">Kinh nghiệm</span>
-                    <span>@bacSi.KinhNghiem</span>
+
+                <div class="doctor-card__body">
+                    <div class="summary-item">
+                        <span class="summary-label">Bằng cấp</span>
+                        <span>@bacSi.BangCap</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Số năm kinh nghiệm</span>
+                        <span>@bacSi.NamKinhNghiem</span>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <span class="summary-label">Phòng khám</span>
-                    <span>@bacSi.PhongLamViec</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Mô tả</span>
-                    <span>@bacSi.MoTa</span>
-                </div>
-            </div>
-        </div>
-    }
-</div>
+            </article>
+        }
+    </div>
+}

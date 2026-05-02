@@ -11,6 +11,7 @@ using ClinicBooking.Infrastructure.Security;
 using ClinicBooking.Infrastructure.Services;
 using ClinicBooking.Infrastructure.Services.Notifications;
 using ClinicBooking.Infrastructure.Services.Scheduling;
+using ClinicBooking.Infrastructure.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,8 @@ public static class DependencyInjection
             configuration.GetSection(JwtSettings.SectionName));
         services.Configure<AdminSeederSettings>(
             configuration.GetSection(AdminSeederSettings.SectionName));
+        services.Configure<OtpOptions>(
+            configuration.GetSection(OtpOptions.SectionName));
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -49,6 +52,7 @@ public static class DependencyInjection
             configuration.GetSection(LichHenOptions.SectionName));
 
         services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
+        services.AddScoped<IOtpService, OtpServiceStub>();
 
         // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
         services.AddScoped<INotificationService, NotificationServiceStub>();

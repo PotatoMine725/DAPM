@@ -1,7 +1,8 @@
 namespace ClinicBooking.Api.Contracts.LichHen;
 
 public record TaoLichHenRequest(
-    int IdCaLamViec,
+    DateOnly NgayLamViec,
+    TimeOnly GioMongMuon,
     int IdDichVu,
     int? IdBenhNhan = null,
     int? IdBacSiMongMuon = null,

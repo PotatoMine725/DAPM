@@ -3,12 +3,9 @@ using MediatR;
 
 namespace ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
 
-/// <summary>
-/// Tao moi mot lich hen. benh_nhan tu dat cho minh (khong truyen IdBenhNhan),
-/// le_tan dat ho (bat buoc truyen IdBenhNhan).
-/// </summary>
 public record TaoLichHenCommand(
-    int IdCaLamViec,
+    DateOnly NgayLamViec,
+    TimeOnly GioMongMuon,
     int IdDichVu,
     int? IdBenhNhan,
     int? IdBacSiMongMuon,
