@@ -161,8 +161,10 @@ public sealed class TaoLichHenHandlerTests
         var ca = TestDataSeeder.SeedCaLamViec(db);
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
-        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(ThongTinCaOk(ca.IdCaLamViec) with { TrangThaiDuyet = TrangThaiDuyetCa.ChoDuyet });
+        // Handler query DB truc tiep (loc TrangThaiDuyet == DaDuyet) nen phai mock KiemTraSlotTrongAsync.
+        // LayThongTinCaAsync khong duoc goi boi handler - chi KiemTraSlotTrongAsync moi quan trong.
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
+            .Returns(new KetQuaKiemTraSlotDto(false, 10, 0, 0, LyDoKhongDatDuoc.CaChuaDuyet));
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
@@ -193,7 +195,7 @@ public sealed class TaoLichHenHandlerTests
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot hoac bi xung dot cap nhat.");
     }
 
     [Fact]
