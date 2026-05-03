@@ -90,3 +90,6 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect(swaggerRootPath));
 
 app.Run();
+
+// Expose Program for WebApplicationFactory (integration tests)
+public partial class Program { }
