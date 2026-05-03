@@ -98,4 +98,35 @@ public class CaLamViecQueryService : ICaLamViecQueryService
             .Select(c => (int?)c.SoSlotDaDat)
             .FirstAsync(cancellationToken);
     }
+
+    public async Task<int> ChayReconSlotAsync(CancellationToken cancellationToken = default)
+    {
+        // Doi soat: dem lich hen con hieu luc theo tung ca, so voi SoSlotDaDat hien tai.
+        // Cap nhat nhung ca bi lech so lieu.
+        var caIds = await _db.CaLamViec
+            .AsNoTracking()
+            .Select(c => c.IdCaLamViec)
+            .ToListAsync(cancellationToken);
+
+        var soCapNhat = 0;
+        foreach (var id in caIds)
+        {
+            var soLichHenHopLe = await _db.LichHen.CountAsync(
+                lh => lh.IdCaLamViec == id &&
+                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.HuyBenhNhan &&
+                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.HuyPhongKham &&
+                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.KhongDen,
+                cancellationToken);
+
+            var rows = await _db.CaLamViec
+                .Where(c => c.IdCaLamViec == id && c.SoSlotDaDat != soLichHenHopLe)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(c => c.SoSlotDaDat, soLichHenHopLe),
+                    cancellationToken);
+
+            soCapNhat += rows;
+        }
+
+        return soCapNhat;
+    }
 }

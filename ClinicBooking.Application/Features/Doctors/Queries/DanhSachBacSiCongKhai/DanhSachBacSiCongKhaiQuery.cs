@@ -7,4 +7,5 @@ public sealed record DanhSachBacSiCongKhaiQuery(
     int SoTrang = 1,
     int KichThuocTrang = 20,
     int? IdChuyenKhoa = null,
-    string? TuKhoa = null) : IRequest<IReadOnlyList<BacSiPublicResponse>>;
+    string? TuKhoa = null,
+    bool? DangLamViec = null) : IRequest<IReadOnlyList<BacSiPublicResponse>>;

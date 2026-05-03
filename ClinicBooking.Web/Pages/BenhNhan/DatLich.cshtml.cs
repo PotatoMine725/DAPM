@@ -17,16 +17,22 @@ public class DatLichModel : PageModel
 
     public DatLichModel(IMediator mediator) => _mediator = mediator;
 
-    // Du lieu hien thi
     public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
     public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
     public DateOnly NgayChon { get; private set; }
+    public string ChuyenKhoaHienTai => string.IsNullOrWhiteSpace(TenChuyenKhoaDaChon) ? "Nội tổng quát" : TenChuyenKhoaDaChon;
+    public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
+    public bool CanSubmit => IdDichVu > 0;
 
-    // Form binding
-    [BindProperty] public int IdCaLamViec { get; set; }
     [BindProperty] public int IdDichVu { get; set; }
+    [BindProperty] public TimeOnly GioMongMuon { get; set; } = new TimeOnly(8, 0);
     [BindProperty] public string? TrieuChung { get; set; }
-    [BindProperty] public string? BacSiMongMuonNote { get; set; }
+    [BindProperty] public string? GhiChu { get; set; }
+    [BindProperty] public int? IdCaLamViec { get; set; }
+    [BindProperty] public string? Otp { get; set; }
+
+    public string? TenChuyenKhoaDaChon { get; private set; }
+    public string? TenDichVu { get; private set; }
 
     public async Task OnGetAsync(DateOnly? ngay)
     {
@@ -36,27 +42,24 @@ public class DatLichModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(DateOnly ngay)
     {
-        NgayChon = ngay;
-        if (NgayChon == default)
-        {
-            NgayChon = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
-        }
+        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
 
-        if (!ModelState.IsValid || IdCaLamViec <= 0 || IdDichVu <= 0)
+        if (!ModelState.IsValid || IdDichVu <= 0)
         {
             await TaiDuLieuAsync(NgayChon);
-            TempData["ErrorMessage"] = "Vui lòng chọn đầy đủ ca làm việc và dịch vụ.";
+            TempData["ErrorMessage"] = "Vui lòng chọn ngày, giờ và dịch vụ hợp lệ.";
             return Page();
         }
 
         try
         {
             var command = new TaoLichHenCommand(
-                IdCaLamViec,
+                NgayChon,
+                GioMongMuon,
                 IdDichVu,
-                IdBenhNhan: null, // benh_nhan tu dat — handler lay tu ICurrentUserService
+                IdBenhNhan: null,
                 IdBacSiMongMuon: null,
-                BacSiMongMuonNote,
+                BacSiMongMuonNote: GhiChu,
                 TrieuChung);
 
             var result = await _mediator.Send(command);
@@ -69,6 +72,14 @@ public class DatLichModel : PageModel
             await TaiDuLieuAsync(NgayChon);
             return Page();
         }
+    }
+
+    public async Task<IActionResult> OnPostGuiOtpAsync(DateOnly ngay)
+    {
+        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
+        await TaiDuLieuAsync(NgayChon);
+        TempData["SuccessMessage"] = "Đã gửi mã OTP (logic xác thực sẽ được ghép khi chốt contract OTP).";
+        return Page();
     }
 
     private async Task TaiDuLieuAsync(DateOnly ngay)

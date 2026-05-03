@@ -40,7 +40,8 @@ public class LichHenController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new TaoLichHenCommand(
-            request.IdCaLamViec,
+            request.NgayLamViec,
+            request.GioMongMuon,
             request.IdDichVu,
             request.IdBenhNhan,
             request.IdBacSiMongMuon,

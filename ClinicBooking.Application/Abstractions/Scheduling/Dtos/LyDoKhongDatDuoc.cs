@@ -15,5 +15,14 @@ public enum LyDoKhongDatDuoc
     CaDaDiQua,
 
     /// <summary>Ca khong ton tai trong he thong.</summary>
-    KhongTonTai
+    KhongTonTai,
+
+    /// <summary>Trang thai / du lieu slot khong hop le.</summary>
+    DuLieuKhongHopLe,
+
+    /// <summary>Yeu cau bi xung dot khi xu ly dong thoi.</summary>
+    DongThoiXungDot,
+
+    /// <summary>Ca khong kha dung de dat/giu cho.</summary>
+    CaKhongKhaDung
 }

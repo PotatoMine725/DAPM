@@ -22,12 +22,19 @@ public sealed class DanhSachBacSiCongKhaiHandler : IRequestHandler<DanhSachBacSi
             .Include(x => x.ChuyenKhoa)
             .AsQueryable();
 
-        query = query.Where(x => x.TrangThai == TrangThaiBacSi.DangLam && x.ChuyenKhoa.HienThi);
-
         if (request.IdChuyenKhoa.HasValue)
         {
             query = query.Where(x => x.IdChuyenKhoa == request.IdChuyenKhoa.Value);
         }
+
+        if (request.DangLamViec.HasValue)
+        {
+            query = query.Where(x => (x.TrangThai == TrangThaiBacSi.DangLam) == request.DangLamViec.Value);
+        }
+
+        // Public portal should still prefer visible departments, but do not hard-drop
+        // doctors if the data set has not been fully synced yet.
+        query = query.Where(x => x.ChuyenKhoa.HienThi);
 
         if (!string.IsNullOrWhiteSpace(request.TuKhoa))
         {

@@ -8,9 +8,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">Chi tiết lịch hẹn</h1>
-        <div class="page-subtitle" style="margin-top: var(--space-1); color: var(--color-text-secondary); font-size: 13px;">
-            Xem đầy đủ thông tin lịch hẹn và lịch sử trạng thái.
-        </div>
+        <div class="page-subtitle">Xem thông tin lịch hẹn, trạng thái và lịch sử xử lý.</div>
     </div>
     <div class="action-bar">
         <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">
@@ -29,7 +27,7 @@
     <div class="section-stack">
         <div class="card">
             <div class="card-header">
-                <span class="card-title">Thông tin lịch hẹn</span>
+                <span class="card-title">Tổng quan lịch hẹn</span>
                 @Html.Raw(BadgeHelper.TrangThaiLichHen(Model.LichHen.TrangThai))
             </div>
 
@@ -43,16 +41,16 @@
                     <div class="detail-value">@Model.LichHen.NgayLamViec.ToString("dd/MM/yyyy")</div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">Giờ khám</div>
+                    <div class="detail-label">Khung giờ</div>
                     <div class="detail-value">@Model.LichHen.GioBatDau.ToString("HH:mm") - @Model.LichHen.GioKetThuc.ToString("HH:mm")</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Dịch vụ</div>
-                    <div class="detail-value">@Model.LichHen.TenDichVu</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Số thứ tự</div>
                     <div class="detail-value">@Model.LichHen.SoSlot</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Dịch vụ</div>
+                    <div class="detail-value">@Model.LichHen.TenDichVu</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Ngày đặt</div>
@@ -63,7 +61,7 @@
 
         <div class="card">
             <div class="card-header">
-                <span class="card-title">Thông tin liên quan</span>
+                <span class="card-title">Thông tin người khám</span>
             </div>
 
             <div class="detail-grid">
@@ -84,7 +82,7 @@
                     <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.LichHen.BacSiMongMuonNote) ? "—" : Model.LichHen.BacSiMongMuonNote)</div>
                 </div>
                 <div class="detail-item detail-span-2">
-                    <div class="detail-label">Triệu chứng</div>
+                    <div class="detail-label">Triệu chứng / lý do khám</div>
                     <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.LichHen.TrieuChung) ? "—" : Model.LichHen.TrieuChung)</div>
                 </div>
             </div>
@@ -122,7 +120,7 @@
             </div>
             @if (!Model.LichSu.Any())
             {
-                <div class="empty-state">
+                <div class="empty-state" style="padding: var(--space-8);">
                     <div class="empty-state-icon"><i class="ph ph-clock-counter-clockwise"></i></div>
                     <p>Chưa có lịch sử trạng thái.</p>
                 </div>
