@@ -1,0 +1,175 @@
+@page "{idLichHen:int}"
+@model ClinicBooking.Web.Pages.BenhNhan.LichHenModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Chi tiết lịch hẹn";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Chi tiết lịch hẹn</h1>
+        <div class="page-subtitle">Xem thông tin lịch hẹn, trạng thái và lịch sử xử lý.</div>
+    </div>
+    <div class="action-bar">
+        <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">
+            <i class="ph ph-arrow-left"></i> Quay lại danh sách
+        </a>
+        @if (Model.LichHen.TrangThai == TrangThaiLichHen.ChoXacNhan || Model.LichHen.TrangThai == TrangThaiLichHen.DaXacNhan)
+        {
+            <button type="button" class="btn btn-danger" onclick="openModal('modal-huy-lich-hen')">
+                <i class="ph ph-x-circle"></i> Huỷ lịch hẹn
+            </button>
+        }
+    </div>
+</div>
+
+<div class="panel-grid-2">
+    <div class="section-stack">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Tổng quan lịch hẹn</span>
+                @Html.Raw(BadgeHelper.TrangThaiLichHen(Model.LichHen.TrangThai))
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Mã lịch hẹn</div>
+                    <div class="detail-value table-code">@Model.LichHen.MaLichHen</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ngày khám</div>
+                    <div class="detail-value">@Model.LichHen.NgayLamViec.ToString("dd/MM/yyyy")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Khung giờ</div>
+                    <div class="detail-value">@Model.LichHen.GioBatDau.ToString("HH:mm") - @Model.LichHen.GioKetThuc.ToString("HH:mm")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Số thứ tự</div>
+                    <div class="detail-value">@Model.LichHen.SoSlot</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Dịch vụ</div>
+                    <div class="detail-value">@Model.LichHen.TenDichVu</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ngày đặt</div>
+                    <div class="detail-value">@Model.LichHen.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Thông tin người khám</span>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Người khám</div>
+                    <div class="detail-value">@Model.LichHen.HoTenBenhNhan</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Hình thức đặt</div>
+                    <div class="detail-value">@Model.LichHen.HinhThucDat</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Bác sĩ mong muốn</div>
+                    <div class="detail-value">@(Model.LichHen.IdBacSiMongMuon.HasValue ? $"#{Model.LichHen.IdBacSiMongMuon}" : "—")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ghi chú</div>
+                    <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.LichHen.BacSiMongMuonNote) ? "—" : Model.LichHen.BacSiMongMuonNote)</div>
+                </div>
+                <div class="detail-item detail-span-2">
+                    <div class="detail-label">Triệu chứng / lý do khám</div>
+                    <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.LichHen.TrieuChung) ? "—" : Model.LichHen.TrieuChung)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-stack">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Tóm tắt nhanh</span>
+            </div>
+            <div class="summary-stack">
+                <div class="summary-item">
+                    <span class="summary-label">Trạng thái</span>
+                    <span>@Html.Raw(BadgeHelper.TrangThaiLichHen(Model.LichHen.TrangThai))</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Ca làm việc</span>
+                    <span class="table-code">#@Model.LichHen.IdCaLamViec</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Dịch vụ</span>
+                    <span>@Model.LichHen.TenDichVu</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Mã BN</span>
+                    <span class="table-code">#@Model.LichHen.IdBenhNhan</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Lịch sử trạng thái</span>
+            </div>
+            @if (!Model.LichSu.Any())
+            {
+                <div class="empty-state" style="padding: var(--space-8);">
+                    <div class="empty-state-icon"><i class="ph ph-clock-counter-clockwise"></i></div>
+                    <p>Chưa có lịch sử trạng thái.</p>
+                </div>
+            }
+            else
+            {
+                <div class="timeline">
+                    @foreach (var item in Model.LichSu)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div>
+                                <div class="timeline-title">@item.HanhDong</div>
+                                <div class="timeline-meta">@item.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.LichHen.TrangThai == TrangThaiLichHen.ChoXacNhan || Model.LichHen.TrangThai == TrangThaiLichHen.DaXacNhan)
+{
+    <div id="modal-huy-lich-hen" class="modal-overlay" hidden>
+        <div class="modal-box" style="max-width: 480px;">
+            <div class="modal-header">
+                <span class="modal-title">Huỷ lịch hẹn</span>
+                <button type="button" class="btn btn-ghost btn-icon" onclick="closeModal('modal-huy-lich-hen')">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="form-hint" style="margin-bottom: var(--space-4);">
+                    Bạn có chắc muốn huỷ lịch hẹn <strong>@Model.LichHen.MaLichHen</strong>? Hành động này không thể hoàn tác.
+                </p>
+                <form method="post" asp-page-handler="Huy">
+                    <input type="hidden" name="idLichHen" value="@Model.LichHen.IdLichHen" />
+                    <div class="form-group">
+                        <label class="form-label">Lý do huỷ (tuỳ chọn)</label>
+                        <input type="text" class="form-input" name="lyDo" maxlength="200" placeholder="Nhập lý do..." />
+                    </div>
+                    <div class="modal-footer" style="padding-left:0; padding-right:0; border-top:none; background:transparent;">
+                        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-huy-lich-hen')">Đóng</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

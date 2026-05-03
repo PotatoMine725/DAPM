@@ -1,0 +1,179 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.ThongBaoModel
+@{
+    ViewData["Title"] = "Thông báo";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            Thông báo
+            @if (Model.DanhSach.SoChuaDoc > 0)
+            {
+                <span class="badge badge-danger" style="font-size:13px; margin-left:8px;">@Model.DanhSach.SoChuaDoc chưa đọc</span>
+            }
+        </h1>
+        <div class="page-subtitle" style="margin-top: var(--space-1); color: var(--color-text-secondary); font-size: 13px;">
+            Theo dõi các cập nhật từ phòng khám.
+        </div>
+    </div>
+    @if (Model.DanhSach.SoChuaDoc > 0)
+    {
+        <form method="post" asp-page-handler="DocTatCa">
+            <button type="submit" class="btn btn-secondary btn-sm">
+                <i class="ph ph-checks"></i> Đánh dấu tất cả đã đọc
+            </button>
+        </form>
+    }
+</div>
+
+<div class="card section-stack" style="margin-bottom: var(--space-4);">
+    <div class="filter-bar">
+        <span style="color:var(--color-text-secondary); font-size:14px;">Lọc</span>
+        <div class="filter-actions">
+            <a href="/BenhNhan/ThongBao"
+               class="btn btn-sm @(Model.ChiChuaDocFilter == null ? "btn-primary" : "btn-secondary")">
+                Tất cả
+            </a>
+            <a href="/BenhNhan/ThongBao?chiChuaDoc=true"
+               class="btn btn-sm @(Model.ChiChuaDocFilter == true ? "btn-primary" : "btn-secondary")">
+                Chưa đọc
+                @if (Model.DanhSach.SoChuaDoc > 0)
+                {
+                    <span class="badge badge-danger" style="margin-left:4px;">@Model.DanhSach.SoChuaDoc</span>
+                }
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    @if (!Model.DanhSach.Items.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-bell-slash"></i></div>
+            <p>
+                @if (Model.ChiChuaDocFilter == true)
+                {
+                    <text>Không có thông báo chưa đọc.</text>
+                }
+                else
+                {
+                    <text>Bạn chưa có thông báo nào.</text>
+                }
+            </p>
+            @if (Model.ChiChuaDocFilter == true)
+            {
+                <a href="/BenhNhan/ThongBao" class="btn btn-secondary btn-sm">Xem tất cả</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div>
+            <div style="padding: var(--space-2) var(--space-4); font-size:13px; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">
+                @Model.DanhSach.TongSo thông báo
+            </div>
+
+            @foreach (var tb in Model.DanhSach.Items)
+            {
+                <div class="thong-bao-item @(tb.DaDoc ? "" : "thong-bao-item--chua-doc")">
+                    <div class="thong-bao-dot @(tb.DaDoc ? "" : "thong-bao-dot--chua-doc")"></div>
+
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-2);">
+                            <div>
+                                <div style="font-weight: @(tb.DaDoc ? "400" : "600"); font-size:14px; line-height:1.4;">
+                                    @tb.TieuDe
+                                </div>
+                                <div style="font-size:13px; color:var(--color-text-secondary); margin-top:4px; line-height:1.5;">
+                                    @tb.NoiDung
+                                </div>
+                            </div>
+
+                            @if (!tb.DaDoc)
+                            {
+                                <form method="post" asp-page-handler="Doc" style="flex-shrink:0;">
+                                    <input type="hidden" name="idThongBao" value="@tb.IdThongBao" />
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            style="white-space:nowrap; font-size:12px; padding:3px 10px;">
+                                        Đánh dấu đọc
+                                    </button>
+                                </form>
+                            }
+                        </div>
+
+                        <div style="display:flex; gap:var(--space-4); margin-top:6px; font-size:12px; color:var(--color-text-muted, #9ca3af); flex-wrap:wrap;">
+                            @if (tb.NgayGui.HasValue)
+                            {
+                                <span><i class="ph ph-clock"></i> @tb.NgayGui.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            }
+                            <span>
+                                <i class="ph ph-@(tb.KenhGui.ToString().ToLower() switch {
+                                    "email" => "envelope",
+                                    "sms" => "chat-text",
+                                    _ => "bell"
+                                })"></i>
+                                @(tb.KenhGui switch {
+                                    ClinicBooking.Domain.Enums.KenhGui.Email => "Email",
+                                    ClinicBooking.Domain.Enums.KenhGui.Sms => "SMS",
+                                    ClinicBooking.Domain.Enums.KenhGui.TrongApp => "Trong ứng dụng",
+                                    _ => tb.KenhGui.ToString()
+                                })
+                            </span>
+                            @if (tb.IdThamChieu.HasValue && tb.LoaiThamChieu == ClinicBooking.Domain.Enums.LoaiThamChieu.LichHen)
+                            {
+                                <a href="/BenhNhan/LichHen/@tb.IdThamChieu"
+                                   style="color:var(--color-primary); text-decoration:none;">
+                                    <i class="ph ph-arrow-square-out"></i> Xem lịch hẹn
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.TongSoTrang > 1)
+        {
+            <div style="display:flex; justify-content:center; gap:var(--space-2); padding: var(--space-4); flex-wrap:wrap;">
+                @for (int i = 1; i <= Model.TongSoTrang; i++)
+                {
+                    var trang = i;
+                    <a href="/BenhNhan/ThongBao?soTrang=@trang@(Model.ChiChuaDocFilter == true ? "&chiChuaDoc=true" : "")"
+                       class="btn btn-sm @(trang == Model.DanhSach.SoTrang ? "btn-primary" : "btn-secondary")">
+                        @trang
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+<style>
+.thong-bao-item {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    transition: background 0.1s;
+}
+.thong-bao-item:last-child { border-bottom: none; }
+.thong-bao-item:hover { background: var(--color-neutral-bg); }
+.thong-bao-item--chua-doc { background: var(--color-active-bg, #eff6ff); }
+.thong-bao-item--chua-doc:hover { background: #dbeafe; }
+
+.thong-bao-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+    background: transparent;
+}
+.thong-bao-dot--chua-doc {
+    background: var(--color-primary, #2563eb);
+}
+</style>
+}

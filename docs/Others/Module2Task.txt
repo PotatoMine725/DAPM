@@ -1,0 +1,253 @@
+===========================================================================
+CODE REVIEW & TASK DELEGATION — MODULE 2
+Branch : feature/module2-doctors-scheduling → develop
+Date   : 2026-04-24
+From   : Architect / Module 1 Owner
+To     : Module 2 Owner
+===========================================================================
+
+OVERVIEW
+--------
+The branch delivers the full BacSi CRUD (internal), BacSi profile
+self-service, public doctor listing, public shift listing, the real
+CaLamViecQueryService implementation, public catalog endpoints, and a
+unit-test suite for all new handlers. Architecture is correctly layered
+and naming conventions are respected.
+
+However, there are 3 blockers that must be fixed before this PR can be
+merged, plus a set of follow-up tasks graded by urgency.
+
+===========================================================================
+🔴  BLOCKERS — fix before this PR merges into develop
+===========================================================================
+
+B1. MISSING VALIDATORS FOR TaoBacSiCommand AND CapNhatBacSiCommand
+--------------------------------------------------------------------
+Every other command in this codebase has a Validator.cs (TaoBenhNhanWalkIn,
+TaoThuoc, TaoToaThuoc, etc.). Both TaoBacSiCommand and CapNhatBacSiCommand
+accept LoaiHopDong and TrangThai as raw strings and call
+Enum.Parse(..., ignoreCase: true) inside the handler. If an invalid string
+is sent, the handler throws an unhandled ArgumentException — not a clean
+400 Bad Request. The ValidationBehavior pipeline never runs because there
+is no validator registered.
+
+  Required:
+  - Add TaoBacSiValidator.cs  in Features/BacSi/Commands/TaoBacSi/
+  - Add CapNhatBacSiValidator.cs in Features/BacSi/Commands/CapNhatBacSi/
+  Each must validate:
+    · HoTen is not empty / not null
+    · LoaiHopDong is a valid enum name  (Enum.IsDefined(typeof(LoaiHopDong), value))
+    · TrangThai is a valid enum name    (Enum.IsDefined(typeof(TrangThaiBacSi), value))
+    · IdChuyenKhoa > 0, IdTaiKhoan > 0
+
+B2. XoaBacSi IS A HARD DELETE — must become a soft deactivation
+---------------------------------------------------------------
+XoaBacSiHandler calls _db.BacSi.Remove(entity) and deletes the row.
+BacSi is a FK target for CaLamViec, HoSoKham, DanhSachLichHen, LichNoiTru,
+and DonNghiPhep. Deleting a doctor with historical records will either
+throw a FK violation or cascade-delete appointment and queue data —
+both are unacceptable in a clinic system.
+
+  Required:
+  - Replace _db.BacSi.Remove(entity) with:
+      entity.TrangThai = TrangThaiBacSi.NghiViec;
+      await _db.SaveChangesAsync(cancellationToken);
+  - Add a guard before deactivating:
+      if any CaLamViec for this doctor has TrangThaiDuyet == DaDuyet
+      AND NgayLamViec > today → throw ConflictException(
+        "Bac si con ca lam viec sap toi, khong the xoa.")
+
+B3. TaoBacSi DOES NOT VERIFY THE LINKED ACCOUNT HAS VaiTro.BacSi
+-----------------------------------------------------------------
+The handler checks IdTaiKhoan exists but never checks the account's role.
+An admin can accidentally bind a le_tan or benh_nhan account to a doctor
+profile, breaking all role-based logic downstream.
+
+  Required:
+  - After looking up TaiKhoan, add:
+      if (taiKhoan.VaiTro != VaiTro.BacSi)
+          throw new ConflictException(
+            "Tai khoan nay khong co vai tro bac si.");
+
+===========================================================================
+🟠  HIGH PRIORITY — fix in the same PR or in an immediate follow-up
+===========================================================================
+
+H1. BacSiController: class-level auth blocks the doctor from their own endpoints
+----------------------------------------------------------------------------------
+[Authorize(Roles = "admin,le_tan")] at the class level gates all five verbs.
+GET /api/bac-si/ho-so-cua-toi correctly overrides with [Authorize(Roles = "bac_si")].
+But GET /api/bac-si/ho-so/{idBacSi} does NOT override — a doctor cannot
+read their own internal profile by ID.
+
+  Required:
+  - Remove the class-level Authorize and annotate each endpoint explicitly.
+  - Decide which roles can call each verb and document it in a comment.
+
+H2. BacSiDto, HoSoBacSiDto, BacSiProfileDto are identical records
+------------------------------------------------------------------
+All three DTOs in ClinicBooking.Api/Contracts/BacSi/ have exactly the same
+11 properties. BacSiMappings.TuDto() and TuProfileDto() produce the same
+output. This is pure duplication.
+
+  Required:
+  - Delete HoSoBacSiDto.cs (it is never used differently).
+  - Keep BacSiDto (admin list) and BacSiProfileDto (self-service) only if
+    they will diverge in the future; otherwise collapse to one DTO.
+  - Update BacSiMappings and all controller return types accordingly.
+
+H3. DanhSachBacSiQuery has no pagination guard
+----------------------------------------------
+A caller can pass kichThuocTrang=10000 (table dump) or soTrang=0 (negative
+Skip). The existing DanhSachBenhNhanValidator pattern already handles this.
+
+  Required:
+  - Add DanhSachBacSiValidator.cs:
+      · SoTrang >= 1
+      · 1 <= KichThuocTrang <= 100
+
+H4. BacSi command handler unit tests cover only happy paths
+-----------------------------------------------------------
+TaoBacSiHandlerTests, CapNhatBacSiHandlerTests, and XoaBacSiHandlerTests
+each have a single success test. The handlers have multiple exception paths
+that are untested.
+
+  Required test cases to add:
+  TaoBacSi:
+    · Handle_TaiKhoanKhongTonTai_ThrowNotFoundException
+    · Handle_ChuyenKhoaKhongTonTai_ThrowNotFoundException
+  CapNhatBacSi:
+    · Handle_BacSiKhongTonTai_ThrowNotFoundException
+    · Handle_ChuyenKhoaKhongTonTai_ThrowNotFoundException
+  XoaBacSi:
+    · Handle_BacSiKhongTonTai_ThrowNotFoundException
+    · (after B2) Handle_ConCaLamViecTuongLai_ThrowConflictException
+
+===========================================================================
+🟡  MEDIUM PRIORITY — must be done during Module 2, not necessarily this PR
+===========================================================================
+
+M1. Scheduling/Commands/ is entirely empty
+------------------------------------------
+The entities and domain model are fully defined (CaLamViec, LichNoiTru,
+NguonTaoCa, TrangThaiDuyetCa) and the query side works. The entire write
+side is missing. This is the core business value of Module 2.
+
+  For contract doctors (LoaiHopDong.HopDong):
+    · DangKyCaLamViecCommand — doctor registers a shift
+      → creates CaLamViec with TrangThaiDuyet=ChoDuyet,
+        NguonTaoCa=BacSiDangKy, sets IdBacSiYeuCau
+    · DuyetCaLamViecCommand — admin approves or rejects
+      → TrangThaiDuyet = DaDuyet or DaHuy, sets IdAdminDuyet, NgayDuyet
+
+  For in-house doctors (LoaiHopDong.NoiTru):
+    · TaoLichNoiTruCommand — admin defines a weekly recurring template
+      → creates LichNoiTru with NgayTrongTuan, IdDinhNghiaCa, NgayApDung
+    · CapNhatLichNoiTruCommand / VoHieuLichNoiTruCommand
+    · SinhCaLamViecTuLichNoiTruCommand (or background job)
+      → reads active LichNoiTru templates and generates CaLamViec rows
+        for the coming N days (NguonTaoCa=TuDong)
+
+  The public GET /api/ca-lam-viec endpoint only has data to return once
+  shifts are being created — this is a dependency for all other modules.
+
+M2. NghiPhep (Leave Request) flow has no application layer
+----------------------------------------------------------
+DonNghiPhep entity, LoaiNghiPhep enum, TrangThaiDuyetDon enum all exist.
+The Features/NghiPhep/ folder is an empty stub. Needed:
+
+  Commands:
+    · NopDonNghiPhepCommand — doctor submits a leave request for a CaLamViec
+    · DuyetDonNghiPhepCommand — admin approves (TrangThaiDuyet=DaDuyet,
+      also sets CaLamViec.TrangThaiDuyet = DaHuy)
+    · TuChoiDonNghiPhepCommand — admin rejects (TrangThaiDuyet=DaDuyet,
+      sets LyDoTuChoi)
+  Queries:
+    · DanhSachDonNghiPhepQuery — admin, filterable by TrangThaiDuyet
+    · DonNghiPhepCuaToiQuery — doctor, own requests
+
+M3. Features/Doctors/ and Features/BacSi/ overlap on doctor listing
+--------------------------------------------------------------------
+There are now two handlers that list doctors:
+  · Doctors/Queries/DanhSachBacSiCongKhai — public, no auth,
+    filters TrangThai==DangLam and ChuyenKhoa.HienThi
+  · BacSi/Queries/DanhSachBacSi — admin/le_tan, no status filter
+
+The module split is ambiguous. Decide:
+  Option A: Keep Features/Doctors/ as the public-facing namespace and
+    Features/BacSi/ as the internal admin namespace (document this).
+  Option B: Delete Features/Doctors/ entirely, add a CongKhai flag to
+    DanhSachBacSiQuery, and handle both cases in one handler.
+
+===========================================================================
+🟢  LOW PRIORITY / NICE-TO-HAVE — post-Module 2 cleanup
+===========================================================================
+
+L1. CaLamViecQueryServiceStub.cs should be removed
+---------------------------------------------------
+The real CaLamViecQueryService is now registered in DependencyInjection.cs.
+The stub is dead code. Delete it to avoid confusion.
+
+L2. Null guard missing in BacSiResponse.TuEntity()
+---------------------------------------------------
+BacSiResponse.TuEntity(entity) reads entity.ChuyenKhoa.TenChuyenKhoa
+directly. If a future caller forgets .Include(x => x.ChuyenKhoa), this
+throws a NullReferenceException at runtime with no useful error message.
+
+  Required:
+  - Change to: entity.ChuyenKhoa?.TenChuyenKhoa ?? string.Empty
+  - Or add an XML doc comment on the static factory:
+    /// <remarks>Caller must eager-load ChuyenKhoa navigation.</remarks>
+
+L3. No unit test for HoSoBacSiHandler (GET by ID, admin view)
+-------------------------------------------------------------
+The handler exists and is wired to an endpoint but has no test file.
+Add at minimum:
+  · Handle_HopLe_TraVeHoSo
+  · Handle_KhongTimThayBacSi_ThrowNotFoundException
+
+L4. ConTrong filter in DanhSachCaLamViecCongKhai ignores active holds
+----------------------------------------------------------------------
+The filter `SoSlotDaDat < SoSlotToiDa` only counts confirmed bookings.
+It ignores active GiuCho records (holds not yet expired). A patient can
+see a shift as "còn trống" and then fail to book because all remaining
+slots are held.
+
+CaLamViecQueryService.KiemTraSlotTrongAsync already accounts for this
+correctly. Either:
+  - Add a ConTrongThucSu boolean field to CaLamViecPublicResponse
+    (computed at query time by subtracting active holds), or
+  - Document that the public listing intentionally shows optimistic
+    availability and the slot check at booking time is authoritative.
+
+===========================================================================
+TASK SUMMARY TABLE
+===========================================================================
+
+ID | Task                                              | Urgency   | Blocks PR
+---|---------------------------------------------------|-----------|----------
+B1 | Add TaoBacSiValidator + CapNhatBacSiValidator     | 🔴 Blocker | YES
+B2 | Soft-deactivate on XoaBacSi + FK guard            | 🔴 Blocker | YES
+B3 | Verify VaiTro==BacSi in TaoBacSiHandler           | 🔴 Blocker | YES
+H1 | Fix per-endpoint auth on BacSiController          | 🟠 High    | no
+H2 | Deduplicate BacSiDto / HoSoBacSiDto / ProfileDto  | 🟠 High    | no
+H3 | Add pagination validator for DanhSachBacSiQuery   | 🟠 High    | no
+H4 | Add error-path unit tests for BacSi handlers      | 🟠 High    | no
+M1 | Implement Scheduling/Commands/ (full write side)  | 🟡 Medium  | no
+M2 | Implement NghiPhep/ leave-request flow            | 🟡 Medium  | no
+M3 | Resolve Doctors/ vs BacSi/ listing overlap        | 🟡 Medium  | no
+L1 | Remove CaLamViecQueryServiceStub.cs               | 🟢 Low     | no
+L2 | Null guard in BacSiResponse.TuEntity()            | 🟢 Low     | no
+L3 | Add tests for HoSoBacSiHandler                    | 🟢 Low     | no
+L4 | Fix ConTrong filter to include active holds        | 🟢 Low     | no
+
+===========================================================================
+ACTION REQUIRED
+===========================================================================
+1. Fix B1, B2, B3 on your current branch.
+2. Push and request re-review.
+3. H1–H4 can be included in the same PR or an immediate follow-up PR.
+4. M1–M3 are the remaining Module 2 scope — plan them as the next sprint.
+5. L1–L4 can be batched into a single cleanup PR at the end of the module.
+
+===========================================================================

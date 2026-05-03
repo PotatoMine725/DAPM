@@ -2,37 +2,47 @@
 @model ClinicBooking.Web.Pages.BenhNhan.DanhSachLichHenModel
 @using ClinicBooking.Domain.Enums
 @{
-    ViewData["Title"] = "Lịch khám của tôi";
+    ViewData["Title"] = "Lịch hẹn";
 }
 
 <div class="page-header">
-    <h1 class="page-title">Lịch khám của tôi</h1>
+    <div>
+        <h1 class="page-title">Lịch hẹn</h1>
+        <div class="page-subtitle">Theo dõi và quản lý các lịch đã tạo.</div>
+    </div>
+    <div class="action-bar">
+        <a href="/BenhNhan/DatLich" class="btn btn-primary">
+            <i class="ph ph-calendar-plus"></i> Đặt lịch mới
+        </a>
+    </div>
 </div>
 
-<!-- Bộ lọc -->
-<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center;">
-        <label class="form-label" style="margin:0; white-space:nowrap;">Trạng thái:</label>
-        <select class="form-select" name="trangThai" style="width:180px;">
-            <option value="">— Tất cả —</option>
-            @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:220px;">
+            <label class="form-label" for="trangThai">Trạng thái</label>
+            <select class="form-select" name="trangThai" id="trangThai">
+                <option value="">— Tất cả —</option>
+                @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+                {
+                    <option value="@((int)tt)" selected="@(Model.TrangThaiFilter == tt ? "selected" : null)">
+                        @BadgeHelper.TrangThaiText(tt)
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-secondary">
+                <i class="ph ph-funnel"></i> Lọc
+            </button>
+            @if (Model.TrangThaiFilter.HasValue)
             {
-                <option value="@((int)tt)" selected="@(Model.TrangThaiFilter == tt ? "selected" : null)">
-                    @BadgeHelper.TrangThaiText(tt)
-                </option>
+                <a href="/BenhNhan/DanhSachLichHen" class="btn btn-ghost">Xoá lọc</a>
             }
-        </select>
-        <button type="submit" class="btn btn-secondary">
-            <i class="ph ph-funnel"></i> Lọc
-        </button>
-        @if (Model.TrangThaiFilter.HasValue)
-        {
-            <a href="/BenhNhan/DanhSachLichHen" class="btn btn-ghost">Xoá lọc</a>
-        }
+        </div>
     </form>
 </div>
 
-<!-- Danh sách lịch hẹn -->
 <div class="card">
     <div class="card-header">
         <span class="card-title">
@@ -49,76 +59,80 @@
     }
     else
     {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Mã lịch hẹn</th>
-                    <th>Ngày khám</th>
-                    <th>Giờ</th>
-                    <th>Dịch vụ</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày đặt</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var lh in Model.DanhSach.KetQua)
-                {
-                    <tr>
-                        <td><span class="table-code">@lh.MaLichHen</span></td>
-                        <td>@lh.NgayLamViec.ToString("dd/MM/yyyy")</td>
-                        <td>@lh.GioBatDau.ToString("HH:mm")</td>
-                        <td>@lh.TenDichVu</td>
-                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
-                        <td>@lh.NgayTao.ToString("dd/MM/yyyy")</td>
-                        <td class="table-actions">
-                            @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan ||
-                                 lh.TrangThai == TrangThaiLichHen.DaXacNhan)
-                            {
-                                <button type="button"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="openModal('modal-huy-@lh.IdLichHen')">
-                                    <i class="ph ph-x-circle"></i> Huỷ
-                                </button>
+        <div class="appointment-list">
+            @foreach (var lh in Model.DanhSach.KetQua)
+            {
+                <article class="appointment-card">
+                    <div class="appointment-card__top">
+                        <div>
+                            <div class="appointment-code">@lh.MaLichHen</div>
+                            <div class="appointment-meta">
+                                @lh.NgayLamViec.ToString("dd/MM/yyyy") · @lh.GioBatDau.ToString("HH:mm")
+                            </div>
+                        </div>
+                        @Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))
+                    </div>
 
-                                <div id="modal-huy-@lh.IdLichHen" class="modal-overlay" hidden>
-                                    <div class="modal-box" style="max-width:420px;">
-                                        <div class="modal-header">
-                                            <span class="modal-title">Huỷ lịch hẹn</span>
-                                            <button type="button" class="btn btn-ghost btn-icon"
-                                                    onclick="closeModal('modal-huy-@lh.IdLichHen')">
-                                                <i class="ph ph-x"></i>
-                                            </button>
-                                        </div>
-                                        <div style="padding: var(--space-4) var(--space-5);">
-                                            <p style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">
-                                                Bạn có chắc muốn huỷ lịch hẹn <strong>@lh.MaLichHen</strong>?
-                                                Hành động này không thể hoàn tác.
-                                            </p>
-                                            <form method="post" asp-page-handler="Huy">
-                                                <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
-                                                <div class="form-group">
-                                                    <label class="form-label">Lý do huỷ (tuỳ chọn)</label>
-                                                    <input type="text" class="form-input" name="lyDo"
-                                                           placeholder="Nhập lý do..." maxlength="200" />
-                                                </div>
-                                                <div style="display:flex; gap:var(--space-3); justify-content:flex-end; margin-top:var(--space-4);">
-                                                    <button type="button" class="btn btn-ghost"
-                                                            onclick="closeModal('modal-huy-@lh.IdLichHen')">Đóng</button>
-                                                    <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
-                                                </div>
-                                            </form>
-                                        </div>
+                    <div class="appointment-card__body">
+                        <div class="summary-item">
+                            <span class="summary-label">Dịch vụ</span>
+                            <span>@lh.TenDichVu</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Ngày đặt</span>
+                            <span>@lh.NgayTao.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="appointment-card__actions">
+                        <a class="btn btn-sm btn-secondary" href="/BenhNhan/LichHen/@lh.IdLichHen">
+                            <i class="ph ph-eye"></i> Chi tiết
+                        </a>
+                        @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan ||
+                             lh.TrangThai == TrangThaiLichHen.DaXacNhan)
+                        {
+                            <button type="button"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="openModal('modal-huy-@lh.IdLichHen')">
+                                <i class="ph ph-x-circle"></i> Huỷ
+                            </button>
+
+                            <div id="modal-huy-@lh.IdLichHen" class="modal-overlay" hidden>
+                                <div class="modal-box" style="max-width:420px;">
+                                    <div class="modal-header">
+                                        <span class="modal-title">Huỷ lịch hẹn</span>
+                                        <button type="button" class="btn btn-ghost btn-icon"
+                                                onclick="closeModal('modal-huy-@lh.IdLichHen')">
+                                            <i class="ph ph-x"></i>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="form-hint" style="margin-bottom: var(--space-4);">
+                                            Bạn có chắc muốn huỷ lịch hẹn <strong>@lh.MaLichHen</strong>?
+                                            Hành động này không thể hoàn tác.
+                                        </p>
+                                        <form method="post" asp-page-handler="Huy">
+                                            <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                            <div class="form-group">
+                                                <label class="form-label">Lý do huỷ (tuỳ chọn)</label>
+                                                <input type="text" class="form-input" name="lyDo"
+                                                       placeholder="Nhập lý do..." maxlength="200" />
+                                            </div>
+                                            <div class="modal-footer" style="padding-left:0; padding-right:0; border-top:none; background:transparent;">
+                                                <button type="button" class="btn btn-ghost"
+                                                        onclick="closeModal('modal-huy-@lh.IdLichHen')">Đóng</button>
+                                                <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            </div>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
 
-        <!-- Phân trang -->
         @if (Model.TongSoTrang > 1)
         {
             <div class="pagination" style="padding: var(--space-3) var(--space-5);">

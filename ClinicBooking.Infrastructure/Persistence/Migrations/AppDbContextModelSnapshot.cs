@@ -71,6 +71,22 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("BacSi");
+
+                    b.HasData(
+                        new
+                        {
+                            IdBacSi = 2001,
+                            AnhDaiDien = "https://via.placeholder.com/150",
+                            BangCap = "Bac Si",
+                            HoTen = "Dr. Nguyen Van A",
+                            IdChuyenKhoa = 1,
+                            IdTaiKhoan = 2002,
+                            LoaiHopDong = "NoiTru",
+                            NamKinhNghiem = 10,
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            TieuSu = "Bac si chuyen khoa tim mach",
+                            TrangThai = "DangLam"
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.BenhNhan", b =>
@@ -126,6 +142,21 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("BenhNhan");
+
+                    b.HasData(
+                        new
+                        {
+                            IdBenhNhan = 2001,
+                            BiHanChe = false,
+                            Cccd = "123456789012",
+                            DiaChi = "123 Duong ABC, TP. HCM",
+                            GioiTinh = "Nu",
+                            HoTen = "Tran Thi B",
+                            IdTaiKhoan = 2001,
+                            NgaySinh = new DateOnly(1990, 5, 15),
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SoLanHuyMuon = 0
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.CaLamViec", b =>
@@ -206,6 +237,65 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.HasIndex("IdPhong");
 
                     b.ToTable("CaLamViec");
+
+                    b.HasData(
+                        new
+                        {
+                            IdCaLamViec = 3001,
+                            GioBatDau = new TimeOnly(7, 0, 0),
+                            GioKetThuc = new TimeOnly(12, 0, 0),
+                            IdAdminDuyet = 2004,
+                            IdBacSi = 2001,
+                            IdChuyenKhoa = 1,
+                            IdDinhNghiaCa = 1,
+                            IdPhong = 1,
+                            NgayDuyet = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NgayLamViec = new DateOnly(2026, 4, 24),
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NguonTaoCa = "TuDong",
+                            SoSlotDaDat = 0,
+                            SoSlotToiDa = 15,
+                            ThoiGianSlot = 20,
+                            TrangThaiDuyet = "DaDuyet"
+                        },
+                        new
+                        {
+                            IdCaLamViec = 3002,
+                            GioBatDau = new TimeOnly(13, 0, 0),
+                            GioKetThuc = new TimeOnly(17, 0, 0),
+                            IdAdminDuyet = 2004,
+                            IdBacSi = 2001,
+                            IdChuyenKhoa = 1,
+                            IdDinhNghiaCa = 2,
+                            IdPhong = 1,
+                            NgayDuyet = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NgayLamViec = new DateOnly(2026, 4, 24),
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NguonTaoCa = "TuDong",
+                            SoSlotDaDat = 0,
+                            SoSlotToiDa = 12,
+                            ThoiGianSlot = 20,
+                            TrangThaiDuyet = "DaDuyet"
+                        },
+                        new
+                        {
+                            IdCaLamViec = 3003,
+                            GioBatDau = new TimeOnly(7, 0, 0),
+                            GioKetThuc = new TimeOnly(12, 0, 0),
+                            IdAdminDuyet = 2004,
+                            IdBacSi = 2001,
+                            IdChuyenKhoa = 1,
+                            IdDinhNghiaCa = 1,
+                            IdPhong = 1,
+                            NgayDuyet = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NgayLamViec = new DateOnly(2026, 4, 30),
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            NguonTaoCa = "TuDong",
+                            SoSlotDaDat = 0,
+                            SoSlotToiDa = 15,
+                            ThoiGianSlot = 20,
+                            TrangThaiDuyet = "DaDuyet"
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.ChuyenKhoa", b =>
@@ -658,6 +748,17 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.HasIndex("IdCaLamViec", "TrangThai", "SoThuTu");
 
                     b.ToTable("HangCho");
+
+                    b.HasData(
+                        new
+                        {
+                            IdHangCho = 5001,
+                            IdCaLamViec = 3001,
+                            IdLichHen = 4001,
+                            NgayCheckIn = new DateTime(2026, 4, 22, 22, 0, 0, 0, DateTimeKind.Utc),
+                            SoThuTu = 1,
+                            TrangThai = "ChoKham"
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.HoSoKham", b =>
@@ -793,6 +894,35 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.HasIndex("IdCaLamViec", "TrangThai");
 
                     b.ToTable("LichHen");
+
+                    b.HasData(
+                        new
+                        {
+                            IdLichHen = 4001,
+                            HinhThucDat = "TrucTuyen",
+                            IdBenhNhan = 2001,
+                            IdCaLamViec = 3001,
+                            IdDichVu = 1,
+                            MaLichHen = "LH-20260424-001",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            RowVersion = new byte[0],
+                            SoSlot = 1,
+                            TrangThai = "DaXacNhan",
+                            TrieuChung = "Dau nguc nhe"
+                        },
+                        new
+                        {
+                            IdLichHen = 4002,
+                            HinhThucDat = "TrucTuyen",
+                            IdBenhNhan = 2001,
+                            IdCaLamViec = 3001,
+                            IdDichVu = 2,
+                            MaLichHen = "LH-20260424-002",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            RowVersion = new byte[0],
+                            SoSlot = 2,
+                            TrangThai = "ChoXacNhan"
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.LichNoiTru", b =>
@@ -878,6 +1008,26 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.HasIndex("IdNguoiThucHien");
 
                     b.ToTable("LichSuLichHen");
+
+                    b.HasData(
+                        new
+                        {
+                            IdLichSu = 6001,
+                            DanhDauHuyMuon = false,
+                            HanhDong = "DatMoi",
+                            IdLichHen = 4001,
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            IdLichSu = 6002,
+                            DanhDauHuyMuon = false,
+                            HanhDong = "XacNhan",
+                            IdLichHen = 4001,
+                            IdNguoiThucHien = 2004,
+                            LyDo = "Admin xac nhan",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 5, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Entities.MauThongBao", b =>
@@ -1218,6 +1368,50 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             SoDienThoai = "0900000000",
                             TenDangNhap = "admin",
+                            TrangThai = true,
+                            VaiTro = "Admin"
+                        },
+                        new
+                        {
+                            IdTaiKhoan = 2001,
+                            Email = "patient@test.vn",
+                            MatKhau = "$2a$11$encrypted_password",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SoDienThoai = "0912345678",
+                            TenDangNhap = "patient001",
+                            TrangThai = true,
+                            VaiTro = "BenhNhan"
+                        },
+                        new
+                        {
+                            IdTaiKhoan = 2002,
+                            Email = "doctor@test.vn",
+                            MatKhau = "$2a$11$encrypted_password",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SoDienThoai = "0987654321",
+                            TenDangNhap = "doctor001",
+                            TrangThai = true,
+                            VaiTro = "BacSi"
+                        },
+                        new
+                        {
+                            IdTaiKhoan = 2003,
+                            Email = "receptionist@test.vn",
+                            MatKhau = "$2a$11$encrypted_password",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SoDienThoai = "0911111111",
+                            TenDangNhap = "receptionist001",
+                            TrangThai = true,
+                            VaiTro = "LeTan"
+                        },
+                        new
+                        {
+                            IdTaiKhoan = 2004,
+                            Email = "admin@test.vn",
+                            MatKhau = "$2a$11$encrypted_password",
+                            NgayTao = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SoDienThoai = "0988888888",
+                            TenDangNhap = "admin001",
                             TrangThai = true,
                             VaiTro = "Admin"
                         });

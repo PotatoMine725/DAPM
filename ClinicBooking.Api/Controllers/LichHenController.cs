@@ -11,6 +11,7 @@ using ClinicBooking.Application.Features.LichHen.Commands.XacNhanLichHen;
 using ClinicBooking.Application.Features.LichHen.Dtos;
 using ClinicBooking.Application.Features.LichHen.Queries.DanhSachLichHenCuaToi;
 using ClinicBooking.Application.Features.LichHen.Queries.DanhSachLichHenTheoNgay;
+using ClinicBooking.Application.Features.LichHen.Queries.DanhSachLichHenTheoNgayCuaToi;
 using ClinicBooking.Application.Features.LichHen.Queries.XemLichHen;
 using ClinicBooking.Domain.Enums;
 using MediatR;
@@ -39,7 +40,8 @@ public class LichHenController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new TaoLichHenCommand(
-            request.IdCaLamViec,
+            request.NgayLamViec,
+            request.GioMongMuon,
             request.IdDichVu,
             request.IdBenhNhan,
             request.IdBacSiMongMuon,
@@ -148,6 +150,17 @@ public class LichHenController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DanhSachLichHenTheoNgayQuery(ngay), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("theo-ngay/cua-toi")]
+    [Authorize(Roles = $"{VaiTroConstants.BacSi},{VaiTroConstants.Admin}")]
+    [ProducesResponseType(typeof(IReadOnlyList<LichHenTomTatResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<LichHenTomTatResponse>>> TheoNgayCuaToi(
+        [FromQuery] DateOnly ngay,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new DanhSachLichHenTheoNgayCuaToiQuery(ngay), cancellationToken);
         return Ok(result);
     }
 }

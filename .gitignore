@@ -1,3 +1,6 @@
+# Git worktrees
+.worktrees/
+
 # Build output
 [Bb]in/
 [Oo]bj/
@@ -56,3 +59,4 @@ dist/
 build/
 
 .fake
+.gitnexus

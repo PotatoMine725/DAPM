@@ -27,8 +27,8 @@ public sealed class TaoToaThuocHandlerTests
             NgayTao = now
         };
         db.HoSoKham.Add(hoSo);
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Vitamin C" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Paracetamol-500mg-20260422-Tao1" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Vitamin-C-20260422-Tao2" });
         await db.SaveChangesAsync();
 
         var dsThuoc = await db.Thuoc
@@ -70,7 +70,7 @@ public sealed class TaoToaThuocHandlerTests
             NgayTao = now
         };
         db.HoSoKham.Add(hoSo);
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
+        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Paracetamol-500mg-20260422-Conflict" });
         await db.SaveChangesAsync();
         var idThuoc = await db.Thuoc.Select(x => x.IdThuoc).FirstAsync();
 

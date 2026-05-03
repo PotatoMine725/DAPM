@@ -1,0 +1,94 @@
+@page "{idCaLamViec:int?}"
+@model ClinicBooking.Web.Pages.BenhNhan.ThuTuHangChoModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Thứ tự hàng chờ";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Thứ tự hàng chờ</h1>
+        <div class="page-subtitle" style="margin-top: var(--space-1); color: var(--color-text-secondary); font-size: 13px;">
+            Xem vị trí của bạn trong hàng chờ theo ca khám.
+        </div>
+    </div>
+    <div class="action-bar">
+        <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">
+            <i class="ph ph-arrow-left"></i> Quay lại lịch hẹn
+        </a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="card" style="border-left: 4px solid var(--color-danger); background-color: rgba(255, 99, 99, 0.05);">
+        <div style="display: flex; gap: var(--space-2); align-items: center; color: var(--color-danger);">
+            <i class="ph ph-warning" style="font-size: 20px;"></i>
+            <span>@Model.ErrorMessage</span>
+        </div>
+    </div>
+}
+else if (!Model.KetQua.DaCoTrongHangCho)
+{
+    <div class="card empty-state-panel">
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="ph ph-users-three"></i></div>
+            <p>Bạn chưa có mặt trong hàng chờ của ca này.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="panel-grid-2">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Vị trí hiện tại</span>
+                @Html.Raw(BadgeHelper.TrangThaiHangCho(TrangThaiHangCho.ChoKham))
+            </div>
+
+            <div class="queue-spotlight">
+                <div class="queue-number">@Model.KetQua.SoThuTu</div>
+                <div class="queue-number-label">Số thứ tự của bạn</div>
+            </div>
+
+            <div class="detail-grid" style="margin-top: var(--space-4);">
+                <div class="detail-item">
+                    <div class="detail-label">Ca làm việc</div>
+                    <div class="detail-value table-code">#@Model.KetQua.IdCaLamViec</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Bệnh nhân</div>
+                    <div class="detail-value">#@Model.KetQua.IdBenhNhan</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Mã hàng chờ</div>
+                    <div class="detail-value table-code">#@Model.KetQua.IdHangCho</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Check-in lúc</div>
+                    <div class="detail-value">@Model.KetQua.NgayCheckIn?.ToString("HH:mm")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Tóm tắt</span>
+            </div>
+            <div class="summary-stack">
+                <div class="summary-item">
+                    <span class="summary-label">Trạng thái</span>
+                    <span>@Html.Raw(BadgeHelper.TrangThaiHangCho(TrangThaiHangCho.ChoKham))</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Mã lịch hẹn</span>
+                    <span class="table-code">#@Model.KetQua.IdHangCho</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Lưu ý</span>
+                    <span>Bạn sẽ được gọi theo thứ tự hàng chờ của ca khám.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}

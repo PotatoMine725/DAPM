@@ -4,12 +4,14 @@ using ClinicBooking.Application.Abstractions.Scheduling;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Options;
 using ClinicBooking.Application.Common.Services;
+using ClinicBooking.Infrastructure.BackgroundJobs;
 using ClinicBooking.Infrastructure.Identity;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Security;
 using ClinicBooking.Infrastructure.Services;
 using ClinicBooking.Infrastructure.Services.Notifications;
 using ClinicBooking.Infrastructure.Services.Scheduling;
+using ClinicBooking.Infrastructure.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +35,8 @@ public static class DependencyInjection
             configuration.GetSection(JwtSettings.SectionName));
         services.Configure<AdminSeederSettings>(
             configuration.GetSection(AdminSeederSettings.SectionName));
+        services.Configure<OtpOptions>(
+            configuration.GetSection(OtpOptions.SectionName));
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -47,13 +51,19 @@ public static class DependencyInjection
         services.Configure<LichHenOptions>(
             configuration.GetSection(LichHenOptions.SectionName));
 
-        // TODO: Thay CaLamViecQueryServiceStub bang impl Module 2 khi code duoc day len
-        services.AddScoped<ICaLamViecQueryService, CaLamViecQueryServiceStub>();
+        services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
+        services.AddScoped<IOtpService, OtpServiceStub>();
 
         // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
         services.AddScoped<INotificationService, NotificationServiceStub>();
 
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
+
+        // --- Module 1: Background jobs ---
+        // TODO Wave 4: khi Module 4 (Hangfire) len, xoa 2 dong AddHostedService nay
+        //              va dang ky recurring job tuong duong trong Hangfire.
+        services.AddHostedService<QuetGiuChoHetHanJob>();
+        services.AddHostedService<ChuyenLichHenDaQuaHanJob>();
 
         return services;
     }

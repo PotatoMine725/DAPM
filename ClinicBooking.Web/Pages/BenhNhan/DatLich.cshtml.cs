@@ -1,0 +1,99 @@
+using ClinicBooking.Application.Features.DanhMuc.Dtos;
+using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
+using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
+using ClinicBooking.Application.Features.Scheduling.Dtos;
+using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace ClinicBooking.Web.Pages.BenhNhan;
+
+[Authorize(Roles = "benh_nhan")]
+public class DatLichModel : PageModel
+{
+    private readonly IMediator _mediator;
+
+    public DatLichModel(IMediator mediator) => _mediator = mediator;
+
+    public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
+    public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
+    public DateOnly NgayChon { get; private set; }
+    public string ChuyenKhoaHienTai => string.IsNullOrWhiteSpace(TenChuyenKhoaDaChon) ? "Nội tổng quát" : TenChuyenKhoaDaChon;
+    public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
+    public bool CanSubmit => IdDichVu > 0;
+
+    [BindProperty] public int IdDichVu { get; set; }
+    [BindProperty] public TimeOnly GioMongMuon { get; set; } = new TimeOnly(8, 0);
+    [BindProperty] public string? TrieuChung { get; set; }
+    [BindProperty] public string? GhiChu { get; set; }
+    [BindProperty] public int? IdCaLamViec { get; set; }
+    [BindProperty] public string? Otp { get; set; }
+
+    public string? TenChuyenKhoaDaChon { get; private set; }
+    public string? TenDichVu { get; private set; }
+
+    public async Task OnGetAsync(DateOnly? ngay)
+    {
+        NgayChon = ngay ?? DateOnly.FromDateTime(DateTime.Now.AddDays(1));
+        await TaiDuLieuAsync(NgayChon);
+    }
+
+    public async Task<IActionResult> OnPostAsync(DateOnly ngay)
+    {
+        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
+
+        if (!ModelState.IsValid || IdDichVu <= 0)
+        {
+            await TaiDuLieuAsync(NgayChon);
+            TempData["ErrorMessage"] = "Vui lòng chọn ngày, giờ và dịch vụ hợp lệ.";
+            return Page();
+        }
+
+        try
+        {
+            var command = new TaoLichHenCommand(
+                NgayChon,
+                GioMongMuon,
+                IdDichVu,
+                IdBenhNhan: null,
+                IdBacSiMongMuon: null,
+                BacSiMongMuonNote: GhiChu,
+                TrieuChung);
+
+            var result = await _mediator.Send(command);
+            TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}";
+            return RedirectToPage("/BenhNhan/DanhSachLichHen");
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            await TaiDuLieuAsync(NgayChon);
+            return Page();
+        }
+    }
+
+    public async Task<IActionResult> OnPostGuiOtpAsync(DateOnly ngay)
+    {
+        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
+        await TaiDuLieuAsync(NgayChon);
+        TempData["SuccessMessage"] = "Đã gửi mã OTP (logic xác thực sẽ được ghép khi chốt contract OTP).";
+        return Page();
+    }
+
+    private async Task TaiDuLieuAsync(DateOnly ngay)
+    {
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
+            SoTrang: 1,
+            KichThuocTrang: 50,
+            TuNgay: ngay,
+            DenNgay: ngay,
+            ConTrong: true));
+
+        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(
+            SoTrang: 1,
+            KichThuocTrang: 100,
+            HienThi: true));
+    }
+}

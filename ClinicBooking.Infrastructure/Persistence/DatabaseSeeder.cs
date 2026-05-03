@@ -99,11 +99,15 @@ public class DatabaseSeeder
             return;
         }
 
-        await SeedLeTanFixtureAsync(fixture.LeTan, matKhau, cancellationToken);
+        await SeedTaiKhoanFixtureAsync(fixture.BenhNhan, VaiTro.BenhNhan, matKhau, cancellationToken);
+        await SeedTaiKhoanFixtureAsync(fixture.BacSi, VaiTro.BacSi, matKhau, cancellationToken);
+        await SeedTaiKhoanFixtureAsync(fixture.LeTan, VaiTro.LeTan, matKhau, cancellationToken);
+        await SeedTaiKhoanFixtureAsync(fixture.Admin, VaiTro.Admin, matKhau, cancellationToken);
     }
 
-    private async Task SeedLeTanFixtureAsync(
+    private async Task SeedTaiKhoanFixtureAsync(
         FixtureTaiKhoan? config,
+        VaiTro vaiTro,
         string matKhau,
         CancellationToken cancellationToken)
     {
@@ -112,39 +116,118 @@ public class DatabaseSeeder
             return;
         }
 
-        var daCo = await _db.TaiKhoan
-            .AnyAsync(x => x.TenDangNhap == config.TenDangNhap, cancellationToken);
-        if (daCo)
+        var now = _dateTimeProvider.UtcNow;
+        var taiKhoan = await _db.TaiKhoan
+            .FirstOrDefaultAsync(x => x.TenDangNhap == config.TenDangNhap, cancellationToken);
+
+        var isNewTaiKhoan = taiKhoan is null;
+        if (isNewTaiKhoan)
         {
-            _logger.LogDebug("Tai khoan le_tan fixture '{Ten}' da ton tai. Bo qua.", config.TenDangNhap);
-            return;
+            taiKhoan = new TaiKhoan
+            {
+                TenDangNhap = config.TenDangNhap,
+                Email = config.Email,
+                SoDienThoai = config.SoDienThoai,
+                MatKhau = _passwordHasher.HashPassword(matKhau),
+                VaiTro = vaiTro,
+                TrangThai = true,
+                NgayTao = now
+            };
+            _db.TaiKhoan.Add(taiKhoan);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            taiKhoan.Email = config.Email;
+            taiKhoan.SoDienThoai = config.SoDienThoai;
+            taiKhoan.MatKhau = _passwordHasher.HashPassword(matKhau);
+            taiKhoan.VaiTro = vaiTro;
+            taiKhoan.TrangThai = true;
+            await _db.SaveChangesAsync(cancellationToken);
         }
 
-        var now = _dateTimeProvider.UtcNow;
-        var taiKhoan = new TaiKhoan
+        switch (vaiTro)
         {
-            TenDangNhap = config.TenDangNhap,
-            Email = config.Email,
-            SoDienThoai = config.SoDienThoai,
-            MatKhau = _passwordHasher.HashPassword(matKhau),
-            VaiTro = VaiTro.LeTan,
-            TrangThai = true,
-            NgayTao = now
-        };
-        _db.TaiKhoan.Add(taiKhoan);
-        await _db.SaveChangesAsync(cancellationToken);
+            case VaiTro.BenhNhan:
+            {
+                var benhNhan = await _db.BenhNhan.FirstOrDefaultAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan, cancellationToken);
+                if (benhNhan is null)
+                {
+                    _db.BenhNhan.Add(new BenhNhan
+                    {
+                        IdTaiKhoan = taiKhoan.IdTaiKhoan,
+                        HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen,
+                        NgayTao = now
+                    });
+                }
+                else
+                {
+                    benhNhan.HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen;
+                    benhNhan.NgayTao = benhNhan.NgayTao == default ? now : benhNhan.NgayTao;
+                }
+                break;
+            }
+            case VaiTro.BacSi:
+            {
+                var chuyenKhoa = await _db.ChuyenKhoa
+                    .OrderBy(x => x.IdChuyenKhoa)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (chuyenKhoa is null)
+                {
+                    _logger.LogWarning("Khong co chuyen khoa nao de seed bac si fixture '{Ten}'.", config.TenDangNhap);
+                    return;
+                }
 
-        _db.LeTan.Add(new LeTan
-        {
-            IdTaiKhoan = taiKhoan.IdTaiKhoan,
-            HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen,
-            NgayTao = now
-        });
+                var bacSi = await _db.BacSi.FirstOrDefaultAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan, cancellationToken);
+                if (bacSi is null)
+                {
+                    _db.BacSi.Add(new BacSi
+                    {
+                        IdTaiKhoan = taiKhoan.IdTaiKhoan,
+                        IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+                        HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen,
+                        LoaiHopDong = LoaiHopDong.NoiTru,
+                        TrangThai = TrangThaiBacSi.DangLam,
+                        NgayTao = now
+                    });
+                }
+                else
+                {
+                    bacSi.IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa;
+                    bacSi.HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen;
+                    bacSi.LoaiHopDong = LoaiHopDong.NoiTru;
+                    bacSi.TrangThai = TrangThaiBacSi.DangLam;
+                }
+                break;
+            }
+            case VaiTro.LeTan:
+            {
+                var leTan = await _db.LeTan.FirstOrDefaultAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan, cancellationToken);
+                if (leTan is null)
+                {
+                    _db.LeTan.Add(new LeTan
+                    {
+                        IdTaiKhoan = taiKhoan.IdTaiKhoan,
+                        HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen,
+                        NgayTao = now
+                    });
+                }
+                else
+                {
+                    leTan.HoTen = string.IsNullOrWhiteSpace(config.HoTen) ? config.TenDangNhap : config.HoTen;
+                }
+                break;
+            }
+            case VaiTro.Admin:
+                // Admin fixture chi can tai khoan; khong can profile rieng.
+                break;
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
 
         _logger.LogWarning(
-            "[DevFixture] Da seed tai khoan le_tan '{Ten}' voi mat khau cau hinh. " +
-            "CHI dung o moi truong Development.",
-            config.TenDangNhap);
+            "[DevFixture] Da upsert tai khoan fixture '{Ten}' vai tro {VaiTro} voi mat khau cau hinh. CHI dung o Development.",
+            config.TenDangNhap,
+            vaiTro);
     }
 }

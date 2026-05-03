@@ -1,6 +1,7 @@
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.DanhMuc.Commands.XoaDinhNghiaCa;
 using ClinicBooking.Application.UnitTests.Common;
+using BacSiEntity = ClinicBooking.Domain.Entities.BacSi;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using FluentAssertions;
@@ -81,7 +82,7 @@ public sealed class XoaDinhNghiaCaHandlerTests
         db.TaiKhoan.Add(taiKhoan);
         await db.SaveChangesAsync();
 
-        var bacSi = new BacSi
+        var bacSi = new BacSiEntity
         {
             IdTaiKhoan = taiKhoan.IdTaiKhoan,
             IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,

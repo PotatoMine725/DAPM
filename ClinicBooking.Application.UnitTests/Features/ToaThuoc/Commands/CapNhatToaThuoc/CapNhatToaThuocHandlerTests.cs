@@ -26,14 +26,12 @@ public sealed class CapNhatToaThuocHandlerTests
             NgayTao = now
         };
         db.HoSoKham.Add(hoSo);
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Vitamin C" });
+        var thuoc1 = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-CapNhatToa-20260422-1" };
+        var thuoc2 = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-CapNhatToa-20260422-2" };
+        db.Thuoc.AddRange(thuoc1, thuoc2);
         await db.SaveChangesAsync();
 
-        var dsThuoc = await db.Thuoc
-            .OrderBy(x => x.IdThuoc)
-            .Select(x => x.IdThuoc)
-            .ToListAsync();
+        var dsThuoc = new List<int> { thuoc1.IdThuoc, thuoc2.IdThuoc };
 
         db.ToaThuoc.Add(new ClinicBooking.Domain.Entities.ToaThuoc
         {

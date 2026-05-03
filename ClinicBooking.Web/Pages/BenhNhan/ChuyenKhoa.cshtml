@@ -1,0 +1,67 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.ChuyenKhoaModel
+@{
+    ViewData["Title"] = "Chuyên khoa";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Chuyên khoa</h1>
+        <div class="page-subtitle">Xem thông tin công khai của bác sĩ theo chuyên khoa.</div>
+    </div>
+</div>
+
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:240px;">
+            <label class="form-label" for="idChuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="idChuyenKhoa" name="idChuyenKhoa">
+                <option value="">— Tất cả —</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoa == ck.IdChuyenKhoa ? "selected" : null)">@ck.TenChuyenKhoa</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-secondary"><i class="ph ph-funnel"></i> Lọc</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.DanhSachBacSi.Any())
+{
+    <div class="card empty-state" style="padding: var(--space-8);">
+        <div class="empty-state-icon"><i class="ph ph-stethoscope"></i></div>
+        <p>Không có bác sĩ phù hợp với chuyên khoa đã chọn.</p>
+    </div>
+}
+else
+{
+    <div class="panel-grid-2">
+        @foreach (var bacSi in Model.DanhSachBacSi)
+        {
+            <article class="card doctor-card">
+                <div class="doctor-card__top">
+                    <div class="doctor-avatar">@bacSi.HoTen.Split(' ').LastOrDefault()?[0]</div>
+                    <div class="doctor-card__meta">
+                        <div class="doctor-name">@bacSi.HoTen</div>
+                        <div class="doctor-specialty">@bacSi.TenChuyenKhoa</div>
+                    </div>
+                    <span class="badge badge-success">Công khai</span>
+                </div>
+
+                <div class="doctor-card__body">
+                    <div class="summary-item">
+                        <span class="summary-label">Bằng cấp</span>
+                        <span>@bacSi.BangCap</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Số năm kinh nghiệm</span>
+                        <span>@bacSi.NamKinhNghiem</span>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+}

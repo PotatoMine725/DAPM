@@ -13,9 +13,10 @@ public sealed class XoaThuocHandlerTests
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
-        db.Thuoc.Add(new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "Paracetamol 500mg" });
+        var thuoc = new ClinicBooking.Domain.Entities.Thuoc { TenThuoc = "THUOC-UT-Xoa-20260422" };
+        db.Thuoc.Add(thuoc);
         await db.SaveChangesAsync();
-        var idThuoc = await db.Thuoc.Select(x => x.IdThuoc).FirstAsync();
+        var idThuoc = thuoc.IdThuoc;
 
         var handler = new XoaThuocHandler(db);
         await handler.Handle(new XoaThuocCommand(idThuoc), CancellationToken.None);

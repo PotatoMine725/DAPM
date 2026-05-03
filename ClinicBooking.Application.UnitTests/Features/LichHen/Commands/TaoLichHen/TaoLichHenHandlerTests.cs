@@ -72,7 +72,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var result = await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, "Dau dau"),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, "Dau dau"),
             CancellationToken.None);
 
         result.MaLichHen.Should().Be("LH-20260505-000001");
@@ -96,7 +96,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Le tan phai chon benh nhan de dat lich.");
@@ -115,7 +115,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
@@ -143,7 +143,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var result = await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         result.IdBenhNhan.Should().Be(bn.IdBenhNhan);
@@ -165,7 +165,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec chua duoc duyet.");
@@ -189,7 +189,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
