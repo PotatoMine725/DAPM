@@ -437,7 +437,7 @@ button {
 }
 
 .required-mark {
-  color: #ff0000 !important;
+  color: #ff0000;
   font-weight: 700;
 }
 
@@ -464,6 +464,26 @@ button {
 .field textarea:focus {
   border-color: var(--primary-mid);
   box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.field input.error,
+.field select.error,
+.field textarea.error {
+  border-color: #e24b4a;
+  box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.18);
+}
+
+.field-error {
+  color: #a32d2d;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  min-height: 1.1em;
+}
+
+.form-error-summary {
+  color: #a32d2d;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .role-grid {
@@ -1153,7 +1173,7 @@ th {
   <body>
     <div class="page-gradient"></div>
     <div class="app-frame">
-      <section class="auth-shell" id="auth-shell">
+      <section class="auth-shell hidden" id="auth-shell">
         <div class="auth-hero">
           <span class="eyebrow">Hệ thống đặt lịch khám Medibook</span>
           <h1>Phòng khám Medicare</h1>
@@ -1172,16 +1192,19 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
             <button class="tab-btn active" data-auth-tab="login">Đăng nhập</button>
             <button class="tab-btn" data-auth-tab="register">Đăng ký</button>
           </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="back-to-guest-btn">← Quay lại cổng vãng lai</button>
 
           <form id="login-form" class="auth-form">
             <div class="field-grid">
               <label class="field">
                 <span>Email hoặc số điện thoại</span>
-                <input type="text" name="identifier" placeholder="Nhập email / SĐT" />
+                <input type="text" id="login-identifier" name="identifier" placeholder="Nhập email / SĐT" />
+                <small class="field-error" data-error-for="login-identifier"></small>
               </label>
               <label class="field">
                 <span>Mật khẩu</span>
-                <input type="password" name="password" placeholder="Nhập mật khẩu" />
+                <input type="password" id="login-password" name="password" placeholder="Nhập mật khẩu" />
+                <small class="field-error" data-error-for="login-password"></small>
               </label>
             </div>
 
@@ -1200,6 +1223,7 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
               <button type="submit" class="btn btn-primary btn-lg">Đăng nhập</button>
               <button type="button" class="btn btn-ghost">Quên mật khẩu</button>
             </div>
+            <div class="form-error-summary" id="login-error-summary"></div>
           </form>
 
           <form id="register-form" class="auth-form hidden">
@@ -1212,40 +1236,48 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
 
             <div class="field-grid">
               <label class="field">
-                <span>Họ và tên</span>
-                <input type="text" name="fullName" placeholder="VD: Nguyễn Văn A" />
+                <span>Họ và tên <span class="required-mark">*</span></span>
+                <input type="text" id="register-full-name" name="fullName" placeholder="VD: Nguyễn Văn A" />
+                <small class="field-error" data-error-for="register-full-name"></small>
               </label>
               <label class="field">
-                <span>Số điện thoại</span>
-                <input type="tel" name="phone" placeholder="VD: 09xxxxxxxx" />
+                <span>Số điện thoại <span class="required-mark">*</span></span>
+                <input type="tel" id="register-phone" name="phone" placeholder="VD: 09xxxxxxxx" />
+                <small class="field-error" data-error-for="register-phone"></small>
               </label>
               <label class="field">
-                <span>Email</span>
-                <input type="email" name="email" placeholder="VD: abc@email.com" />
+                <span>Email <span class="required-mark">*</span></span>
+                <input type="email" id="register-email" name="email" placeholder="VD: abc@email.com" />
+                <small class="field-error" data-error-for="register-email"></small>
               </label>
               <label class="field">
-                <span>CCCD</span>
-                <input type="text" name="cccd" placeholder="VD: 123456789012" />
+                <span>CCCD <span class="required-mark">*</span></span>
+                <input type="text" id="register-cccd" name="cccd" placeholder="VD: 123456789012" />
+                <small class="field-error" data-error-for="register-cccd"></small>
               </label>
               <label class="field">
-                <span>Ngày sinh</span>
-                <input type="date" name="dob" />
+                <span>Ngày sinh <span class="required-mark">*</span></span>
+                <input type="date" id="register-dob" name="dob" />
+                <small class="field-error" data-error-for="register-dob"></small>
               </label>
               <label class="field">
-                <span>Giới tính</span>
-                <select name="gender">
+                <span>Giới tính <span class="required-mark">*</span></span>
+                <select id="register-gender" name="gender">
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                   <option value="Khác">Khác</option>
                 </select>
+                <small class="field-error" data-error-for="register-gender"></small>
               </label>
               <label class="field">
-                <span>Mật khẩu</span>
-                <input type="password" name="password" placeholder="Tối thiểu 8 ký tự" />
+                <span>Mật khẩu <span class="required-mark">*</span></span>
+                <input type="password" id="register-password" name="password" placeholder="Tối thiểu 8 ký tự" />
+                <small class="field-error" data-error-for="register-password"></small>
               </label>
               <label class="field">
-                <span>Nhập lại mật khẩu</span>
-                <input type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" />
+                <span>Nhập lại mật khẩu <span class="required-mark">*</span></span>
+                <input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Nhập lại mật khẩu" />
+                <small class="field-error" data-error-for="register-confirm-password"></small>
               </label>
             </div>
 
@@ -1254,11 +1286,12 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
               <button type="submit" class="btn btn-primary btn-lg">Tạo tài khoản</button>
               <button type="button" class="btn btn-ghost" data-auth-tab="login">Quay lại đăng nhập</button>
             </div>
+            <div class="form-error-summary" id="register-error-summary"></div>
           </form>
         </div>
       </section>
 
-      <section class="system-shell hidden" id="system-shell">
+      <section class="system-shell" id="system-shell">
         <aside class="sidebar">
           <div class="brand-block">
             <span class="eyebrow">Hệ thống đặt lịch Medibook</span>
@@ -1491,6 +1524,21 @@ window.ClinicApp.dataStore = {
     gender: "Nữ",
     restricted: false,
     lateCancelCount: 1,
+  },
+  demoPatientAccount: {
+    identifier: "ha.nguyen@example.com",
+    phone: "0912345678",
+    password: "Patient@123",
+  },
+  guestPatient: {
+    fullName: "Khách vãng lai",
+    phone: "Chưa đăng nhập",
+    email: "",
+    cccd: "",
+    dob: "",
+    gender: "Khác",
+    restricted: false,
+    lateCancelCount: 0,
   },
   initialAppointments: [
     {
@@ -1913,11 +1961,14 @@ window.ClinicApp.helpers = {
     selectedAppointmentFilter: "all",
     selectedSlot: "2026-04-10 07:30",
     otpVerified: false,
+    isAuthenticated: false,
+    pendingView: null,
+    authRequiredModalOpen: false,
     appointmentsCurrentPage: 1,
     notificationsCurrentPage: 1,
     notificationDetailOpen: false,
     selectedNotificationId: null,
-    currentPatient: { ...store.initialPatient },
+    currentPatient: { ...store.guestPatient },
     appointments: store.initialAppointments.map((item) => ({ ...item })),
     notifications: store.initialNotifications.map((item) => ({ ...item })),
     bookingDraft: { ...store.initialBookingDraft },
@@ -2257,12 +2308,47 @@ window.ClinicApp.renderers.booking = function renderBooking() {
         <div class="form-actions"><button class="btn btn-primary btn-lg" id="complete-booking-btn">Hoàn tất đặt lịch</button></div>
       </aside>
     </section>
+
+    ${state.authRequiredModalOpen ? `
+      <section class="modal-backdrop" id="auth-required-modal">
+        <article class="modal-card" style="max-width: 520px;">
+          <header class="modal-header">
+            <div><span class="card-kicker">Xác thực tài khoản</span><h3>Bạn cần đăng nhập hoặc đăng ký</h3></div>
+            <button class="close-btn" id="close-auth-required-modal">✕</button>
+          </header>
+          <div class="modal-body">
+            <p>Khách vãng lai có thể xem giao diện đặt lịch, nhưng cần có tài khoản để hoàn tất đặt lịch khám.</p>
+            <p>Vui lòng chọn một trong hai hướng sau:</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký tài khoản</button>
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+          </div>
+        </article>
+      </section>
+    ` : ""}
   `;
 };
 
 // appointments.js
 window.ClinicApp.renderers.appointments = function renderAppointments() {
   const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Lịch hẹn của bạn</span>
+          <h3>Khách vãng lai chưa có dữ liệu lịch hẹn cá nhân</h3>
+          <p>Đăng nhập hoặc đăng ký để xem lịch hẹn và quản lý đổi/hủy lịch.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
   const { getDoctorById, getServiceById, getStatusClass, getSortedAppointments, getPaginatedData, getTotalPages } = window.ClinicApp.helpers;
   const appointments = state.appointments;
   let filteredAppointments = state.selectedAppointmentFilter === "all"
@@ -2339,6 +2425,22 @@ window.ClinicApp.renderers.appointments = function renderAppointments() {
 // notifications.js
 window.ClinicApp.renderers.notifications = function renderNotifications() {
   const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Thông báo</span>
+          <h3>Khách vãng lai chưa có thông báo cá nhân</h3>
+          <p>Đăng nhập hoặc đăng ký để nhận thông báo xác nhận lịch, nhắc lịch và thay đổi từ phòng khám.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
   const { getSortedNotifications, getPaginatedData, getTotalPages } = window.ClinicApp.helpers;
   let notifications = state.notifications;
   
@@ -2493,7 +2595,9 @@ window.ClinicApp.renderers.profile = function renderProfile() {
   }
 
   function renderMenu() {
-    const unreadCount = state.notifications.filter((n) => n.unread).length;
+    const unreadCount = state.isAuthenticated
+      ? state.notifications.filter((n) => n.unread).length
+      : 0;
     dom.menuRoot.innerHTML = store.menuItems
       .map((item) => {
         const badge = item.id === "notifications" && unreadCount > 0 
@@ -2509,15 +2613,43 @@ window.ClinicApp.renderers.profile = function renderProfile() {
     const current = store.menuItems.find((item) => item.id === state.currentView);
     dom.viewKicker.textContent = current.kicker;
     dom.viewTitle.textContent = current.title;
-    dom.patientName.textContent = state.currentPatient.fullName;
-    dom.patientPhone.textContent = state.currentPatient.phone;
+    dom.patientName.textContent = state.currentPatient.fullName || "Khách vãng lai";
+    dom.patientPhone.textContent = state.currentPatient.phone || "Chưa đăng nhập";
+    const authButton = document.getElementById("logout-btn");
+    if (authButton) {
+      authButton.textContent = state.isAuthenticated ? "Đăng xuất" : "Đăng nhập / Đăng ký";
+      authButton.classList.toggle("btn-danger", state.isAuthenticated);
+      authButton.classList.toggle("btn-ghost", !state.isAuthenticated);
+    }
     dom.viewRoot.innerHTML = app.renderers[state.currentView]();
   }
 
   function enterPatientApp() {
+    state.isAuthenticated = true;
+    dom.authShell.classList.add("hidden");
+    dom.systemShell.classList.remove("hidden");
+    if (state.pendingView) {
+      state.currentView = state.pendingView;
+      state.pendingView = null;
+    }
+    renderCurrentView();
+  }
+
+  function returnToGuestPortal() {
     dom.authShell.classList.add("hidden");
     dom.systemShell.classList.remove("hidden");
     renderCurrentView();
+  }
+
+  function requestAuthenticationForView(targetView, authTab) {
+    state.pendingView = targetView || "booking";
+    state.authTab = authTab || "login";
+    dom.authShell.classList.remove("hidden");
+    dom.systemShell.classList.add("hidden");
+    document.querySelectorAll(".tab-btn").forEach((item) => item.classList.toggle("active", item.dataset.authTab === state.authTab));
+    document.getElementById("login-form").classList.toggle("hidden", state.authTab !== "login");
+    document.getElementById("register-form").classList.toggle("hidden", state.authTab !== "register");
+    showToast("Vui lòng đăng nhập hoặc đăng ký để sử dụng chức năng đặt lịch.", "warning");
   }
 
   function updateBookingDraftFromDoctor(doctorId) {
@@ -2534,6 +2666,12 @@ window.ClinicApp.renderers.profile = function renderProfile() {
         document.querySelectorAll(".tab-btn").forEach((item) => item.classList.toggle("active", item.dataset.authTab === state.authTab));
         document.getElementById("login-form").classList.toggle("hidden", state.authTab !== "login");
         document.getElementById("register-form").classList.toggle("hidden", state.authTab !== "register");
+        document.querySelectorAll("#login-form .field input, #register-form .field input, #register-form .field select").forEach((item) => item.classList.remove("error"));
+        document.querySelectorAll("#login-form .field-error, #register-form .field-error").forEach((item) => { item.textContent = ""; });
+        const loginSummary = document.getElementById("login-error-summary");
+        const registerSummary = document.getElementById("register-error-summary");
+        if (loginSummary) loginSummary.textContent = "";
+        if (registerSummary) registerSummary.textContent = "";
       }
 
       const loginRoleBtn = event.target.closest("[data-role]");
@@ -2544,7 +2682,8 @@ window.ClinicApp.renderers.profile = function renderProfile() {
 
       const menuBtn = event.target.closest("[data-view], [data-go-view]");
       if (menuBtn) {
-        state.currentView = menuBtn.dataset.view || menuBtn.dataset.goView;
+        const targetView = menuBtn.dataset.view || menuBtn.dataset.goView;
+        state.currentView = targetView;
         state.doctorDetailOpen = false;
         renderCurrentView();
       }
@@ -2623,6 +2762,11 @@ window.ClinicApp.renderers.profile = function renderProfile() {
         }
         if (!state.bookingDraft.time) {
           showToast("Vui lòng chọn giờ khám trước khi hoàn tất đặt lịch.", "warning");
+          return;
+        }
+        if (!state.isAuthenticated) {
+          state.authRequiredModalOpen = true;
+          renderCurrentView();
           return;
         }
         const availableDoctors = helpers.getAvailableDoctorsForSession({
@@ -2734,10 +2878,38 @@ window.ClinicApp.renderers.profile = function renderProfile() {
       }
 
       if (event.target.id === "logout-btn") {
-        dom.authShell.classList.remove("hidden");
-        dom.systemShell.classList.add("hidden");
+        if (!state.isAuthenticated) {
+          requestAuthenticationForView(state.currentView);
+          return;
+        }
+        state.isAuthenticated = false;
         state.currentView = "dashboard";
+        state.pendingView = null;
+        state.currentPatient = { ...store.guestPatient };
+        returnToGuestPortal();
         showToast("Đã đăng xuất khỏi phiên demo.");
+      }
+
+      if (event.target.id === "back-to-guest-btn") {
+        state.pendingView = null;
+        returnToGuestPortal();
+      }
+
+      if (event.target.id === "auth-required-modal") {
+        state.authRequiredModalOpen = false;
+        renderCurrentView();
+      }
+
+      if (event.target.id === "close-auth-required-modal") {
+        state.authRequiredModalOpen = false;
+        renderCurrentView();
+      }
+
+      const authRouteBtn = event.target.closest("[data-auth-route]");
+      if (authRouteBtn) {
+        state.authRequiredModalOpen = false;
+        requestAuthenticationForView("booking", authRouteBtn.dataset.authRoute);
+        return;
       }
 
       // Pagination for appointments
@@ -2777,23 +2949,206 @@ window.ClinicApp.renderers.profile = function renderProfile() {
   }
 
   function bindForms() {
+    const normalizePhone = (value) => (value || "").replace(/\D/g, "");
+    const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+    function clearFieldError(inputId) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.remove("error");
+      if (errorNode) errorNode.textContent = "";
+    }
+
+    function setFieldError(inputId, message) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.add("error");
+      if (errorNode) errorNode.textContent = message;
+    }
+
+    function clearFormErrors(summaryId, fieldIds) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = "";
+      fieldIds.forEach(clearFieldError);
+    }
+
+    function setSummaryError(summaryId, message) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = message;
+    }
+
     document.getElementById("login-form").addEventListener("submit", (event) => {
       event.preventDefault();
-      if (state.loginRole !== "patient") {
-        showToast("Phiên demo hiện chỉ mô phỏng module Bệnh nhân. Hệ thống sẽ mở vào khu vực Bệnh nhân để xem giao diện.", "warning");
+      clearFormErrors("login-error-summary", ["login-identifier", "login-password"]);
+
+      const formData = new FormData(event.currentTarget);
+      const identifier = (formData.get("identifier") || "").toString().trim();
+      const password = (formData.get("password") || "").toString();
+      let hasError = false;
+
+      if (!identifier) {
+        setFieldError("login-identifier", "Vui lòng nhập email hoặc số điện thoại.");
+        hasError = true;
       }
+
+      if (!password) {
+        setFieldError("login-password", "Vui lòng nhập mật khẩu.");
+        hasError = true;
+      }
+
+      if (hasError) {
+        setSummaryError("login-error-summary", "Thông tin đăng nhập chưa đầy đủ. Vui lòng kiểm tra lại.");
+        return;
+      }
+
+      const account = store.demoPatientAccount;
+      const isMatchingIdentifier =
+        identifier.toLowerCase() === account.identifier.toLowerCase()
+        || normalizePhone(identifier) === account.phone;
+
+      if (!isMatchingIdentifier) {
+        setFieldError("login-identifier", "Tài khoản chưa tồn tại.");
+        setSummaryError("login-error-summary", "Không tìm thấy tài khoản. Vui lòng đăng ký để tiếp tục đặt lịch.");
+        state.authTab = "register";
+        document.querySelectorAll(".tab-btn").forEach((item) => item.classList.toggle("active", item.dataset.authTab === "register"));
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("register-form").classList.remove("hidden");
+        return;
+      }
+
+      if (password !== account.password) {
+        setFieldError("login-password", "Mật khẩu không đúng.");
+        setSummaryError("login-error-summary", "Đăng nhập thất bại. Vui lòng kiểm tra lại mật khẩu.");
+        return;
+      }
+
+      state.currentPatient = { ...store.initialPatient };
+      if (state.loginRole !== "patient") {
+        showToast("Phiên demo chỉ mô phỏng portal Bệnh nhân. Hệ thống sẽ chuyển vào khu vực Bệnh nhân.", "warning");
+      }
+
       enterPatientApp();
     });
 
     document.getElementById("register-form").addEventListener("submit", (event) => {
       event.preventDefault();
+      clearFormErrors("register-error-summary", [
+        "register-full-name",
+        "register-phone",
+        "register-email",
+        "register-cccd",
+        "register-dob",
+        "register-gender",
+        "register-password",
+        "register-confirm-password",
+      ]);
+
       const formData = new FormData(event.currentTarget);
-      state.currentPatient.fullName = formData.get("fullName") || state.currentPatient.fullName;
-      state.currentPatient.phone = formData.get("phone") || state.currentPatient.phone;
-      state.currentPatient.email = formData.get("email") || state.currentPatient.email;
-      state.currentPatient.cccd = formData.get("cccd") || state.currentPatient.cccd;
-      state.currentPatient.dob = formData.get("dob") || state.currentPatient.dob;
-      state.currentPatient.gender = formData.get("gender") || state.currentPatient.gender;
+      const fullName = (formData.get("fullName") || "").toString().trim();
+      const phone = (formData.get("phone") || "").toString().trim();
+      const email = (formData.get("email") || "").toString().trim();
+      const cccd = (formData.get("cccd") || "").toString().trim();
+      const dob = (formData.get("dob") || "").toString();
+      const gender = (formData.get("gender") || "").toString();
+      const password = (formData.get("password") || "").toString();
+      const confirmPassword = (formData.get("confirmPassword") || "").toString();
+
+      let hasError = false;
+      if (!fullName) {
+        setFieldError("register-full-name", "Vui lòng nhập họ và tên.");
+        hasError = true;
+      }
+
+      if (!phone) {
+        setFieldError("register-phone", "Vui lòng nhập số điện thoại.");
+        hasError = true;
+      } else if (!/^0\d{9,10}$/.test(normalizePhone(phone))) {
+        setFieldError("register-phone", "Số điện thoại không hợp lệ.");
+        hasError = true;
+      }
+
+      if (!email) {
+        setFieldError("register-email", "Vui lòng nhập email.");
+        hasError = true;
+      } else if (!isValidEmail(email)) {
+        setFieldError("register-email", "Email không đúng định dạng.");
+        hasError = true;
+      }
+
+      if (!cccd) {
+        setFieldError("register-cccd", "Vui lòng nhập CCCD.");
+        hasError = true;
+      } else if (!/^\d{12}$/.test(cccd)) {
+        setFieldError("register-cccd", "CCCD phải gồm đúng 12 chữ số.");
+        hasError = true;
+      }
+
+      if (!dob) {
+        setFieldError("register-dob", "Vui lòng chọn ngày sinh.");
+        hasError = true;
+      }
+
+      if (!gender) {
+        setFieldError("register-gender", "Vui lòng chọn giới tính.");
+        hasError = true;
+      }
+
+      if (!password) {
+        setFieldError("register-password", "Vui lòng nhập mật khẩu.");
+        hasError = true;
+      } else if (password.length < 8) {
+        setFieldError("register-password", "Mật khẩu cần tối thiểu 8 ký tự.");
+        hasError = true;
+      }
+
+      if (!confirmPassword) {
+        setFieldError("register-confirm-password", "Vui lòng nhập lại mật khẩu.");
+        hasError = true;
+      } else if (confirmPassword !== password) {
+        setFieldError("register-confirm-password", "Mật khẩu nhập lại không khớp.");
+        hasError = true;
+      }
+
+      const normalizedPhone = normalizePhone(phone);
+      const existedEmail = email.toLowerCase() === store.demoPatientAccount.identifier.toLowerCase();
+      const existedPhone = normalizedPhone === store.demoPatientAccount.phone;
+      const existedCccd = cccd === store.initialPatient.cccd;
+
+      if (existedEmail) {
+        setFieldError("register-email", "Email đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (existedPhone) {
+        setFieldError("register-phone", "Số điện thoại đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (existedCccd) {
+        setFieldError("register-cccd", "CCCD đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (hasError) {
+        setSummaryError("register-error-summary", "Đăng ký chưa thành công. Vui lòng kiểm tra lại thông tin.");
+        return;
+      }
+
+      state.currentPatient.fullName = fullName;
+      state.currentPatient.phone = phone;
+      state.currentPatient.email = email;
+      state.currentPatient.cccd = cccd;
+      state.currentPatient.dob = dob;
+      state.currentPatient.gender = gender;
+      store.initialPatient.fullName = fullName;
+      store.initialPatient.phone = phone;
+      store.initialPatient.email = email;
+      store.initialPatient.cccd = cccd;
+      store.initialPatient.dob = dob;
+      store.initialPatient.gender = gender;
+      store.demoPatientAccount.identifier = email;
+      store.demoPatientAccount.phone = normalizedPhone;
+      store.demoPatientAccount.password = password;
       showToast("Đăng ký thành công. Bạn đã được chuyển sang giao diện Bệnh nhân.");
       enterPatientApp();
     });
@@ -2849,6 +3204,7 @@ window.ClinicApp.renderers.profile = function renderProfile() {
     bindClicks();
     bindForms();
     bindChanges();
+    renderCurrentView();
   };
 })();
 
