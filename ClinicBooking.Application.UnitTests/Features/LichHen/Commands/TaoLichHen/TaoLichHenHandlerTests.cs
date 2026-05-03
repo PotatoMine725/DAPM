@@ -143,7 +143,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var result = await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         result.IdBenhNhan.Should().Be(bn.IdBenhNhan);

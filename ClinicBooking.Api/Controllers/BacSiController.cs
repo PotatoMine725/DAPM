@@ -1,4 +1,5 @@
 using ClinicBooking.Api.Contracts.BacSi;
+using ClinicBooking.Api.Contracts.Doctors;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.BacSi.Commands.CapNhatBacSi;
 using ClinicBooking.Application.Features.BacSi.Commands.TaoBacSi;
@@ -6,6 +7,7 @@ using ClinicBooking.Application.Features.BacSi.Commands.XoaBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.DanhSachBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.HoSoBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.LayHoSoCuaToi;
+using ClinicBooking.Application.Features.Doctors.Queries.DanhSachBacSiCongKhai;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -86,5 +88,29 @@ public class BacSiController : ControllerBase
     {
         await _mediator.Send(new XoaBacSiCommand(idBacSi), cancellationToken);
         return NoContent();
+    }
+
+    // Public: patient portal can browse active doctors without authentication.
+    [HttpGet("cong-khai")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<BacSiPublicDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BacSiPublicDto>>> DanhSachBacSiCongKhai(
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        [FromQuery] int? idChuyenKhoa = null,
+        [FromQuery] string? tuKhoa = null,
+        [FromQuery] bool? dangLamViec = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new DanhSachBacSiCongKhaiQuery(
+                SoTrang: soTrang,
+                KichThuocTrang: kichThuocTrang,
+                IdChuyenKhoa: idChuyenKhoa,
+                TuKhoa: tuKhoa,
+                DangLamViec: dangLamViec),
+            cancellationToken);
+
+        return Ok(result.Select(x => x.TuDto()).ToList());
     }
 }
