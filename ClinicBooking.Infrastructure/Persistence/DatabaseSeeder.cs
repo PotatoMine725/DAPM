@@ -103,6 +103,44 @@ public class DatabaseSeeder
         await SeedTaiKhoanFixtureAsync(fixture.BacSi, VaiTro.BacSi, matKhau, cancellationToken);
         await SeedTaiKhoanFixtureAsync(fixture.LeTan, VaiTro.LeTan, matKhau, cancellationToken);
         await SeedTaiKhoanFixtureAsync(fixture.Admin, VaiTro.Admin, matKhau, cancellationToken);
+        await RefreshCaLamViecDatesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Cap nhat cac CaLamViec seed (IDs 3001/3002/3003) sang ngay tuong lai neu ngay da qua.
+    /// Chay moi lan app khoi dong (idempotent): neu date da la tuong lai thi bo qua.
+    /// CHI chay khi DevFixture.Enabled = true.
+    /// </summary>
+    private async Task RefreshCaLamViecDatesAsync(CancellationToken cancellationToken)
+    {
+        var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
+        var seededIds = new[] { 3001, 3002, 3003 };
+
+        var staleShifts = await _db.CaLamViec
+            .Where(c => seededIds.Contains(c.IdCaLamViec) && c.NgayLamViec <= today)
+            .ToListAsync(cancellationToken);
+
+        if (!staleShifts.Any())
+        {
+            _logger.LogDebug("[DevFixture] CaLamViec seed da co ngay tuong lai. Bo qua refresh.");
+            return;
+        }
+
+        foreach (var shift in staleShifts)
+        {
+            // 3001/3002 ban dau la "ngay mai" → giw nguyen y nghia: 30 ngay ke tu today
+            // 3003 ban dau la "tuan toi" → 37 ngay ke tu today
+            shift.NgayLamViec = shift.IdCaLamViec == 3003
+                ? today.AddDays(37)
+                : today.AddDays(30);
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "[DevFixture] Da cap nhat {Count} CaLamViec stale (IDs: {Ids}) sang ngay tuong lai. CHI dung o Development.",
+            staleShifts.Count,
+            string.Join(", ", staleShifts.Select(s => s.IdCaLamViec)));
     }
 
     private async Task SeedTaiKhoanFixtureAsync(

@@ -1,5 +1,10 @@
-using ClinicBooking.Application.Abstractions.Persistence;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using ClinicBooking.Api.Contracts.Auth;
 using ClinicBooking.Application.Abstractions.Security;
+using ClinicBooking.Application.Features.Auth.Dtos;
+using ClinicBooking.Domain.Entities;
+using ClinicBooking.Domain.Enums;
 using ClinicBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -95,6 +100,66 @@ public sealed class ClinicBookingApiFactory : WebApplicationFactory<Program>
         catch (Exception)
         {
         }
+    }
+
+    /// <summary>
+    /// Dang nhap va tra ve HttpClient da gan Authorization Bearer header.
+    /// </summary>
+    public async Task<HttpClient> LoginAsync(string tenDangNhap, string matKhau, CancellationToken cancellationToken = default)
+    {
+        var baseOptions = new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") };
+        using var plainClient = CreateClient(baseOptions);
+
+        var response = await plainClient.PostAsJsonAsync(
+            "/api/auth/dang-nhap",
+            new DangNhapRequest(tenDangNhap, matKhau),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var xacThuc = await response.Content.ReadFromJsonAsync<XacThucResponse>(cancellationToken: cancellationToken);
+
+        var client = CreateClient(baseOptions);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", xacThuc!.AccessToken);
+        return client;
+    }
+
+    /// <summary>
+    /// Tao tai khoan BenhNhan moi (idempotent) va tra ve client da dang nhap.
+    /// Dung de tao "benh_nhan thu hai" cho cac test kiem tra ownership.
+    /// </summary>
+    public async Task<HttpClient> TaoVaDangNhapBenhNhanMoiAsync(
+        string tenDangNhap,
+        string matKhau,
+        CancellationToken cancellationToken = default)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+
+        if (!await db.TaiKhoan.AnyAsync(x => x.TenDangNhap == tenDangNhap, cancellationToken))
+        {
+            var taiKhoan = new TaiKhoan
+            {
+                TenDangNhap = tenDangNhap,
+                MatKhau = hasher.HashPassword(matKhau),
+                VaiTro = VaiTro.BenhNhan,
+                TrangThai = true,
+                NgayTao = dateTimeProvider.UtcNow
+            };
+            db.TaiKhoan.Add(taiKhoan);
+            await db.SaveChangesAsync(cancellationToken);
+
+            db.BenhNhan.Add(new BenhNhan
+            {
+                IdTaiKhoan = taiKhoan.IdTaiKhoan,
+                HoTen = tenDangNhap,
+                NgayTao = dateTimeProvider.UtcNow
+            });
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        return await LoginAsync(tenDangNhap, matKhau, cancellationToken);
     }
 
     private AppDbContext CreateSchemaContext()
