@@ -20,6 +20,10 @@
 {
     <div class="alert alert-danger">@err</div>
 }
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
 
 @if (Model.CanhBaoThieuBacSi.Any(x => x.HoanToanTrong))
 {
@@ -98,7 +102,7 @@ else if (Model.CanhBaoThieuBacSi.Any())
                     <button type="submit" formaction="?handler=GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
                     <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
                 </div>
-                <div class="form-hint">Bạn có thể bấm gửi OTP để nhận mã xác thực trước khi đặt lịch.</div>
+                <div class="form-hint">Bấm gửi OTP để tạo mã xác thực, sau đó nhập mã và bấm hoàn tất đặt lịch.</div>
             </div>
         </div>
     </div>
@@ -134,6 +138,18 @@ else if (Model.CanhBaoThieuBacSi.Any())
 
         <div class="action-bar">
             <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">Huỷ bỏ</a>
+<<<<<<< HEAD
+=======
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="ph ph-lightbulb"></i> Cách hoạt động</span>
+            </div>
+            <div style="padding: var(--space-4);" class="form-hint">
+                Bạn chỉ cần chọn ngày, nhập giờ mong muốn và gửi yêu cầu. Hệ thống sẽ tự khớp ca làm việc phù hợp, tạo lịch hẹn và thông báo kết quả sau khi xử lý xong.
+            </div>
+>>>>>>> 525704d (fix booking otp flow and patient profile editing)
         </div>
     </div>
 </form>

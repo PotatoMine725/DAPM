@@ -32,12 +32,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="text" class="form-input" value="@Model.HoSo.Email" disabled />
+                    <label class="form-label" asp-for="Email">Email</label>
+                    <input type="email" class="form-input" asp-for="Email" required />
+                    <small style="color:var(--color-text-secondary); display:block; margin-top:4px;">Có thể cập nhật email dùng để liên hệ.</small>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Số điện thoại</label>
-                    <input type="text" class="form-input" value="@Model.HoSo.SoDienThoai" disabled />
+                    <label class="form-label" asp-for="SoDienThoai">Số điện thoại</label>
+                    <input type="tel" class="form-input" asp-for="SoDienThoai" required />
+                    <small style="color:var(--color-text-secondary); display:block; margin-top:4px;">Có thể cập nhật số điện thoại dùng cho OTP và liên hệ.</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ngày tạo tài khoản</label>

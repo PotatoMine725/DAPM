@@ -14,6 +14,7 @@ using ClinicBooking.Infrastructure.Services.Scheduling;
 using ClinicBooking.Infrastructure.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -52,6 +53,7 @@ public static class DependencyInjection
             configuration.GetSection(LichHenOptions.SectionName));
 
         services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
+        services.AddMemoryCache();
         services.AddScoped<IOtpService, OtpServiceStub>();
 
         // Module 2: implementation ca lam viec query service
