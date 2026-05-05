@@ -1,5 +1,6 @@
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Security;
+using ClinicBooking.Application.Common.Options;
 using ClinicBooking.Application.Features.DanhMuc.Dtos;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
 using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ClinicBooking.Web.Pages.BenhNhan;
 
@@ -22,13 +24,15 @@ public class DatLichModel : PageModel
     private readonly IAppDbContext _db;
     private readonly IOtpService _otpService;
     private readonly ICurrentUserService _currentUser;
+    private readonly OtpOptions _otpOptions;
 
-    public DatLichModel(IMediator mediator, IAppDbContext db, IOtpService otpService, ICurrentUserService currentUser)
+    public DatLichModel(IMediator mediator, IAppDbContext db, IOtpService otpService, ICurrentUserService currentUser, IOptions<OtpOptions> otpOptions)
     {
         _mediator = mediator;
         _db = db;
         _otpService = otpService;
         _currentUser = currentUser;
+        _otpOptions = otpOptions.Value;
     }
 
     public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
@@ -36,6 +40,7 @@ public class DatLichModel : PageModel
     public string ChuyenKhoaHienTai => "Hệ thống sẽ tự sắp xếp theo dịch vụ và giờ mong muốn";
     public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
     public bool CanSubmit => IdDichVu > 0;
+    public bool BatBuocOtp => _otpOptions.BatBuocChoDatLich;
 
     [BindProperty] public int IdDichVu { get; set; }
     [BindProperty] public TimeOnly GioMongMuon { get; set; } = new TimeOnly(8, 0);
@@ -56,6 +61,12 @@ public class DatLichModel : PageModel
 
     public async Task<IActionResult> OnPostGuiOtpAsync()
     {
+        if (!BatBuocOtp)
+        {
+            TempData["SuccessMessage"] = "Bỏ qua OTP theo cấu hình Development.";
+            return RedirectToPage(new { ngay = NgayChon });
+        }
+
         await TaiDuLieuAsync();
 
         var taiKhoan = await LayTaiKhoanHienTaiAsync();
@@ -91,17 +102,20 @@ public class DatLichModel : PageModel
             return Page();
         }
 
-        if (string.IsNullOrWhiteSpace(Otp))
+        if (BatBuocOtp)
         {
-            TempData["ErrorMessage"] = "Vui lòng nhập OTP đã nhận để hoàn tất đặt lịch.";
-            return Page();
-        }
+            if (string.IsNullOrWhiteSpace(Otp))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập OTP đã nhận để hoàn tất đặt lịch.";
+                return Page();
+            }
 
-        var daXacThuc = await _otpService.XacThucOtpDatLichAsync(taiKhoan.IdTaiKhoan, Otp.Trim());
-        if (!daXacThuc)
-        {
-            TempData["ErrorMessage"] = "OTP không hợp lệ hoặc đã hết hạn. Vui lòng gửi OTP mới.";
-            return Page();
+            var daXacThuc = await _otpService.XacThucOtpDatLichAsync(taiKhoan.IdTaiKhoan, Otp.Trim());
+            if (!daXacThuc)
+            {
+                TempData["ErrorMessage"] = "OTP không hợp lệ hoặc đã hết hạn. Vui lòng gửi OTP mới.";
+                return Page();
+            }
         }
 
         try

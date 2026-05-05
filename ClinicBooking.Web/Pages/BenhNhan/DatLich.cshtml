@@ -86,15 +86,25 @@
                 <span class="badge badge-primary">Bước 3</span>
             </div>
             <div style="padding: var(--space-4);" class="section-stack">
-                <div class="form-group">
-                    <label class="form-label">Mã OTP</label>
-                    <input type="text" class="form-input" asp-for="Otp" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số" />
-                </div>
-                <div class="filter-actions">
-                    <button type="submit" formaction="?handler=GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
-                    <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
-                </div>
-                <div class="form-hint">Bấm gửi OTP để tạo mã xác thực, sau đó nhập mã và bấm hoàn tất đặt lịch.</div>
+                @if (Model.BatBuocOtp)
+                {
+                    <div class="form-group">
+                        <label class="form-label">Mã OTP</label>
+                        <input type="text" class="form-input" asp-for="Otp" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số" />
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" formaction="?handler=GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
+                        <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
+                    </div>
+                    <div class="form-hint">Bấm gửi OTP để tạo mã xác thực, sau đó nhập mã và bấm hoàn tất đặt lịch.</div>
+                }
+                else
+                {
+                    <div class="form-hint">OTP đang được tắt theo cấu hình Development. Bạn có thể đặt lịch trực tiếp.</div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
+                    </div>
+                }
             </div>
         </div>
     </div>

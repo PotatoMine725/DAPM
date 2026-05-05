@@ -10,7 +10,7 @@ public static class Module1TestDataSeeder
     {
         var now = new DateTime(2026, 4, 23, 0, 0, 0, DateTimeKind.Utc);
         var today = DateOnly.FromDateTime(now);
-        var tomorrowDate = today.AddDays(1);
+        var tomorrowMorningDate = today.AddDays(1);
         var nextWeekDate = today.AddDays(7);
 
         modelBuilder.Entity<TaiKhoan>().HasData(
@@ -87,8 +87,8 @@ public static class Module1TestDataSeeder
                 IdPhong = 1,
                 IdChuyenKhoa = 1,
                 IdDinhNghiaCa = 1,
-                NgayLamViec = tomorrowDate,
-                GioBatDau = new TimeOnly(7, 0),
+                NgayLamViec = tomorrowMorningDate,
+                GioBatDau = new TimeOnly(8, 0),
                 GioKetThuc = new TimeOnly(12, 0),
                 ThoiGianSlot = 20,
                 SoSlotToiDa = 15,
@@ -108,7 +108,7 @@ public static class Module1TestDataSeeder
                 IdPhong = 1,
                 IdChuyenKhoa = 1,
                 IdDinhNghiaCa = 2,
-                NgayLamViec = tomorrowDate,
+                NgayLamViec = tomorrowMorningDate,
                 GioBatDau = new TimeOnly(13, 0),
                 GioKetThuc = new TimeOnly(17, 0),
                 ThoiGianSlot = 20,
@@ -164,7 +164,7 @@ public static class Module1TestDataSeeder
             new LichHen
             {
                 IdLichHen = 4001,
-                MaLichHen = $"LH-{tomorrowDate:yyyyMMdd}-001",
+                MaLichHen = $"LH-{tomorrowMorningDate:yyyyMMdd}-001",
                 IdBenhNhan = 2001,
                 IdCaLamViec = 3001,
                 IdDichVu = 1,
@@ -180,7 +180,7 @@ public static class Module1TestDataSeeder
             new LichHen
             {
                 IdLichHen = 4002,
-                MaLichHen = $"LH-{tomorrowDate:yyyyMMdd}-002",
+                MaLichHen = $"LH-{tomorrowMorningDate:yyyyMMdd}-002",
                 IdBenhNhan = 2001,
                 IdCaLamViec = 3001,
                 IdDichVu = 2,
