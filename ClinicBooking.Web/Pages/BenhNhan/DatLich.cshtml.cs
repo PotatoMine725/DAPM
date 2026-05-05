@@ -19,7 +19,7 @@ public class DatLichModel : PageModel
 
     public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
     public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
-    public DateOnly NgayChon { get; private set; }
+    [BindProperty(SupportsGet = true)] public DateOnly NgayChon { get; set; }
     public string ChuyenKhoaHienTai => string.IsNullOrWhiteSpace(TenChuyenKhoaDaChon) ? "Nội tổng quát" : TenChuyenKhoaDaChon;
     public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
     public bool CanSubmit => IdDichVu > 0;
@@ -28,7 +28,6 @@ public class DatLichModel : PageModel
     [BindProperty] public TimeOnly GioMongMuon { get; set; } = new TimeOnly(8, 0);
     [BindProperty] public string? TrieuChung { get; set; }
     [BindProperty] public string? GhiChu { get; set; }
-    [BindProperty] public int? IdCaLamViec { get; set; }
     [BindProperty] public string? Otp { get; set; }
 
     public string? TenChuyenKhoaDaChon { get; private set; }
@@ -37,17 +36,16 @@ public class DatLichModel : PageModel
     public async Task OnGetAsync(DateOnly? ngay)
     {
         NgayChon = ngay ?? DateOnly.FromDateTime(DateTime.Now.AddDays(1));
-        await TaiDuLieuAsync(NgayChon);
+        await TaiDuLieuAsync();
     }
 
-    public async Task<IActionResult> OnPostAsync(DateOnly ngay)
+    public async Task<IActionResult> OnPostAsync()
     {
-        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
+        await TaiDuLieuAsync();
 
         if (!ModelState.IsValid || IdDichVu <= 0)
         {
-            await TaiDuLieuAsync(NgayChon);
-            TempData["ErrorMessage"] = "Vui lòng chọn ngày, giờ và dịch vụ hợp lệ.";
+            TempData["ErrorMessage"] = "Vui lòng chọn dịch vụ hợp lệ.";
             return Page();
         }
 
@@ -63,32 +61,30 @@ public class DatLichModel : PageModel
                 TrieuChung);
 
             var result = await _mediator.Send(command);
-            TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}";
+            TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}. Hệ thống sẽ tự sắp xếp ca khám phù hợp và gửi thông báo sau khi hoàn tất.";
             return RedirectToPage("/BenhNhan/DanhSachLichHen");
         }
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = ex.Message;
-            await TaiDuLieuAsync(NgayChon);
             return Page();
         }
     }
 
-    public async Task<IActionResult> OnPostGuiOtpAsync(DateOnly ngay)
+    public async Task<IActionResult> OnPostGuiOtpAsync()
     {
-        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
-        await TaiDuLieuAsync(NgayChon);
-        TempData["SuccessMessage"] = "Đã gửi mã OTP (logic xác thực sẽ được ghép khi chốt contract OTP).";
+        await TaiDuLieuAsync();
+        TempData["SuccessMessage"] = "Đã nhận yêu cầu. Hệ thống sẽ gửi OTP sau khi hoàn tất bước xác nhận trước đặt lịch.";
         return Page();
     }
 
-    private async Task TaiDuLieuAsync(DateOnly ngay)
+    private async Task TaiDuLieuAsync()
     {
         DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
             SoTrang: 1,
             KichThuocTrang: 50,
-            TuNgay: ngay,
-            DenNgay: ngay,
+            TuNgay: NgayChon,
+            DenNgay: NgayChon,
             ConTrong: true));
 
         DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(

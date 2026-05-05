@@ -31,62 +31,22 @@
     </div>
 </div>
 
-<div class="panel-grid-2">
+<form method="post" class="panel-grid-2">
     <div class="section-stack">
-        <form method="get" class="card" style="padding: var(--space-4);">
-            <div class="form-group" style="margin:0;">
-                <label class="form-label" style="margin:0 0 var(--space-2);">Chọn ngày đến khám</label>
-                <div class="filter-actions" style="align-items:center;">
-                    <input type="date" class="form-input" name="ngay"
-                           value="@Model.NgayChon.ToString("yyyy-MM-dd")"
-                           min="@DateOnly.FromDateTime(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")"
-                           style="width: 180px;" />
-                    <button type="submit" class="btn btn-secondary">
-                        <i class="ph ph-calendar-blank"></i> Xem khung giờ
-                    </button>
-                </div>
-            </div>
-        </form>
-
         <div class="card">
             <div class="card-header">
-                <span class="card-title"><i class="ph ph-clock"></i> Khung giờ trống</span>
-                <span class="badge badge-primary">@Model.NgayChon.ToString("dd/MM/yyyy")</span>
-            </div>
-
-            @if (!Model.DanhSachCa.Any())
-            {
-                <div class="empty-state" style="padding: var(--space-8);">
-                    <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
-                    <p>Không có khung giờ phù hợp cho ngày này.<br/>Vui lòng chọn ngày khác.</p>
-                </div>
-            }
-            else
-            {
-                <div style="padding: var(--space-4);">
-                    <div class="slot-grid">
-                        @foreach (var ca in Model.DanhSachCa)
-                        {
-                            <button type="button"
-                                    class="slot-chip @(Model.IdCaLamViec == ca.IdCaLamViec ? "slot-chip--selected" : "")"
-                                    onclick="selectSlot(@ca.IdCaLamViec, '@ca.GioBatDau.ToString("HH:mm")', '@ca.GioKetThuc.ToString("HH:mm")', '@ca.TenChuyenKhoa', '@ca.MaPhong', '@ca.IdCaLamViec')">
-                                <span class="slot-chip__time">@ca.GioBatDau.ToString("HH:mm")</span>
-                                <span class="slot-chip__sub">@ca.GioKetThuc.ToString("HH:mm")</span>
-                            </button>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="ph ph-first-aid"></i> Thông tin khám</span>
+                <span class="card-title"><i class="ph ph-calendar"></i> Thông tin đặt lịch</span>
             </div>
             <div style="padding: var(--space-4);" class="section-stack">
                 <div class="form-group">
-                    <label class="form-label">Chuyên khoa</label>
-                    <div class="form-input booking-readonly">@Model.ChuyenKhoaHienTai</div>
+                    <label class="form-label">Ngày đến khám</label>
+                    <input type="date" class="form-input" asp-for="NgayChon"
+                           min="@DateOnly.FromDateTime(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Giờ mong muốn</label>
+                    <input type="time" class="form-input" asp-for="GioMongMuon" />
+                    <div class="form-hint">Bạn chọn giờ mong muốn, hệ thống sẽ tự tìm ca khám phù hợp và sắp xếp sau khi đặt lịch.</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dịch vụ khám</label>
@@ -107,14 +67,29 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Lý do khám / triệu chứng</label>
-                    <textarea class="form-input" asp-for="TrieuChung" rows="4"
-                              placeholder="Mệt mỏi, cơn đau, tái khám..." ></textarea>
+                    <textarea class="form-input" asp-for="TrieuChung" rows="4" placeholder="Mệt mỏi, cơn đau, tái khám..."></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ghi chú (nếu có)</label>
-                    <textarea class="form-input" asp-for="GhiChu" rows="3"
-                              placeholder="Muốn gặp bác sĩ đã khám lần trước..."></textarea>
+                    <textarea class="form-input" asp-for="GhiChu" rows="3" placeholder="Muốn gặp bác sĩ đã khám lần trước..."></textarea>
                 </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="ph ph-shield-check"></i> Xác thực</span>
+                <span class="badge badge-primary">Bước 3</span>
+            </div>
+            <div style="padding: var(--space-4);" class="section-stack">
+                <div class="form-group">
+                    <label class="form-label">Mã OTP</label>
+                    <input type="text" class="form-input" asp-for="Otp" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số" />
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" name="handler" value="GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
+                </div>
+                <div class="form-hint">Bạn có thể bấm gửi OTP để nhận mã xác thực trước khi đặt lịch.</div>
             </div>
         </div>
     </div>
@@ -126,62 +101,57 @@
             </div>
             <div class="summary-stack">
                 <div class="summary-item">
+                    <span class="summary-label">Ngày giờ</span>
+                    <span id="summary-gio">@Model.NgayChon.ToString("dd/MM/yyyy") lúc @Model.GioMongMuon.ToString("HH:mm")</span>
+                </div>
+                <div class="summary-item">
                     <span class="summary-label">Dịch vụ</span>
                     <span id="summary-dichvu">@Model.TenDichVuDaChon</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Ngày giờ</span>
-                    <span id="summary-gio">@Model.NgayChon.ToString("yyyy-MM-dd") lúc @Model.GioMongMuon.ToString("HH:mm")</span>
+                    <span class="summary-label">Chuyên khoa</span>
+                    <span>@Model.ChuyenKhoaHienTai</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Bác sĩ khám</span>
-                    <span id="summary-bacsi">Sẽ tự động phân công</span>
+                    <span id="summary-bacsi">Hệ thống sẽ tự sắp xếp phù hợp</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Phòng khám</span>
-                    <span id="summary-phong">Sẽ cập nhật sau khi chọn ca</span>
+                    <span id="summary-phong">Sẽ cập nhật sau khi đặt lịch</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title"><i class="ph ph-shield-check"></i> Xác thực OTP</span>
-                <span class="badge badge-primary">Bước 3</span>
-            </div>
-            <div style="padding: var(--space-4);" class="section-stack">
-                <div class="form-group">
-                    <label class="form-label">Mã OTP</label>
-                    <input type="text" class="form-input" asp-for="Otp" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số" />
-                </div>
-                <div class="filter-actions">
-                    <button type="submit" name="handler" value="GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
-                    <button type="submit" class="btn btn-primary" @(Model.CanSubmit ? "" : "disabled")>Hoàn tất đặt lịch</button>
-                </div>
-                <div class="form-hint">OTP sẽ được dùng để xác thực trước khi tạo lịch hẹn.</div>
             </div>
         </div>
 
         <div class="action-bar">
             <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">Huỷ bỏ</a>
-            <button type="submit" class="btn btn-primary" @(Model.CanSubmit ? "" : "disabled")>
+            <button type="submit" class="btn btn-primary">
                 <i class="ph ph-calendar-check"></i> Hoàn tất đặt lịch
             </button>
         </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="ph ph-lightbulb"></i> Cách hoạt động</span>
+            </div>
+            <div style="padding: var(--space-4);" class="form-hint">
+                Bạn chỉ cần chọn ngày, nhập giờ mong muốn và gửi yêu cầu. Hệ thống sẽ tự khớp ca làm việc phù hợp, tạo lịch hẹn và thông báo kết quả sau khi xử lý xong.
+            </div>
+        </div>
     </div>
-</div>
+</form>
 
 @section Scripts {
 <script>
-function selectSlot(id, start, end, tenChuyenKhoa, maPhong, idCa) {
-    const input = document.querySelector('input[name="IdCaLamViec"]');
-    if (input) input.value = id;
-    const summaryGio = document.getElementById('summary-gio');
-    if (summaryGio) summaryGio.textContent = `${document.querySelector('input[name="ngay"]').value} lúc ${start}`;
-    const summaryBacSi = document.getElementById('summary-bacsi');
-    if (summaryBacSi) summaryBacSi.textContent = tenChuyenKhoa;
-    const summaryPhong = document.getElementById('summary-phong');
-    if (summaryPhong) summaryPhong.textContent = maPhong;
+const ngayInput = document.querySelector('input[name="NgayChon"]');
+const gioInput = document.querySelector('input[name="GioMongMuon"]');
+const summaryGio = document.getElementById('summary-gio');
+if (ngayInput && gioInput && summaryGio) {
+    const renderSummary = () => {
+        summaryGio.textContent = `${ngayInput.value ? new Date(ngayInput.value).toLocaleDateString('vi-VN') : ''} lúc ${gioInput.value}`;
+    };
+    ngayInput.addEventListener('change', renderSummary);
+    gioInput.addEventListener('input', renderSummary);
 }
 </script>
 }
