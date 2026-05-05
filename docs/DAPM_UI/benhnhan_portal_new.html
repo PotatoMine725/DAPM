@@ -140,6 +140,26 @@ button {
   padding: 32px;
 }
 
+.auth-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.auth-panel-title {
+  margin: 0;
+  font-size: 1.45rem;
+  color: var(--primary-dark);
+}
+
+.auth-panel-subtitle {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -153,7 +173,7 @@ button {
 }
 
 .hidden {
-  display: none !important;
+  display: none;
 }
 
 .view-root {
@@ -424,6 +444,10 @@ button {
   gap: 16px;
 }
 
+.auth-form.hidden {
+  display: none;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -437,7 +461,7 @@ button {
 }
 
 .required-mark {
-  color: #ff0000 !important;
+  color: #ff0000;
   font-weight: 700;
 }
 
@@ -464,6 +488,26 @@ button {
 .field textarea:focus {
   border-color: var(--primary-mid);
   box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.field input.error,
+.field select.error,
+.field textarea.error {
+  border-color: #e24b4a;
+  box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.18);
+}
+
+.field-error {
+  color: #a32d2d;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  min-height: 1.1em;
+}
+
+.form-error-summary {
+  color: #a32d2d;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .role-grid {
@@ -527,6 +571,101 @@ button {
   opacity: 0.55;
   transform: none;
   box-shadow: none;
+}
+
+.btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn.loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.password-strength {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.strength-bar {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.strength-bar.weak {
+  background: #d32f2f;
+}
+
+.strength-bar.fair {
+  background: #f57c00;
+}
+
+.strength-bar.good {
+  background: #fbc02d;
+}
+
+.strength-bar.strong {
+  background: #388e3c;
+}
+
+.strength-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+}
+
+.strength-text.weak {
+  color: #d32f2f;
+}
+
+.strength-text.fair {
+  color: #f57c00;
+}
+
+.strength-text.good {
+  color: #fbc02d;
+}
+
+.strength-text.strong {
+  color: #388e3c;
+}
+
+.otp-timer {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+.otp-timer.expiring {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  display: block;
 }
 
 .btn-primary {
@@ -1070,6 +1209,24 @@ th {
   background: #f0f5fa;
 }
 
+.code-text {
+  font-family: Consolas, "SFMono-Regular", Menlo, Monaco, monospace;
+  color: var(--primary-dark);
+}
+
+.modal-meta-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.prescription-lines {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
 .toast-root {
   position: fixed;
   right: 24px;
@@ -1153,7 +1310,7 @@ th {
   <body>
     <div class="page-gradient"></div>
     <div class="app-frame">
-      <section class="auth-shell" id="auth-shell">
+      <section class="auth-shell hidden" id="auth-shell">
         <div class="auth-hero">
           <span class="eyebrow">Hệ thống đặt lịch khám Medibook</span>
           <h1>Phòng khám Medicare</h1>
@@ -1167,6 +1324,13 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
         </div>
 
         <div class="auth-panel">
+          <div class="auth-panel-head">
+            <div>
+              <h2 class="auth-panel-title" id="auth-panel-title">Đăng nhập tài khoản bệnh nhân</h2>
+              <p class="auth-panel-subtitle" id="auth-panel-subtitle">Nhập thông tin đăng nhập để tiếp tục.</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="back-to-guest-btn">← Quay lại cổng vãng lai</button>
+          </div>
 
           <div class="auth-tabs" role="tablist">
             <button class="tab-btn active" data-auth-tab="login">Đăng nhập</button>
@@ -1176,89 +1340,89 @@ Phòng khám Đa khoa Medicare được thành lập với mục tiêu mang đ�
           <form id="login-form" class="auth-form">
             <div class="field-grid">
               <label class="field">
-                <span>Email hoặc số điện thoại</span>
-                <input type="text" name="identifier" placeholder="Nhập email / SĐT" />
+                <span>Email hoặc số điện thoại <span class="required-mark">*</span></span>
+                <input type="text" id="login-identifier" name="identifier" placeholder="Nhập email / SĐT" aria-label="Email hoặc số điện thoại" />
+                <small class="field-error" data-error-for="login-identifier"></small>
               </label>
               <label class="field">
-                <span>Mật khẩu</span>
-                <input type="password" name="password" placeholder="Nhập mật khẩu" />
+                <span>Mật khẩu <span class="required-mark">*</span></span>
+                <input type="password" id="login-password" name="password" placeholder="Nhập mật khẩu" aria-label="Mật khẩu" />
+                <small class="field-error" data-error-for="login-password"></small>
               </label>
             </div>
-
-            <div class="field">
-              <span>Vai trò đăng nhập</span>
-              <div class="role-grid" id="login-role-grid">
-                <button type="button" class="role-chip active" data-role="patient">Bệnh nhân</button>
-                <button type="button" class="role-chip" data-role="receptionist">Lễ tân</button>
-                <button type="button" class="role-chip" data-role="doctor">Bác sĩ</button>
-                <button type="button" class="role-chip" data-role="admin">Admin</button>
-              </div>
-            </div>
-
 
             <div class="form-actions">
               <button type="submit" class="btn btn-primary btn-lg">Đăng nhập</button>
-              <button type="button" class="btn btn-ghost">Quên mật khẩu</button>
             </div>
+            <div class="form-error-summary" id="login-error-summary"></div>
           </form>
 
           <form id="register-form" class="auth-form hidden">
-            <div class="field">
-              <span>Loại tài khoản</span>
-              <div class="role-grid compact">
-                <button type="button" class="role-chip active" data-register-role="patient">Bệnh nhân</button>
-              </div>
-            </div>
-
             <div class="field-grid">
               <label class="field">
-                <span>Họ và tên</span>
-                <input type="text" name="fullName" placeholder="VD: Nguyễn Văn A" />
+                <span>Họ và tên <span class="required-mark">*</span></span>
+                <input type="text" id="register-full-name" name="fullName" placeholder="VD: Nguyễn Văn A" aria-label="Họ và tên" />
+                <small class="field-error" data-error-for="register-full-name"></small>
               </label>
               <label class="field">
-                <span>Số điện thoại</span>
-                <input type="tel" name="phone" placeholder="VD: 09xxxxxxxx" />
+                <span>Số điện thoại <span class="required-mark">*</span></span>
+                <input type="tel" id="register-phone" name="phone" placeholder="VD: 09xxxxxxxx" aria-label="Số điện thoại" />
+                <small class="field-error" data-error-for="register-phone"></small>
               </label>
               <label class="field">
-                <span>Email</span>
-                <input type="email" name="email" placeholder="VD: abc@email.com" />
+                <span>Email <span class="required-mark">*</span></span>
+                <input type="email" id="register-email" name="email" placeholder="VD: abc@email.com" aria-label="Email" />
+                <small class="field-error" data-error-for="register-email"></small>
               </label>
               <label class="field">
-                <span>CCCD</span>
-                <input type="text" name="cccd" placeholder="VD: 123456789012" />
+                <span>CCCD <span class="required-mark">*</span></span>
+                <input type="text" id="register-cccd" name="cccd" placeholder="VD: 123456789012" aria-label="Chứng chỉ căn cước công dân" />
+                <small class="field-error" data-error-for="register-cccd"></small>
               </label>
               <label class="field">
-                <span>Ngày sinh</span>
-                <input type="date" name="dob" />
+                <span>Ngày sinh <span class="required-mark">*</span></span>
+                <input type="date" id="register-dob" name="dob" aria-label="Ngày sinh" />
+                <small class="field-error" data-error-for="register-dob"></small>
               </label>
               <label class="field">
-                <span>Giới tính</span>
-                <select name="gender">
+                <span>Giới tính <span class="required-mark">*</span></span>
+                <select id="register-gender" name="gender" aria-label="Giới tính">
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                   <option value="Khác">Khác</option>
                 </select>
+                <small class="field-error" data-error-for="register-gender"></small>
               </label>
               <label class="field">
-                <span>Mật khẩu</span>
-                <input type="password" name="password" placeholder="Tối thiểu 8 ký tự" />
+                <span>Mật khẩu <span class="required-mark">*</span></span>
+                <input type="password" id="register-password" name="password" placeholder="Tối thiểu 8 ký tự" aria-describedby="password-hint" />
+                <small class="field-hint" id="password-hint">Gợi ý: Sử dụng chữ hoa, chữ thường, số và ký tự đặc biệt để tăng độ an toàn</small>
+                <div class="password-strength" id="password-strength-bars" style="display:none;">
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                  <div class="strength-bar"></div>
+                </div>
+                <small class="strength-text" id="password-strength-text"></small>
+                <small class="field-error" data-error-for="register-password"></small>
               </label>
               <label class="field">
-                <span>Nhập lại mật khẩu</span>
-                <input type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" />
+                <span>Nhập lại mật khẩu <span class="required-mark">*</span></span>
+                <input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Nhập lại mật khẩu" />
+                <small class="field-error" data-error-for="register-confirm-password"></small>
               </label>
             </div>
 
 
             <div class="form-actions">
               <button type="submit" class="btn btn-primary btn-lg">Tạo tài khoản</button>
-              <button type="button" class="btn btn-ghost" data-auth-tab="login">Quay lại đăng nhập</button>
             </div>
+            <div class="form-error-summary" id="register-error-summary"></div>
           </form>
         </div>
       </section>
 
-      <section class="system-shell hidden" id="system-shell">
+      <section class="system-shell" id="system-shell">
         <aside class="sidebar">
           <div class="brand-block">
             <span class="eyebrow">Hệ thống đặt lịch Medibook</span>
@@ -1304,6 +1468,8 @@ window.ClinicApp.dataStore = {
     { id: "specialties", label: "Chuyên khoa", kicker: "Tra cứu", title: "Tìm kiếm thông tin chuyên khoa và bác sĩ" },
     { id: "booking", label: "Đặt lịch", kicker: "Đăng ký khám", title: "Đặt lịch online" },
     { id: "appointments", label: "Lịch hẹn", kicker: "Quản lý lịch khám", title: "Theo dõi, đổi và hủy lịch hẹn" },
+    { id: "medical-history", label: "Lịch sử khám", kicker: "Module 3", title: "Theo dõi hồ sơ khám và chẩn đoán đã ghi nhận" },
+    { id: "prescriptions", label: "Toa thuốc", kicker: "Module 3", title: "Xem toa thuốc đã kê và hướng dẫn sử dụng" },
     { id: "notifications", label: "Thông báo", kicker: "Tin nhắn hệ thống", title: "Thông báo xác nhận, nhắc lịch, hủy lịch" },
     { id: "profile", label: "Hồ sơ cá nhân", kicker: "Tài khoản bệnh nhân", title: "Cập nhật thông tin cá nhân và bảo mật" },
   ],
@@ -1491,6 +1657,21 @@ window.ClinicApp.dataStore = {
     gender: "Nữ",
     restricted: false,
     lateCancelCount: 1,
+  },
+  demoPatientAccount: {
+    identifier: "ha.nguyen@example.com",
+    phone: "0912345678",
+    password: "Patient@123",
+  },
+  guestPatient: {
+    fullName: "Khách vãng lai",
+    phone: "Chưa đăng nhập",
+    email: "",
+    cccd: "",
+    dob: "",
+    gender: "Khác",
+    restricted: false,
+    lateCancelCount: 0,
   },
   initialAppointments: [
     {
@@ -1787,6 +1968,102 @@ window.ClinicApp.dataStore = {
       unread: true,
     },
   ],
+  initialMedicalRecords: [
+    {
+      id: "HSK-260331-01",
+      appointmentId: "LH-260331-03",
+      doctorId: "bs01",
+      serviceId: "dv01",
+      visitDate: "2026-03-31",
+      visitTime: "09:10",
+      status: "Hoàn thành",
+      diagnosis: "Rối loạn tiền đình mức độ nhẹ",
+      conclusion: "Theo dõi huyết áp sáng-tối trong 14 ngày",
+      advice: "Ngủ đúng giờ, tránh làm việc quá sức, tái khám nếu chóng mặt kéo dài.",
+      reExamDate: "2026-05-05",
+      note: "Đã ghi nhận chỉ số huyết áp 135/88.",
+    },
+    {
+      id: "HSK-260405-02",
+      appointmentId: "LH-260405-09",
+      doctorId: "bs04",
+      serviceId: "dv04",
+      visitDate: "2026-04-05",
+      visitTime: "11:20",
+      status: "Hoàn thành",
+      diagnosis: "Tăng huyết áp giai đoạn 1",
+      conclusion: "Điều chỉnh phác đồ và hẹn tái khám sau 3 tuần",
+      advice: "Giảm muối, đo huyết áp mỗi ngày, vận động 30 phút.",
+      reExamDate: "2026-04-28",
+      note: "Đã tư vấn chế độ ăn DASH.",
+    },
+    {
+      id: "HSK-260418-03",
+      appointmentId: "LH-260418-06",
+      doctorId: "bs02",
+      serviceId: "dv02",
+      visitDate: "2026-04-18",
+      visitTime: "14:05",
+      status: "Đang theo dõi",
+      diagnosis: "Viêm mũi dị ứng theo mùa",
+      conclusion: "Điều trị triệu chứng, theo dõi đáp ứng sau 7 ngày",
+      advice: "Vệ sinh mũi hằng ngày, tránh tác nhân dị ứng.",
+      reExamDate: "2026-04-25",
+      note: "Bệnh nhân phản ứng tốt sau 3 ngày dùng thuốc.",
+    },
+    {
+      id: "HSK-260420-04",
+      appointmentId: "LH-260420-13",
+      doctorId: "bs02",
+      serviceId: "dv02",
+      visitDate: "2026-04-20",
+      visitTime: "10:35",
+      status: "Mới tạo",
+      diagnosis: "Đang chờ bác sĩ cập nhật kết luận cuối",
+      conclusion: "Đã lấy mẫu xét nghiệm",
+      advice: "Chờ kết quả xét nghiệm máu trong 24 giờ.",
+      reExamDate: "2026-04-27",
+      note: "Hồ sơ khám vừa tạo sau khi check-in.",
+    },
+  ],
+  initialPrescriptions: [
+    {
+      id: "TT-260331-01",
+      medicalRecordId: "HSK-260331-01",
+      doctorId: "bs01",
+      issuedDate: "2026-03-31",
+      status: "Đang dùng",
+      instruction: "Uống sau ăn sáng và tối. Tái khám đúng lịch hẹn.",
+      medicines: [
+        { name: "Betaserc 16mg", dosage: "1 viên", frequency: "2 lần/ngày", duration: "14 ngày", note: "Sau ăn" },
+        { name: "Magne B6", dosage: "1 viên", frequency: "1 lần/ngày", duration: "14 ngày", note: "Buổi tối" },
+      ],
+    },
+    {
+      id: "TT-260405-02",
+      medicalRecordId: "HSK-260405-02",
+      doctorId: "bs04",
+      issuedDate: "2026-04-05",
+      status: "Đã hoàn tất",
+      instruction: "Duy trì đo huyết áp tại nhà mỗi sáng.",
+      medicines: [
+        { name: "Amlodipine 5mg", dosage: "1 viên", frequency: "1 lần/ngày", duration: "21 ngày", note: "Sau ăn sáng" },
+        { name: "Atorvastatin 10mg", dosage: "1 viên", frequency: "1 lần/ngày", duration: "21 ngày", note: "Buổi tối" },
+      ],
+    },
+    {
+      id: "TT-260418-03",
+      medicalRecordId: "HSK-260418-03",
+      doctorId: "bs02",
+      issuedDate: "2026-04-18",
+      status: "Đang dùng",
+      instruction: "Nếu sốt trên 38.5°C cần liên hệ phòng khám.",
+      medicines: [
+        { name: "Xịt mũi NaCl 0.9%", dosage: "2 nhát", frequency: "3 lần/ngày", duration: "7 ngày", note: "Mỗi bên mũi" },
+        { name: "Loratadine 10mg", dosage: "1 viên", frequency: "1 lần/ngày", duration: "7 ngày", note: "Buổi tối" },
+      ],
+    },
+  ],
   initialBookingDraft: {
     specialtyId: "ck01",
     doctorId: "bs01",
@@ -1888,6 +2165,20 @@ window.ClinicApp.helpers = {
       return timeB - timeA;
     });
   },
+  getSortedMedicalRecords(medicalRecords) {
+    return [...medicalRecords].sort((a, b) => {
+      const timeA = window.ClinicApp.helpers.parseDateTime(a.visitDate, a.visitTime);
+      const timeB = window.ClinicApp.helpers.parseDateTime(b.visitDate, b.visitTime);
+      return timeB - timeA;
+    });
+  },
+  getSortedPrescriptions(prescriptions) {
+    return [...prescriptions].sort((a, b) => {
+      const timeA = window.ClinicApp.helpers.parseDateTime(a.issuedDate);
+      const timeB = window.ClinicApp.helpers.parseDateTime(b.issuedDate);
+      return timeB - timeA;
+    });
+  },
   getPaginatedData(data, pageNumber, itemsPerPage = 5) {
     const startIdx = (pageNumber - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
@@ -1904,22 +2195,35 @@ window.ClinicApp.helpers = {
 
   window.ClinicApp.state = {
     authTab: "login",
-    loginRole: "patient",
     currentView: "dashboard",
     selectedDoctorId: "bs01",
     doctorDetailOpen: false,
     selectedSpecialtyId: "ck01",
     selectedSpecialtyFilter: null,
     selectedAppointmentFilter: "all",
+    selectedMedicalRecordFilter: "all",
+    selectedPrescriptionFilter: "all",
     selectedSlot: "2026-04-10 07:30",
     otpVerified: false,
+    isAuthenticated: false,
+    pendingView: null,
+    authRequiredModalOpen: false,
+    rescheduleAppointmentId: null,
     appointmentsCurrentPage: 1,
     notificationsCurrentPage: 1,
+    medicalHistoryCurrentPage: 1,
+    prescriptionsCurrentPage: 1,
     notificationDetailOpen: false,
+    medicalRecordDetailOpen: false,
+    prescriptionDetailOpen: false,
     selectedNotificationId: null,
-    currentPatient: { ...store.initialPatient },
+    selectedMedicalRecordId: null,
+    selectedPrescriptionId: null,
+    currentPatient: { ...store.guestPatient },
     appointments: store.initialAppointments.map((item) => ({ ...item })),
     notifications: store.initialNotifications.map((item) => ({ ...item })),
+    medicalRecords: store.initialMedicalRecords.map((item) => ({ ...item })),
+    prescriptions: store.initialPrescriptions.map((item) => ({ ...item })),
     bookingDraft: { ...store.initialBookingDraft },
   };
 })();
@@ -1943,6 +2247,33 @@ window.ClinicApp.renderers = window.ClinicApp.renderers || {};
 // dashboard.js
 window.ClinicApp.renderers.dashboard = function renderDashboard() {
   const state = window.ClinicApp.state;
+  const store = window.ClinicApp.dataStore;
+  if (!state.isAuthenticated) {
+    const soChuyenKhoa = store.specialties.length;
+    const soBacSiDangMoLich = store.doctors.filter((item) => item.status === "Đang làm việc").length;
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Cổng bệnh nhân</span>
+          <h3>Chào mừng bạn đến với hệ thống đặt lịch khám</h3>
+          <p>Bạn đang ở chế độ khách vãng lai. Có thể xem thông tin chuyên khoa, bác sĩ và ca khám trống.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký tài khoản</button>
+            <button class="btn btn-ghost" data-go-view="specialties">Xem chuyên khoa</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stats-card"><span class="card-kicker">Khám nhanh</span><strong>${soChuyenKhoa}</strong><p>Chuyên khoa đang hoạt động</p></article>
+        <article class="stats-card"><span class="card-kicker">Bác sĩ</span><strong>${soBacSiDangMoLich}</strong><p>Bác sĩ đang mở lịch khám</p></article>
+        <article class="stats-card"><span class="card-kicker">Hỗ trợ</span><strong>24/7</strong><p>Tổng đài tư vấn: 1900 1234</p></article>
+        <article class="stats-card"><span class="card-kicker">Lưu ý</span><strong>OTP</strong><p>Cần tài khoản để hoàn tất đặt lịch</p></article>
+      </section>
+    `;
+  }
+
   const { getDoctorById, getServiceById, getStatusClass } = window.ClinicApp.helpers;
   const appointments = state.appointments;
   const confirmed = appointments.filter((item) => item.status === "Đã xác nhận").length;
@@ -2006,6 +2337,18 @@ window.ClinicApp.renderers.dashboard = function renderDashboard() {
         <h3>Xem thông báo</h3>
         <p>Theo dõi xác nhận và cập nhật từ phòng khám</p>
         <button class="btn btn-secondary" data-go-view="notifications">Xem thông báo</button>
+      </article>
+      <article class="quick-card">
+        <span class="card-kicker">Hồ sơ khám</span>
+        <h3>Lịch sử khám bệnh</h3>
+        <p>Xem chẩn đoán, kết luận và lịch tái khám đã được bác sĩ ghi nhận</p>
+        <button class="btn btn-secondary" data-go-view="medical-history">Lịch sử khám</button>
+      </article>
+      <article class="quick-card">
+        <span class="card-kicker">Toa thuốc</span>
+        <h3>Đơn thuốc của tôi</h3>
+        <p>Tra cứu toa thuốc theo từng lần khám và hướng dẫn sử dụng thuốc</p>
+        <button class="btn btn-secondary" data-go-view="prescriptions">Xem toa thuốc</button>
       </article>
     </section>
   `;
@@ -2169,6 +2512,9 @@ window.ClinicApp.renderers.booking = function renderBooking() {
   const { doctors, services, specialties } = window.ClinicApp.dataStore;
   const { getServiceById, getAvailableDoctorsForSession, getScheduleByDate } = window.ClinicApp.helpers;
   const draft = state.bookingDraft;
+  const rescheduleAppointment = state.rescheduleAppointmentId
+    ? state.appointments.find((item) => item.id === state.rescheduleAppointmentId) || null
+    : null;
   const selectedService = getServiceById(draft.serviceId);
   const doctorsInSpecialty = doctors.filter((item) => item.specialtyId === draft.specialtyId && item.status === "Đang làm việc");
 
@@ -2242,27 +2588,69 @@ window.ClinicApp.renderers.booking = function renderBooking() {
       <aside class="detail-card">
         <header><div><span class="card-kicker">Thông tin đặt khám</span><h3>${assignedDoctor ? assignedDoctor.name : "Phân công theo ca khám trống"}</h3></div></header>
         <ul class="info-list">
+          <li><span>Chế độ</span><strong>${rescheduleAppointment ? `Đổi lịch (${rescheduleAppointment.id})` : "Đặt lịch mới"}</strong></li>
           <li><span>Dịch vụ</span><strong>${selectedService.name}</strong></li>
           <li><span>Ngày giờ</span><strong>${draft.date}${draft.time ? ` lúc ${draft.time}` : ""}</strong></li>
           <li><span>Bác sĩ khám</span><strong>${assignedDoctor ? assignedDoctor.name : "Sẽ tự động phân công"}</strong></li>
           <li><span>Phòng khám</span><strong>${assignedDoctor ? assignedDoctor.room : "Sẽ cập nhật sau khi chọn ca khám"}</strong></li>
         </ul>
 
+        ${rescheduleAppointment ? `
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" id="cancel-reschedule-mode-btn">Hủy chế độ đổi lịch</button>
+          </div>
+        ` : ""}
+
         <div class="spacer"></div>
         <span class="card-kicker">Bước 3: Xác thực OTP</span>
-        <div class="field-grid"><label class="field"><span>Mã OTP</span><input id="otp-input" type="text" placeholder="Nhập 6 số" /></label></div>
+        <div class="field-grid"><label class="field"><span>Mã OTP</span><input id="otp-input" type="text" placeholder="Nhập 6 số" aria-describedby="otp-timer" /><small id="otp-timer" class="otp-timer"></small></label></div>
         <div class="form-actions"><button class="btn btn-secondary" id="send-otp-btn">Gửi mã OTP</button><button class="btn btn-primary" id="verify-otp-btn">Xác nhận</button></div>
 
         <div class="spacer"></div>
         <div class="form-actions"><button class="btn btn-primary btn-lg" id="complete-booking-btn">Hoàn tất đặt lịch</button></div>
       </aside>
     </section>
+
+    ${state.authRequiredModalOpen ? `
+      <section class="modal-backdrop" id="auth-required-modal">
+        <article class="modal-card" style="max-width: 520px;">
+          <header class="modal-header">
+            <div><span class="card-kicker">Xác thực tài khoản</span><h3>Bạn cần đăng nhập hoặc đăng ký</h3></div>
+            <button class="close-btn" id="close-auth-required-modal">✕</button>
+          </header>
+          <div class="modal-body">
+            <p>Khách vãng lai có thể xem giao diện đặt lịch, nhưng cần có tài khoản để hoàn tất đặt lịch khám.</p>
+            <p>Vui lòng chọn một trong hai hướng sau:</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký tài khoản</button>
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+          </div>
+        </article>
+      </section>
+    ` : ""}
   `;
 };
 
 // appointments.js
 window.ClinicApp.renderers.appointments = function renderAppointments() {
   const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Lịch hẹn của bạn</span>
+          <h3>Khách vãng lai chưa có dữ liệu lịch hẹn cá nhân</h3>
+          <p>Đăng nhập hoặc đăng ký để xem lịch hẹn và quản lý đổi/hủy lịch.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
   const { getDoctorById, getServiceById, getStatusClass, getSortedAppointments, getPaginatedData, getTotalPages } = window.ClinicApp.helpers;
   const appointments = state.appointments;
   let filteredAppointments = state.selectedAppointmentFilter === "all"
@@ -2339,6 +2727,22 @@ window.ClinicApp.renderers.appointments = function renderAppointments() {
 // notifications.js
 window.ClinicApp.renderers.notifications = function renderNotifications() {
   const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Thông báo</span>
+          <h3>Khách vãng lai chưa có thông báo cá nhân</h3>
+          <p>Đăng nhập hoặc đăng ký để nhận thông báo xác nhận lịch, nhắc lịch và thay đổi từ phòng khám.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
   const { getSortedNotifications, getPaginatedData, getTotalPages } = window.ClinicApp.helpers;
   let notifications = state.notifications;
   
@@ -2433,9 +2837,325 @@ window.ClinicApp.renderers.notifications = function renderNotifications() {
   `;
 };
 
+// medical-history.js
+window.ClinicApp.renderers["medical-history"] = function renderMedicalHistory() {
+  const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Lịch sử khám</span>
+          <h3>Vui lòng đăng nhập để xem hồ sơ khám bệnh</h3>
+          <p>Hồ sơ khám và chẩn đoán chỉ hiển thị cho tài khoản bệnh nhân đã xác thực.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
+  const {
+    getDoctorById,
+    getServiceById,
+    getSortedMedicalRecords,
+    getPaginatedData,
+    getTotalPages,
+  } = window.ClinicApp.helpers;
+
+  const statuses = ["all", "Hoàn thành", "Đang theo dõi", "Mới tạo"];
+  let filteredRecords = state.selectedMedicalRecordFilter === "all"
+    ? state.medicalRecords
+    : state.medicalRecords.filter((item) => item.status === state.selectedMedicalRecordFilter);
+
+  filteredRecords = getSortedMedicalRecords(filteredRecords);
+  const itemsPerPage = 5;
+  const totalPages = getTotalPages(filteredRecords.length, itemsPerPage);
+  const paginatedRecords = getPaginatedData(filteredRecords, state.medicalHistoryCurrentPage, itemsPerPage);
+
+  return `
+    <section class="summary-grid">
+      <article class="summary-box hero">
+        <span class="card-kicker">Module 3 - Hồ sơ khám</span>
+        <h3>Theo dõi kết luận chuyên môn theo từng lần khám</h3>
+        <p>Bạn có thể mở chi tiết để xem chẩn đoán, lời dặn của bác sĩ và lịch tái khám.</p>
+      </article>
+      <article class="summary-box">
+        <span class="card-kicker">Tổng hồ sơ</span>
+        <strong class="big-number">${state.medicalRecords.length}</strong>
+        <p>Hồ sơ khám đã ghi nhận</p>
+      </article>
+    </section>
+
+    <section class="segment-tabs">
+      ${statuses.map((status) => `
+        <button
+          class="segment-btn ${state.selectedMedicalRecordFilter === status ? "active" : ""}"
+          data-medical-filter="${status}">
+          ${status === "all" ? "Tất cả" : status}
+        </button>
+      `).join("")}
+    </section>
+
+    <section class="detail-card">
+      <header><div><span class="card-kicker">Lịch sử khám</span><h3>Danh sách hồ sơ khám bệnh</h3></div></header>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mã hồ sơ</th><th>Mã lịch</th><th>Bác sĩ</th><th>Dịch vụ</th><th>Ngày khám</th><th>Chẩn đoán</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+          <tbody>
+            ${paginatedRecords.map((record) => {
+              const doctor = getDoctorById(record.doctorId);
+              const service = getServiceById(record.serviceId);
+              const statusClass = record.status === "Hoàn thành" ? "success" : record.status === "Đang theo dõi" ? "warning" : "neutral";
+              return `
+                <tr>
+                  <td class="code-text">${record.id}</td>
+                  <td class="code-text">${record.appointmentId}</td>
+                  <td>${doctor.name}</td>
+                  <td>${service.name}</td>
+                  <td>${record.visitDate} lúc ${record.visitTime}</td>
+                  <td>${record.diagnosis}</td>
+                  <td><span class="status-badge ${statusClass}">${record.status}</span></td>
+                  <td class="table-actions">
+                    <button class="btn btn-secondary btn-xs" data-open-medical-record="${record.id}">Xem chi tiết</button>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+            ${paginatedRecords.length === 0 ? `<tr><td colspan="8" class="muted">Không có hồ sơ khám phù hợp bộ lọc.</td></tr>` : ""}
+          </tbody>
+        </table>
+      </div>
+      ${filteredRecords.length > 0 ? `
+        <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center; align-items: center;">
+          <button class="btn btn-secondary btn-sm" data-prev-medical-history ${state.medicalHistoryCurrentPage === 1 ? "disabled" : ""}>← Trang trước</button>
+          <span style="padding: 0 12px;">Trang ${state.medicalHistoryCurrentPage}/${totalPages}</span>
+          <button class="btn btn-secondary btn-sm" data-next-medical-history ${state.medicalHistoryCurrentPage === totalPages ? "disabled" : ""}>Trang sau →</button>
+        </div>
+      ` : ""}
+    </section>
+
+    ${state.medicalRecordDetailOpen ? `
+      <section class="modal-backdrop" id="medical-record-detail-modal">
+        <article class="modal-card">
+          <header class="modal-header">
+            <div><span class="card-kicker">Chi tiết hồ sơ khám</span><h3>Thông tin chuyên môn</h3></div>
+            <button id="close-medical-record-modal" class="close-btn">✕</button>
+          </header>
+          <div class="modal-body">
+            ${(() => {
+              const selectedRecord = state.medicalRecords.find((item) => item.id === state.selectedMedicalRecordId);
+              if (!selectedRecord) return "<p>Không tìm thấy hồ sơ khám.</p>";
+              const doctor = getDoctorById(selectedRecord.doctorId);
+              const service = getServiceById(selectedRecord.serviceId);
+              const statusClass = selectedRecord.status === "Hoàn thành"
+                ? "success"
+                : selectedRecord.status === "Đang theo dõi" ? "warning" : "neutral";
+              return `
+                <div style="display: grid; gap: 16px;">
+                  <div class="modal-meta-grid">
+                    <p><strong>Mã hồ sơ:</strong> <span class="code-text">${selectedRecord.id}</span></p>
+                    <p><strong>Mã lịch hẹn:</strong> <span class="code-text">${selectedRecord.appointmentId}</span></p>
+                    <p><strong>Bác sĩ:</strong> ${doctor.name}</p>
+                    <p><strong>Dịch vụ:</strong> ${service.name}</p>
+                    <p><strong>Thời gian khám:</strong> ${selectedRecord.visitDate} lúc ${selectedRecord.visitTime}</p>
+                    <p><strong>Trạng thái:</strong> <span class="status-badge ${statusClass}">${selectedRecord.status}</span></p>
+                  </div>
+                  <div>
+                    <label style="display: block; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px;">Chẩn đoán</label>
+                    <p>${selectedRecord.diagnosis}</p>
+                  </div>
+                  <div>
+                    <label style="display: block; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px;">Kết luận</label>
+                    <p>${selectedRecord.conclusion}</p>
+                  </div>
+                  <div>
+                    <label style="display: block; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px;">Lời dặn</label>
+                    <p>${selectedRecord.advice}</p>
+                  </div>
+                  <div class="inline-note info">
+                    <strong>Tái khám đề nghị:</strong> ${selectedRecord.reExamDate}. ${selectedRecord.note}
+                  </div>
+                </div>
+              `;
+            })()}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="close-medical-record-btn">Đóng</button>
+          </div>
+        </article>
+      </section>
+    ` : ""}
+  `;
+};
+
+// prescriptions.js
+window.ClinicApp.renderers.prescriptions = function renderPrescriptions() {
+  const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Toa thuốc</span>
+          <h3>Vui lòng đăng nhập để xem đơn thuốc cá nhân</h3>
+          <p>Toa thuốc chỉ hiển thị cho bệnh nhân sở hữu hồ sơ khám tương ứng.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
+  const {
+    getDoctorById,
+    getSortedPrescriptions,
+    getPaginatedData,
+    getTotalPages,
+  } = window.ClinicApp.helpers;
+
+  const statuses = ["all", "Đang dùng", "Đã hoàn tất"];
+  let filteredPrescriptions = state.selectedPrescriptionFilter === "all"
+    ? state.prescriptions
+    : state.prescriptions.filter((item) => item.status === state.selectedPrescriptionFilter);
+
+  filteredPrescriptions = getSortedPrescriptions(filteredPrescriptions);
+  const itemsPerPage = 5;
+  const totalPages = getTotalPages(filteredPrescriptions.length, itemsPerPage);
+  const paginatedPrescriptions = getPaginatedData(filteredPrescriptions, state.prescriptionsCurrentPage, itemsPerPage);
+
+  return `
+    <section class="summary-grid">
+      <article class="summary-box hero">
+        <span class="card-kicker">Module 3 - Toa thuốc</span>
+        <h3>Tra cứu toa thuốc theo từng lần khám</h3>
+        <p>Mỗi toa liên kết trực tiếp với hồ sơ khám để bạn tiện theo dõi điều trị.</p>
+      </article>
+      <article class="summary-box">
+        <span class="card-kicker">Tổng toa</span>
+        <strong class="big-number">${state.prescriptions.length}</strong>
+        <p>Toa thuốc đã được kê</p>
+      </article>
+    </section>
+
+    <section class="segment-tabs">
+      ${statuses.map((status) => `
+        <button
+          class="segment-btn ${state.selectedPrescriptionFilter === status ? "active" : ""}"
+          data-prescription-filter="${status}">
+          ${status === "all" ? "Tất cả" : status}
+        </button>
+      `).join("")}
+    </section>
+
+    <section class="detail-card">
+      <header><div><span class="card-kicker">Toa thuốc của tôi</span><h3>Danh sách toa đã kê</h3></div></header>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mã toa</th><th>Mã hồ sơ</th><th>Ngày kê</th><th>Bác sĩ</th><th>Số dòng thuốc</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+          <tbody>
+            ${paginatedPrescriptions.map((prescription) => {
+              const doctor = getDoctorById(prescription.doctorId);
+              const statusClass = prescription.status === "Đã hoàn tất" ? "success" : "warning";
+              return `
+                <tr>
+                  <td class="code-text">${prescription.id}</td>
+                  <td class="code-text">${prescription.medicalRecordId}</td>
+                  <td>${prescription.issuedDate}</td>
+                  <td>${doctor.name}</td>
+                  <td>${prescription.medicines.length} thuốc</td>
+                  <td><span class="status-badge ${statusClass}">${prescription.status}</span></td>
+                  <td class="table-actions">
+                    <button class="btn btn-secondary btn-xs" data-open-prescription="${prescription.id}">Xem toa</button>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+            ${paginatedPrescriptions.length === 0 ? `<tr><td colspan="7" class="muted">Không có toa thuốc phù hợp bộ lọc.</td></tr>` : ""}
+          </tbody>
+        </table>
+      </div>
+      ${filteredPrescriptions.length > 0 ? `
+        <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center; align-items: center;">
+          <button class="btn btn-secondary btn-sm" data-prev-prescriptions ${state.prescriptionsCurrentPage === 1 ? "disabled" : ""}>← Trang trước</button>
+          <span style="padding: 0 12px;">Trang ${state.prescriptionsCurrentPage}/${totalPages}</span>
+          <button class="btn btn-secondary btn-sm" data-next-prescriptions ${state.prescriptionsCurrentPage === totalPages ? "disabled" : ""}>Trang sau →</button>
+        </div>
+      ` : ""}
+    </section>
+
+    ${state.prescriptionDetailOpen ? `
+      <section class="modal-backdrop" id="prescription-detail-modal">
+        <article class="modal-card">
+          <header class="modal-header">
+            <div><span class="card-kicker">Chi tiết toa thuốc</span><h3>Hướng dẫn dùng thuốc</h3></div>
+            <button id="close-prescription-modal" class="close-btn">✕</button>
+          </header>
+          <div class="modal-body">
+            ${(() => {
+              const selectedPrescription = state.prescriptions.find((item) => item.id === state.selectedPrescriptionId);
+              if (!selectedPrescription) return "<p>Không tìm thấy toa thuốc.</p>";
+              const relatedRecord = state.medicalRecords.find((item) => item.id === selectedPrescription.medicalRecordId);
+              const doctor = getDoctorById(selectedPrescription.doctorId);
+              return `
+                <div style="display: grid; gap: 16px;">
+                  <div class="modal-meta-grid">
+                    <p><strong>Mã toa:</strong> <span class="code-text">${selectedPrescription.id}</span></p>
+                    <p><strong>Mã hồ sơ:</strong> <span class="code-text">${selectedPrescription.medicalRecordId}</span></p>
+                    <p><strong>Bác sĩ kê:</strong> ${doctor.name}</p>
+                    <p><strong>Ngày kê:</strong> ${selectedPrescription.issuedDate}</p>
+                    <p><strong>Liên kết lịch hẹn:</strong> <span class="code-text">${relatedRecord ? relatedRecord.appointmentId : "Không có"}</span></p>
+                    <p><strong>Trạng thái:</strong> <span class="status-badge ${selectedPrescription.status === "Đã hoàn tất" ? "success" : "warning"}">${selectedPrescription.status}</span></p>
+                  </div>
+                  <div>
+                    <label style="display: block; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px;">Danh sách thuốc</label>
+                    <ul class="prescription-lines">
+                      ${selectedPrescription.medicines.map((medicine) => `
+                        <li>
+                          <strong>${medicine.name}</strong> - ${medicine.dosage}, ${medicine.frequency}, ${medicine.duration}
+                          ${medicine.note ? `<span class="muted"> (${medicine.note})</span>` : ""}
+                        </li>
+                      `).join("")}
+                    </ul>
+                  </div>
+                  <div class="inline-note info">
+                    <strong>Hướng dẫn tổng quát:</strong> ${selectedPrescription.instruction}
+                  </div>
+                </div>
+              `;
+            })()}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="close-prescription-btn">Đóng</button>
+          </div>
+        </article>
+      </section>
+    ` : ""}
+  `;
+};
+
 // profile.js
 window.ClinicApp.renderers.profile = function renderProfile() {
-  const patient = window.ClinicApp.state.currentPatient;
+  const state = window.ClinicApp.state;
+  if (!state.isAuthenticated) {
+    return `
+      <section class="summary-grid">
+        <article class="summary-box hero">
+          <span class="card-kicker">Hồ sơ cá nhân</span>
+          <h3>Vui lòng đăng nhập để quản lý hồ sơ bệnh nhân</h3>
+          <p>Khách vãng lai chưa thể truy cập hoặc chỉnh sửa hồ sơ cá nhân.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" data-auth-route="login">Đăng nhập</button>
+            <button class="btn btn-secondary" data-auth-route="register">Đăng ký</button>
+          </div>
+        </article>
+      </section>
+    `;
+  }
+
+  const patient = state.currentPatient;
   return `
     <section class="summary-grid">
       <article class="summary-box hero">
@@ -2483,6 +3203,8 @@ window.ClinicApp.renderers.profile = function renderProfile() {
   const dom = app.dom;
   const store = app.dataStore;
   const helpers = app.helpers;
+  const SESSION_DURATION_MS = 30 * 60 * 1000;
+  let sessionTimerId = null;
 
   function showToast(message, variant) {
     const toast = document.createElement("div");
@@ -2493,7 +3215,9 @@ window.ClinicApp.renderers.profile = function renderProfile() {
   }
 
   function renderMenu() {
-    const unreadCount = state.notifications.filter((n) => n.unread).length;
+    const unreadCount = state.isAuthenticated
+      ? state.notifications.filter((n) => n.unread).length
+      : 0;
     dom.menuRoot.innerHTML = store.menuItems
       .map((item) => {
         const badge = item.id === "notifications" && unreadCount > 0 
@@ -2509,12 +3233,115 @@ window.ClinicApp.renderers.profile = function renderProfile() {
     const current = store.menuItems.find((item) => item.id === state.currentView);
     dom.viewKicker.textContent = current.kicker;
     dom.viewTitle.textContent = current.title;
-    dom.patientName.textContent = state.currentPatient.fullName;
-    dom.patientPhone.textContent = state.currentPatient.phone;
+    dom.patientName.textContent = state.currentPatient.fullName || "Khách vãng lai";
+    dom.patientPhone.textContent = state.currentPatient.phone || "Chưa đăng nhập";
+    const authButton = document.getElementById("logout-btn");
+    if (authButton) {
+      authButton.textContent = state.isAuthenticated ? "Đăng xuất" : "Đăng nhập / Đăng ký";
+      authButton.classList.toggle("btn-danger", state.isAuthenticated);
+      authButton.classList.toggle("btn-ghost", !state.isAuthenticated);
+    }
     dom.viewRoot.innerHTML = app.renderers[state.currentView]();
   }
 
+  function clearSessionTimer() {
+    if (sessionTimerId) {
+      window.clearTimeout(sessionTimerId);
+      sessionTimerId = null;
+    }
+  }
+
+  function clearAuthValidationState() {
+    document.querySelectorAll("#login-form .field input, #register-form .field input, #register-form .field select").forEach((item) => item.classList.remove("error"));
+    document.querySelectorAll("#login-form .field-error, #register-form .field-error").forEach((item) => { item.textContent = ""; });
+    const loginSummary = document.getElementById("login-error-summary");
+    const registerSummary = document.getElementById("register-error-summary");
+    if (loginSummary) loginSummary.textContent = "";
+    if (registerSummary) registerSummary.textContent = "";
+  }
+
+  function switchAuthView(authTab, shouldClearErrors) {
+    state.authTab = authTab === "register" ? "register" : "login";
+    const isLogin = state.authTab === "login";
+
+    document.querySelectorAll(".tab-btn").forEach((item) => item.classList.toggle("active", item.dataset.authTab === state.authTab));
+    document.getElementById("login-form").classList.toggle("hidden", !isLogin);
+    document.getElementById("register-form").classList.toggle("hidden", isLogin);
+
+    const panelTitle = document.getElementById("auth-panel-title");
+    const panelSubtitle = document.getElementById("auth-panel-subtitle");
+    if (panelTitle && panelSubtitle) {
+      if (isLogin) {
+        panelTitle.textContent = "Đăng nhập tài khoản bệnh nhân";
+        panelSubtitle.textContent = "Nhập thông tin đăng nhập để tiếp tục.";
+      } else {
+        panelTitle.textContent = "Đăng ký tài khoản bệnh nhân";
+        panelSubtitle.textContent = "Nhập thông tin đăng ký để tạo tài khoản mới.";
+      }
+    }
+
+    if (shouldClearErrors) {
+      clearAuthValidationState();
+    }
+  }
+
+  function requestAuthenticationForView(targetView, authTab, message) {
+    state.pendingView = targetView || "booking";
+    dom.authShell.classList.remove("hidden");
+    dom.systemShell.classList.add("hidden");
+    switchAuthView(authTab || "login", true);
+    if (message) {
+      showToast(message, "warning");
+    }
+  }
+
+  function onSessionExpired() {
+    if (!state.isAuthenticated) {
+      return;
+    }
+
+    state.isAuthenticated = false;
+    state.currentPatient = { ...store.guestPatient };
+    state.authRequiredModalOpen = false;
+    state.otpVerified = false;
+    state.rescheduleAppointmentId = null;
+    state.notificationDetailOpen = false;
+    state.medicalRecordDetailOpen = false;
+    state.prescriptionDetailOpen = false;
+    state.selectedNotificationId = null;
+    state.selectedMedicalRecordId = null;
+    state.selectedPrescriptionId = null;
+    requestAuthenticationForView(
+      state.currentView,
+      "login",
+      "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.",
+    );
+  }
+
+  function refreshSessionTimer() {
+    if (!state.isAuthenticated) {
+      return;
+    }
+
+    clearSessionTimer();
+    sessionTimerId = window.setTimeout(onSessionExpired, SESSION_DURATION_MS);
+  }
+
   function enterPatientApp() {
+    state.isAuthenticated = true;
+    dom.authShell.classList.add("hidden");
+    dom.systemShell.classList.remove("hidden");
+    state.authRequiredModalOpen = false;
+    if (state.pendingView) {
+      state.currentView = state.pendingView;
+      state.pendingView = null;
+    }
+    refreshSessionTimer();
+    renderCurrentView();
+  }
+
+  function returnToGuestPortal() {
+    clearSessionTimer();
     dom.authShell.classList.add("hidden");
     dom.systemShell.classList.remove("hidden");
     renderCurrentView();
@@ -2528,24 +3355,23 @@ window.ClinicApp.renderers.profile = function renderProfile() {
 
   function bindClicks() {
     document.addEventListener("click", (event) => {
-      const authTabBtn = event.target.closest("[data-auth-tab]");
-      if (authTabBtn) {
-        state.authTab = authTabBtn.dataset.authTab;
-        document.querySelectorAll(".tab-btn").forEach((item) => item.classList.toggle("active", item.dataset.authTab === state.authTab));
-        document.getElementById("login-form").classList.toggle("hidden", state.authTab !== "login");
-        document.getElementById("register-form").classList.toggle("hidden", state.authTab !== "register");
+      if (state.isAuthenticated) {
+        refreshSessionTimer();
       }
 
-      const loginRoleBtn = event.target.closest("[data-role]");
-      if (loginRoleBtn) {
-        state.loginRole = loginRoleBtn.dataset.role;
-        document.querySelectorAll("#login-role-grid .role-chip").forEach((item) => item.classList.toggle("active", item.dataset.role === state.loginRole));
+      const authTabBtn = event.target.closest("[data-auth-tab]");
+      if (authTabBtn) {
+        switchAuthView(authTabBtn.dataset.authTab, true);
       }
 
       const menuBtn = event.target.closest("[data-view], [data-go-view]");
       if (menuBtn) {
-        state.currentView = menuBtn.dataset.view || menuBtn.dataset.goView;
+        const targetView = menuBtn.dataset.view || menuBtn.dataset.goView;
+        state.currentView = targetView;
         state.doctorDetailOpen = false;
+        state.notificationDetailOpen = false;
+        state.medicalRecordDetailOpen = false;
+        state.prescriptionDetailOpen = false;
         renderCurrentView();
       }
 
@@ -2579,6 +3405,32 @@ window.ClinicApp.renderers.profile = function renderProfile() {
         renderCurrentView();
       }
 
+      const openMedicalRecordBtn = event.target.closest("[data-open-medical-record]");
+      if (openMedicalRecordBtn) {
+        state.selectedMedicalRecordId = openMedicalRecordBtn.dataset.openMedicalRecord;
+        state.medicalRecordDetailOpen = true;
+        renderCurrentView();
+      }
+
+      if (event.target.id === "close-medical-record-modal" || event.target.id === "medical-record-detail-modal" || event.target.id === "close-medical-record-btn") {
+        state.medicalRecordDetailOpen = false;
+        state.selectedMedicalRecordId = null;
+        renderCurrentView();
+      }
+
+      const openPrescriptionBtn = event.target.closest("[data-open-prescription]");
+      if (openPrescriptionBtn) {
+        state.selectedPrescriptionId = openPrescriptionBtn.dataset.openPrescription;
+        state.prescriptionDetailOpen = true;
+        renderCurrentView();
+      }
+
+      if (event.target.id === "close-prescription-modal" || event.target.id === "prescription-detail-modal" || event.target.id === "close-prescription-btn") {
+        state.prescriptionDetailOpen = false;
+        state.selectedPrescriptionId = null;
+        renderCurrentView();
+      }
+
       const bookDoctorBtn = event.target.closest("[data-book-doctor]");
       if (bookDoctorBtn) {
         updateBookingDraftFromDoctor(bookDoctorBtn.dataset.bookDoctor);
@@ -2600,7 +3452,35 @@ window.ClinicApp.renderers.profile = function renderProfile() {
         renderCurrentView();
       }
 
-      if (event.target.id === "send-otp-btn") showToast("Đã gửi OTP đến email và số điện thoại đăng ký.");
+      const medicalFilterBtn = event.target.closest("[data-medical-filter]");
+      if (medicalFilterBtn) {
+        state.selectedMedicalRecordFilter = medicalFilterBtn.dataset.medicalFilter;
+        state.medicalHistoryCurrentPage = 1;
+        renderCurrentView();
+      }
+
+      const prescriptionFilterBtn = event.target.closest("[data-prescription-filter]");
+      if (prescriptionFilterBtn) {
+        state.selectedPrescriptionFilter = prescriptionFilterBtn.dataset.prescriptionFilter;
+        state.prescriptionsCurrentPage = 1;
+        renderCurrentView();
+      }
+
+      if (event.target.id === "send-otp-btn") {
+        const sendBtn = document.getElementById("send-otp-btn");
+        const verifyBtn = document.getElementById("verify-otp-btn");
+        sendBtn.classList.add("loading");
+        sendBtn.disabled = true;
+        
+        // Simulate OTP sending delay
+        setTimeout(() => {
+          sendBtn.classList.remove("loading");
+          sendBtn.disabled = false;
+          window.ClinicApp.startOtpTimer(300); // 5 minutes
+          showToast("✓ Đã gửi OTP đến email và số điện thoại đăng ký.");
+          verifyBtn.disabled = false;
+        }, 1200);
+      }
 
       if (event.target.id === "verify-otp-btn") {
         const otpValue = document.getElementById("otp-input")?.value.trim();
@@ -2613,6 +3493,7 @@ window.ClinicApp.renderers.profile = function renderProfile() {
       }
 
       if (event.target.id === "complete-booking-btn") {
+        const laCheDoDoiLich = Boolean(state.rescheduleAppointmentId);
         if (!state.bookingDraft.date) {
           showToast("Vui lòng chọn ngày khám.", "warning");
           return;
@@ -2623,6 +3504,11 @@ window.ClinicApp.renderers.profile = function renderProfile() {
         }
         if (!state.bookingDraft.time) {
           showToast("Vui lòng chọn giờ khám trước khi hoàn tất đặt lịch.", "warning");
+          return;
+        }
+        if (!state.isAuthenticated) {
+          state.authRequiredModalOpen = true;
+          renderCurrentView();
           return;
         }
         const availableDoctors = helpers.getAvailableDoctorsForSession({
@@ -2641,34 +3527,70 @@ window.ClinicApp.renderers.profile = function renderProfile() {
           return;
         }
         state.bookingDraft.doctorId = doctor.id;
-        state.appointments.unshift({
-          id: `LH-${Date.now().toString().slice(-8)}`,
-          doctorId: state.bookingDraft.doctorId,
-          serviceId: state.bookingDraft.serviceId,
-          date: state.bookingDraft.date,
-          time: state.bookingDraft.time,
-          room: doctor.room,
-          bookingMethod: "Online",
-          status: "Chờ xác nhận",
-          paymentStatus: "Chưa thanh toán",
-          deposit: 0,
-          symptoms: state.bookingDraft.symptoms,
-          changeCount: 0,
-          note: "Đã xác thực OTP, đang chờ lễ tân xác nhận.",
-        });
-        state.notifications.unshift({
-          id: `tb${Date.now()}`,
-          type: "Đặt lịch",
-          title: "Lịch hẹn mới đã được tạo ở trạng thái chờ xác nhận",
-          body: `Phòng khám sẽ duyệt lịch với ${doctor.name} vào ${state.bookingDraft.date} lúc ${state.bookingDraft.time}.`,
-          time: "08/04/2026 11:15",
-          unread: true,
-        });
+        const nowText = new Date().toLocaleString("vi-VN", { hour12: false });
+
+        if (state.rescheduleAppointmentId) {
+          const oldAppointment = state.appointments.find((item) => item.id === state.rescheduleAppointmentId);
+          if (!oldAppointment) {
+            showToast("Không tìm thấy lịch hẹn cần đổi. Vui lòng thử lại.", "danger");
+            state.rescheduleAppointmentId = null;
+            return;
+          }
+
+          oldAppointment.doctorId = state.bookingDraft.doctorId;
+          oldAppointment.serviceId = state.bookingDraft.serviceId;
+          oldAppointment.date = state.bookingDraft.date;
+          oldAppointment.time = state.bookingDraft.time;
+          oldAppointment.room = doctor.room;
+          oldAppointment.status = "Chờ xác nhận";
+          oldAppointment.symptoms = state.bookingDraft.symptoms;
+          oldAppointment.note = "Đã gửi yêu cầu đổi lịch, chờ lễ tân xác nhận.";
+          oldAppointment.changeCount = (oldAppointment.changeCount || 0) + 1;
+
+          state.notifications.unshift({
+            id: `tb${Date.now()}`,
+            type: "Đổi lịch",
+            title: `Yêu cầu đổi lịch ${oldAppointment.id} đã được ghi nhận`,
+            body: `Lịch hẹn đang chờ xác nhận khung giờ mới với ${doctor.name} vào ${state.bookingDraft.date} lúc ${state.bookingDraft.time}.`,
+            time: nowText,
+            unread: true,
+          });
+        } else {
+          state.appointments.unshift({
+            id: `LH-${Date.now().toString().slice(-8)}`,
+            doctorId: state.bookingDraft.doctorId,
+            serviceId: state.bookingDraft.serviceId,
+            date: state.bookingDraft.date,
+            time: state.bookingDraft.time,
+            room: doctor.room,
+            bookingMethod: "Online",
+            status: "Chờ xác nhận",
+            paymentStatus: "Chưa thanh toán",
+            deposit: 0,
+            symptoms: state.bookingDraft.symptoms,
+            changeCount: 0,
+            note: "Đã xác thực OTP, đang chờ lễ tân xác nhận.",
+          });
+          state.notifications.unshift({
+            id: `tb${Date.now()}`,
+            type: "Đặt lịch",
+            title: "Lịch hẹn mới đã được tạo ở trạng thái chờ xác nhận",
+            body: `Phòng khám sẽ duyệt lịch với ${doctor.name} vào ${state.bookingDraft.date} lúc ${state.bookingDraft.time}.`,
+            time: nowText,
+            unread: true,
+          });
+        }
+
         state.currentView = "appointments";
         state.selectedAppointmentFilter = "all";
         state.otpVerified = false;
+        state.rescheduleAppointmentId = null;
         renderCurrentView();
-        showToast("Đặt lịch thành công. Lịch hẹn đang chờ xác nhận.");
+        showToast(
+          laCheDoDoiLich
+            ? "Đổi lịch thành công. Lịch hẹn đang chờ xác nhận lại."
+            : "Đặt lịch thành công. Lịch hẹn đang chờ xác nhận.",
+        );
       }
 
       const cancelBtn = event.target.closest("[data-cancel]");
@@ -2710,10 +3632,16 @@ window.ClinicApp.renderers.profile = function renderProfile() {
           state.bookingDraft.time = appointment.time;
           state.selectedSlot = `${appointment.date} ${appointment.time}`;
           state.otpVerified = false;
+          state.rescheduleAppointmentId = appointment.id;
           state.currentView = "booking";
           renderCurrentView();
           showToast("Đã nạp thông tin lịch hẹn vào màn hình đổi lịch.");
         }
+      }
+
+      if (event.target.id === "cancel-reschedule-mode-btn") {
+        state.rescheduleAppointmentId = null;
+        renderCurrentView();
       }
 
       if (event.target.id === "mark-read-btn") {
@@ -2734,16 +3662,55 @@ window.ClinicApp.renderers.profile = function renderProfile() {
       }
 
       if (event.target.id === "logout-btn") {
-        dom.authShell.classList.remove("hidden");
-        dom.systemShell.classList.add("hidden");
+        if (!state.isAuthenticated) {
+          requestAuthenticationForView(
+            state.currentView,
+            "login",
+            "Vui lòng đăng nhập để truy cập đầy đủ tính năng cá nhân.",
+          );
+          return;
+        }
+        state.isAuthenticated = false;
         state.currentView = "dashboard";
+        state.pendingView = null;
+        state.currentPatient = { ...store.guestPatient };
+        state.rescheduleAppointmentId = null;
+        state.notificationDetailOpen = false;
+        state.medicalRecordDetailOpen = false;
+        state.prescriptionDetailOpen = false;
+        returnToGuestPortal();
         showToast("Đã đăng xuất khỏi phiên demo.");
+      }
+
+      if (event.target.id === "back-to-guest-btn") {
+        state.pendingView = null;
+        returnToGuestPortal();
+      }
+
+      if (event.target.id === "auth-required-modal") {
+        state.authRequiredModalOpen = false;
+        renderCurrentView();
+      }
+
+      if (event.target.id === "close-auth-required-modal") {
+        state.authRequiredModalOpen = false;
+        renderCurrentView();
+      }
+
+      const authRouteBtn = event.target.closest("[data-auth-route]");
+      if (authRouteBtn) {
+        state.authRequiredModalOpen = false;
+        requestAuthenticationForView(state.currentView, authRouteBtn.dataset.authRoute, "");
+        return;
       }
 
       // Pagination for appointments
       if (event.target.dataset.nextAppointments !== undefined) {
         const { getTotalPages } = helpers;
-        const totalPages = getTotalPages(state.appointments.length, 5);
+        const filteredAppointments = state.selectedAppointmentFilter === "all"
+          ? state.appointments
+          : state.appointments.filter((item) => item.status === state.selectedAppointmentFilter);
+        const totalPages = getTotalPages(filteredAppointments.length, 5);
         if (state.appointmentsCurrentPage < totalPages) {
           state.appointmentsCurrentPage++;
           renderCurrentView();
@@ -2773,34 +3740,377 @@ window.ClinicApp.renderers.profile = function renderProfile() {
           renderCurrentView();
         }
       }
+
+      // Pagination for medical history
+      if (event.target.dataset.nextMedicalHistory !== undefined) {
+        const { getTotalPages } = helpers;
+        const filteredMedicalRecords = state.selectedMedicalRecordFilter === "all"
+          ? state.medicalRecords
+          : state.medicalRecords.filter((item) => item.status === state.selectedMedicalRecordFilter);
+        const totalPages = getTotalPages(filteredMedicalRecords.length, 5);
+        if (state.medicalHistoryCurrentPage < totalPages) {
+          state.medicalHistoryCurrentPage++;
+          renderCurrentView();
+        }
+      }
+
+      if (event.target.dataset.prevMedicalHistory !== undefined) {
+        if (state.medicalHistoryCurrentPage > 1) {
+          state.medicalHistoryCurrentPage--;
+          renderCurrentView();
+        }
+      }
+
+      // Pagination for prescriptions
+      if (event.target.dataset.nextPrescriptions !== undefined) {
+        const { getTotalPages } = helpers;
+        const filteredPrescriptions = state.selectedPrescriptionFilter === "all"
+          ? state.prescriptions
+          : state.prescriptions.filter((item) => item.status === state.selectedPrescriptionFilter);
+        const totalPages = getTotalPages(filteredPrescriptions.length, 5);
+        if (state.prescriptionsCurrentPage < totalPages) {
+          state.prescriptionsCurrentPage++;
+          renderCurrentView();
+        }
+      }
+
+      if (event.target.dataset.prevPrescriptions !== undefined) {
+        if (state.prescriptionsCurrentPage > 1) {
+          state.prescriptionsCurrentPage--;
+          renderCurrentView();
+        }
+      }
     });
   }
 
   function bindForms() {
+    const normalizePhone = (value) => (value || "").replace(/\D/g, "");
+    const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    
+    // Password strength calculator
+    const calculatePasswordStrength = (password) => {
+      if (!password) return { score: 0, level: "", text: "" };
+      let score = 0;
+      
+      if (password.length >= 8) score++;
+      if (password.length >= 12) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^a-zA-Z0-9]/.test(password)) score++;
+      
+      if (score <= 2) return { score: 1, level: "weak", text: "Yếu" };
+      if (score <= 3) return { score: 2, level: "fair", text: "Trung bình" };
+      if (score <= 4) return { score: 3, level: "good", text: "Tốt" };
+      return { score: 4, level: "strong", text: "Mạnh" };
+    };
+    
+    // OTP timer management - declare at form level so it can be used globally
+    let otpTimerInterval = null;
+    window.ClinicApp.startOtpTimer = function(durationSeconds = 300) {
+      let remaining = durationSeconds;
+      const timerElement = document.getElementById("otp-timer");
+      
+      if (otpTimerInterval) clearInterval(otpTimerInterval);
+      
+      const updateTimer = () => {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const text = remaining <= 60 ? "⚠️ " : "⏱️ ";
+        const expiring = remaining <= 60 ? "expiring" : "";
+        timerElement.className = `otp-timer ${expiring}`;
+        timerElement.textContent = `${text}Mã OTP hết hạn trong ${mins}:${secs.toString().padStart(2, "0")}`;
+        
+        if (remaining <= 0) {
+          clearInterval(otpTimerInterval);
+          timerElement.textContent = "❌ Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.";
+          document.getElementById("verify-otp-btn").disabled = true;
+        }
+        remaining--;
+      };
+      
+      updateTimer();
+      otpTimerInterval = setInterval(updateTimer, 1000);
+    };
+
+    function clearFieldError(inputId) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.remove("error");
+      if (errorNode) errorNode.textContent = "";
+    }
+
+    function setFieldError(inputId, message) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.add("error");
+      if (errorNode) errorNode.textContent = message;
+    }
+
+    function clearFormErrors(summaryId, fieldIds) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = "";
+      fieldIds.forEach(clearFieldError);
+    }
+
+    function setSummaryError(summaryId, message) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = message;
+    }
+
+    // Password strength indicator on input
+    document.getElementById("register-password")?.addEventListener("input", (event) => {
+      const password = event.target.value;
+      const strengthResult = calculatePasswordStrength(password);
+      const barsContainer = document.getElementById("password-strength-bars");
+      const textElement = document.getElementById("password-strength-text");
+      
+      if (password) {
+        barsContainer.style.display = "grid";
+        const bars = barsContainer.querySelectorAll(".strength-bar");
+        bars.forEach((bar, idx) => {
+          bar.className = "strength-bar";
+          if (idx < strengthResult.score) {
+            bar.classList.add(strengthResult.level);
+          }
+        });
+        textElement.className = `strength-text ${strengthResult.level}`;
+        textElement.textContent = strengthResult.text;
+      } else {
+        barsContainer.style.display = "none";
+        textElement.textContent = "";
+      }
+    });
+
+    function clearFieldError(inputId) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.remove("error");
+      if (errorNode) errorNode.textContent = "";
+    }
+
+    function setFieldError(inputId, message) {
+      const input = document.getElementById(inputId);
+      const errorNode = document.querySelector(`[data-error-for="${inputId}"]`);
+      if (input) input.classList.add("error");
+      if (errorNode) errorNode.textContent = message;
+    }
+
+    function clearFormErrors(summaryId, fieldIds) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = "";
+      fieldIds.forEach(clearFieldError);
+    }
+
+    function setSummaryError(summaryId, message) {
+      const summary = document.getElementById(summaryId);
+      if (summary) summary.textContent = message;
+    }
+
     document.getElementById("login-form").addEventListener("submit", (event) => {
       event.preventDefault();
-      if (state.loginRole !== "patient") {
-        showToast("Phiên demo hiện chỉ mô phỏng module Bệnh nhân. Hệ thống sẽ mở vào khu vực Bệnh nhân để xem giao diện.", "warning");
+      clearFormErrors("login-error-summary", ["login-identifier", "login-password"]);
+
+      const formData = new FormData(event.currentTarget);
+      const identifier = (formData.get("identifier") || "").toString().trim();
+      const password = (formData.get("password") || "").toString();
+      let hasError = false;
+
+      if (!identifier) {
+        setFieldError("login-identifier", "Vui lòng nhập email hoặc số điện thoại.");
+        hasError = true;
       }
-      enterPatientApp();
+
+      if (!password) {
+        setFieldError("login-password", "Vui lòng nhập mật khẩu.");
+        hasError = true;
+      }
+
+      if (hasError) {
+        setSummaryError("login-error-summary", "Thông tin đăng nhập chưa đầy đủ. Vui lòng kiểm tra lại.");
+        return;
+      }
+
+      const submitBtn = event.currentTarget.querySelector("[type='submit']");
+      submitBtn.classList.add("loading");
+      submitBtn.disabled = true;
+
+      setTimeout(() => {
+        const account = store.demoPatientAccount;
+        const isMatchingIdentifier =
+          identifier.toLowerCase() === account.identifier.toLowerCase()
+          || normalizePhone(identifier) === account.phone;
+
+        if (!isMatchingIdentifier) {
+          setFieldError("login-identifier", "Tài khoản chưa tồn tại.");
+          setSummaryError("login-error-summary", "Không tìm thấy tài khoản. Vui lòng đăng ký để tiếp tục đặt lịch.");
+          if (identifier.includes("@")) {
+            const registerEmail = document.getElementById("register-email");
+            if (registerEmail) registerEmail.value = identifier;
+          } else {
+            const registerPhone = document.getElementById("register-phone");
+            if (registerPhone) registerPhone.value = identifier;
+          }
+          switchAuthView("register", true);
+          showToast("Không tìm thấy tài khoản. Vui lòng đăng ký để tiếp tục.", "warning");
+          submitBtn.classList.remove("loading");
+          submitBtn.disabled = false;
+          return;
+        }
+
+        if (password !== account.password) {
+          setFieldError("login-password", "Mật khẩu không đúng.");
+          setSummaryError("login-error-summary", "Đăng nhập thất bại. Vui lòng kiểm tra lại mật khẩu.");
+          submitBtn.classList.remove("loading");
+          submitBtn.disabled = false;
+          return;
+        }
+
+        state.currentPatient = { ...store.initialPatient };
+        submitBtn.classList.remove("loading");
+        submitBtn.disabled = false;
+        enterPatientApp();
+      }, 800);
     });
 
     document.getElementById("register-form").addEventListener("submit", (event) => {
       event.preventDefault();
+      clearFormErrors("register-error-summary", [
+        "register-full-name",
+        "register-phone",
+        "register-email",
+        "register-cccd",
+        "register-dob",
+        "register-gender",
+        "register-password",
+        "register-confirm-password",
+      ]);
+
       const formData = new FormData(event.currentTarget);
-      state.currentPatient.fullName = formData.get("fullName") || state.currentPatient.fullName;
-      state.currentPatient.phone = formData.get("phone") || state.currentPatient.phone;
-      state.currentPatient.email = formData.get("email") || state.currentPatient.email;
-      state.currentPatient.cccd = formData.get("cccd") || state.currentPatient.cccd;
-      state.currentPatient.dob = formData.get("dob") || state.currentPatient.dob;
-      state.currentPatient.gender = formData.get("gender") || state.currentPatient.gender;
-      showToast("Đăng ký thành công. Bạn đã được chuyển sang giao diện Bệnh nhân.");
-      enterPatientApp();
+      const fullName = (formData.get("fullName") || "").toString().trim();
+      const phone = (formData.get("phone") || "").toString().trim();
+      const email = (formData.get("email") || "").toString().trim();
+      const cccd = (formData.get("cccd") || "").toString().trim();
+      const dob = (formData.get("dob") || "").toString();
+      const gender = (formData.get("gender") || "").toString();
+      const password = (formData.get("password") || "").toString();
+      const confirmPassword = (formData.get("confirmPassword") || "").toString();
+
+      let hasError = false;
+      if (!fullName) {
+        setFieldError("register-full-name", "Vui lòng nhập họ và tên.");
+        hasError = true;
+      }
+
+      if (!phone) {
+        setFieldError("register-phone", "Vui lòng nhập số điện thoại.");
+        hasError = true;
+      } else if (!/^0\d{9,10}$/.test(normalizePhone(phone))) {
+        setFieldError("register-phone", "Số điện thoại không hợp lệ.");
+        hasError = true;
+      }
+
+      if (!email) {
+        setFieldError("register-email", "Vui lòng nhập email.");
+        hasError = true;
+      } else if (!isValidEmail(email)) {
+        setFieldError("register-email", "Email không đúng định dạng.");
+        hasError = true;
+      }
+
+      if (!cccd) {
+        setFieldError("register-cccd", "Vui lòng nhập CCCD.");
+        hasError = true;
+      } else if (!/^\d{12}$/.test(cccd)) {
+        setFieldError("register-cccd", "CCCD phải gồm đúng 12 chữ số.");
+        hasError = true;
+      }
+
+      if (!dob) {
+        setFieldError("register-dob", "Vui lòng chọn ngày sinh.");
+        hasError = true;
+      }
+
+      if (!gender) {
+        setFieldError("register-gender", "Vui lòng chọn giới tính.");
+        hasError = true;
+      }
+
+      if (!password) {
+        setFieldError("register-password", "Vui lòng nhập mật khẩu.");
+        hasError = true;
+      } else if (password.length < 8) {
+        setFieldError("register-password", "Mật khẩu cần tối thiểu 8 ký tự.");
+        hasError = true;
+      }
+
+      if (!confirmPassword) {
+        setFieldError("register-confirm-password", "Vui lòng nhập lại mật khẩu.");
+        hasError = true;
+      } else if (confirmPassword !== password) {
+        setFieldError("register-confirm-password", "Mật khẩu nhập lại không khớp.");
+        hasError = true;
+      }
+
+      const normalizedPhone = normalizePhone(phone);
+      const existedEmail = email.toLowerCase() === store.demoPatientAccount.identifier.toLowerCase();
+      const existedPhone = normalizedPhone === store.demoPatientAccount.phone;
+      const existedCccd = cccd === store.initialPatient.cccd;
+
+      if (existedEmail) {
+        setFieldError("register-email", "Email đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (existedPhone) {
+        setFieldError("register-phone", "Số điện thoại đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (existedCccd) {
+        setFieldError("register-cccd", "CCCD đã tồn tại trong hệ thống demo.");
+        hasError = true;
+      }
+
+      if (hasError) {
+        setSummaryError("register-error-summary", "Đăng ký chưa thành công. Vui lòng kiểm tra lại thông tin.");
+        return;
+      }
+
+      const submitBtn = event.currentTarget.querySelector("[type='submit']");
+      submitBtn.classList.add("loading");
+      submitBtn.disabled = true;
+
+      setTimeout(() => {
+        state.currentPatient.fullName = fullName;
+        state.currentPatient.phone = phone;
+        state.currentPatient.email = email;
+        state.currentPatient.cccd = cccd;
+        state.currentPatient.dob = dob;
+        state.currentPatient.gender = gender;
+        store.initialPatient.fullName = fullName;
+        store.initialPatient.phone = phone;
+        store.initialPatient.email = email;
+        store.initialPatient.cccd = cccd;
+        store.initialPatient.dob = dob;
+        store.initialPatient.gender = gender;
+        store.demoPatientAccount.identifier = email;
+        store.demoPatientAccount.phone = normalizedPhone;
+        store.demoPatientAccount.password = password;
+        submitBtn.classList.remove("loading");
+        submitBtn.disabled = false;
+        showToast("✓ Đăng ký thành công. Bạn đã được chuyển sang giao diện Bệnh nhân.");
+        enterPatientApp();
+      }, 1000);
     });
   }
 
   function bindChanges() {
     document.addEventListener("change", (event) => {
+      if (state.isAuthenticated) {
+        refreshSessionTimer();
+      }
+
       if (event.target.id === "specialty-filter") {
         state.selectedSpecialtyFilter = event.target.value ? event.target.value : null;
         state.doctorDetailOpen = false;
@@ -2840,6 +4150,10 @@ window.ClinicApp.renderers.profile = function renderProfile() {
     });
 
     document.addEventListener("input", (event) => {
+      if (state.isAuthenticated) {
+        refreshSessionTimer();
+      }
+
       if (event.target.id === "booking-symptoms") state.bookingDraft.symptoms = event.target.value;
       if (event.target.id === "booking-note") state.bookingDraft.note = event.target.value;
     });
@@ -2849,6 +4163,7 @@ window.ClinicApp.renderers.profile = function renderProfile() {
     bindClicks();
     bindForms();
     bindChanges();
+    renderCurrentView();
   };
 })();
 

@@ -27,20 +27,21 @@ public sealed class TaoBenhNhanWalkInHandlerTests
         var result = await handler.Handle(
             new TaoBenhNhanWalkInCommand(
                 "Nguyen Van A",
-                "0912345678",
+                "0933333333",
                 new DateOnly(1995, 1, 1),
                 GioiTinh.Nam,
-                "123456789012",
+                "987654321099",
                 "Dia chi"),
             CancellationToken.None);
 
         result.IdBenhNhan.Should().BeGreaterThan(0);
-        result.IdTaiKhoan.Should().BeGreaterThan(0);
 
-        var taiKhoan = await db.TaiKhoan.AsNoTracking().FirstAsync(x => x.IdTaiKhoan == result.IdTaiKhoan);
+        var taiKhoan = await db.TaiKhoan
+            .AsNoTracking()
+            .FirstAsync(x => x.SoDienThoai == "0933333333");
         taiKhoan.VaiTro.Should().Be(VaiTro.BenhNhan);
         taiKhoan.TrangThai.Should().BeFalse();
-        taiKhoan.SoDienThoai.Should().Be("0912345678");
+        taiKhoan.SoDienThoai.Should().Be("0933333333");
     }
 
     [Fact]
@@ -52,7 +53,7 @@ public sealed class TaoBenhNhanWalkInHandlerTests
         {
             TenDangNhap = "ton_tai",
             Email = "ton_tai@example.com",
-            SoDienThoai = "0912345678",
+            SoDienThoai = "0944444444",
             MatKhau = "hash",
             VaiTro = VaiTro.BenhNhan,
             TrangThai = true,
@@ -67,7 +68,7 @@ public sealed class TaoBenhNhanWalkInHandlerTests
 
         var handler = new TaoBenhNhanWalkInHandler(db, passwordHasher, dateTimeProvider);
         var act = async () => await handler.Handle(
-            new TaoBenhNhanWalkInCommand("A", "0912345678", null, null, null, null),
+            new TaoBenhNhanWalkInCommand("A", "0944444444", null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>()

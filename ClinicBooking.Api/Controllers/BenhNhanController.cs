@@ -94,6 +94,6 @@ public class BenhNhanController : ControllerBase
                 request.DiaChi),
             cancellationToken);
 
-        return StatusCode(StatusCodes.Status201Created, new TaoBenhNhanWalkInResponse(result.IdBenhNhan, result.IdTaiKhoan));
+        return StatusCode(StatusCodes.Status201Created, new TaoBenhNhanWalkInResponse(result.IdBenhNhan));
     }
 }
