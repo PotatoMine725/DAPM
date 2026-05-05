@@ -21,7 +21,7 @@ public class DatLichModel : PageModel
     public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
     public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
     public IReadOnlyList<NgayThieuBacSiDto> CanhBaoThieuBacSi { get; private set; } = [];
-    public DateOnly NgayChon { get; private set; }
+    [BindProperty(SupportsGet = true)] public DateOnly NgayChon { get; set; }
     public string ChuyenKhoaHienTai => string.IsNullOrWhiteSpace(TenChuyenKhoaDaChon) ? "Nội tổng quát" : TenChuyenKhoaDaChon;
     public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
     public bool CanSubmit => IdDichVu > 0;
@@ -30,7 +30,6 @@ public class DatLichModel : PageModel
     [BindProperty] public TimeOnly GioMongMuon { get; set; } = new TimeOnly(8, 0);
     [BindProperty] public string? TrieuChung { get; set; }
     [BindProperty] public string? GhiChu { get; set; }
-    [BindProperty] public int? IdCaLamViec { get; set; }
     [BindProperty] public string? Otp { get; set; }
     [BindProperty] public int IdChuyenKhoa { get; set; } = 1;
 
@@ -43,63 +42,43 @@ public class DatLichModel : PageModel
         await TaiDuLieuAsync(NgayChon);
     }
 
-    public async Task<IActionResult> OnPostAsync(DateOnly ngay)
+    public async Task<IActionResult> OnPostGuiOtpAsync()
     {
-        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
+        await TaiDuLieuAsync(NgayChon);
+        TempData["SuccessMessage"] = "Đã nhận yêu cầu gửi OTP.";
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        await TaiDuLieuAsync(NgayChon);
 
         if (!ModelState.IsValid || IdDichVu <= 0)
         {
-            await TaiDuLieuAsync(NgayChon);
-            TempData["ErrorMessage"] = "Vui lòng chọn ngày, giờ và dịch vụ hợp lệ.";
+            TempData["ErrorMessage"] = "Vui lòng chọn dịch vụ hợp lệ.";
             return Page();
         }
 
         try
         {
-            var command = new TaoLichHenCommand(
-                NgayChon,
-                GioMongMuon,
-                IdDichVu,
-                IdBenhNhan: null,
-                IdBacSiMongMuon: null,
-                BacSiMongMuonNote: GhiChu,
-                TrieuChung);
-
+            var command = new TaoLichHenCommand(NgayChon, GioMongMuon, IdDichVu, null, null, GhiChu, TrieuChung);
             var result = await _mediator.Send(command);
-            TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}";
+            TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}.";
             return RedirectToPage("/BenhNhan/DanhSachLichHen");
         }
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = ex.Message;
-            await TaiDuLieuAsync(NgayChon);
             return Page();
         }
     }
 
-    public async Task<IActionResult> OnPostGuiOtpAsync(DateOnly ngay)
-    {
-        NgayChon = ngay == default ? DateOnly.FromDateTime(DateTime.Now.AddDays(1)) : ngay;
-        await TaiDuLieuAsync(NgayChon);
-        TempData["SuccessMessage"] = "Đã gửi mã OTP (logic xác thực sẽ được ghép khi chốt contract OTP).";
-        return Page();
-    }
-
     private async Task TaiDuLieuAsync(DateOnly ngay)
     {
-        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
-            SoTrang: 1,
-            KichThuocTrang: 50,
-            IdChuyenKhoa: IdChuyenKhoa,
-            TuNgay: ngay,
-            DenNgay: ngay,
-            ConTrong: true));
-
-        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(
-            SoTrang: 1,
-            KichThuocTrang: 100,
-            HienThi: true));
-
-        CanhBaoThieuBacSi = await _mediator.Send(new KiemTraDoPhuBacSiQuery(IdChuyenKhoa, ngay, ngay));
+        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(1, 100, true));
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(1, 50, null, IdChuyenKhoa, null, ngay, ngay, true));
+        CanhBaoThieuBacSi = (await _mediator.Send(new KiemTraDoPhuBacSiQuery(IdChuyenKhoa, ngay, ngay))).NgayThieu;
+        TenDichVu = DanhSachDichVu.FirstOrDefault(x => x.IdDichVu == IdDichVu)?.TenDichVu;
+        TenChuyenKhoaDaChon = "Nội tổng quát";
     }
 }
