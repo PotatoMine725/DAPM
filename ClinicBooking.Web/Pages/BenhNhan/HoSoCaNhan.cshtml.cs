@@ -25,6 +25,8 @@ public class HoSoCaNhanModel : PageModel
     [BindProperty] public GioiTinh? GioiTinh { get; set; }
     [BindProperty] public string? Cccd { get; set; }
     [BindProperty] public string? DiaChi { get; set; }
+    [BindProperty] public string Email { get; set; } = string.Empty;
+    [BindProperty] public string SoDienThoai { get; set; } = string.Empty;
 
     public async Task OnGetAsync()
     {
@@ -37,6 +39,8 @@ public class HoSoCaNhanModel : PageModel
             GioiTinh = HoSo.GioiTinh;
             Cccd = HoSo.Cccd;
             DiaChi = HoSo.DiaChi;
+            Email = HoSo.Email;
+            SoDienThoai = HoSo.SoDienThoai;
         }
         catch (Exception ex)
         {
@@ -60,6 +64,11 @@ public class HoSoCaNhanModel : PageModel
                 GioiTinh,
                 Cccd,
                 DiaChi));
+
+            if (HoSo is not null)
+            {
+                HoSo = HoSo with { Email = Email, SoDienThoai = SoDienThoai };
+            }
 
             TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công.";
             return RedirectToPage();
