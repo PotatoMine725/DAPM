@@ -101,32 +101,54 @@ public class CaLamViecQueryService : ICaLamViecQueryService
 
     public async Task<int> ChayReconSlotAsync(CancellationToken cancellationToken = default)
     {
-        // Doi soat: dem lich hen con hieu luc theo tung ca, so voi SoSlotDaDat hien tai.
-        // Cap nhat nhung ca bi lech so lieu.
-        var caIds = await _db.CaLamViec
+        var now = _dateTimeProvider.UtcNow;
+
+        var caCanRecon = await _db.CaLamViec
             .AsNoTracking()
-            .Select(c => c.IdCaLamViec)
+            .Where(c => c.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
+            .Select(c => new
+            {
+                c.IdCaLamViec,
+                c.SoSlotDaDat,
+                c.SoSlotToiDa,
+                TongLichHen = _db.LichHen.Count(lh =>
+                    lh.IdCaLamViec == c.IdCaLamViec &&
+                    lh.TrangThai != TrangThaiLichHen.HuyBenhNhan &&
+                    lh.TrangThai != TrangThaiLichHen.HuyPhongKham &&
+                    lh.TrangThai != TrangThaiLichHen.DaQuaHan &&
+                    lh.TrangThai != TrangThaiLichHen.KhongDen),
+                TongGiuCho = _db.GiuCho.Count(gc =>
+                    gc.IdCaLamViec == c.IdCaLamViec &&
+                    !gc.DaGiaiPhong &&
+                    gc.GioHetHan > now)
+            })
             .ToListAsync(cancellationToken);
 
-        var soCapNhat = 0;
-        foreach (var id in caIds)
+        var daCapNhat = 0;
+        foreach (var item in caCanRecon)
         {
-            var soLichHenHopLe = await _db.LichHen.CountAsync(
-                lh => lh.IdCaLamViec == id &&
-                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.HuyBenhNhan &&
-                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.HuyPhongKham &&
-                      lh.TrangThai != Domain.Enums.TrangThaiLichHen.KhongDen,
-                cancellationToken);
+            var soSlotTinhLai = item.TongLichHen + item.TongGiuCho;
+            if (soSlotTinhLai < 0 || soSlotTinhLai > item.SoSlotToiDa)
+            {
+                continue;
+            }
 
-            var rows = await _db.CaLamViec
-                .Where(c => c.IdCaLamViec == id && c.SoSlotDaDat != soLichHenHopLe)
+            if (soSlotTinhLai == item.SoSlotDaDat)
+            {
+                continue;
+            }
+
+            var rowsAffected = await _db.CaLamViec
+                .Where(c => c.IdCaLamViec == item.IdCaLamViec)
+                .Where(c => c.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
+                .Where(c => c.SoSlotDaDat >= 0 && c.SoSlotDaDat <= c.SoSlotToiDa)
                 .ExecuteUpdateAsync(
-                    s => s.SetProperty(c => c.SoSlotDaDat, soLichHenHopLe),
+                    s => s.SetProperty(c => c.SoSlotDaDat, soSlotTinhLai),
                     cancellationToken);
 
-            soCapNhat += rows;
+            daCapNhat += rowsAffected;
         }
 
-        return soCapNhat;
+        return daCapNhat;
     }
 }

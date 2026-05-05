@@ -9,6 +9,7 @@ using ClinicBooking.Domain.Enums;
 using GiuChoEntity = ClinicBooking.Domain.Entities.GiuCho;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
 namespace ClinicBooking.Application.Features.LichHen.Commands.TaoGiuCho;
@@ -76,47 +77,48 @@ public class TaoGiuChoHandler : IRequestHandler<TaoGiuChoCommand, GiuChoResponse
             throw new ConflictException(LyDoTuChoiMessage(ketQua.LyDoTuChoi));
         }
 
-        // NOTE: `GiuCho.SoSlot` dang tam hieu la ordinal (giong LichHen.SoSlot).
-        // Khi PM chot semantic chinh xac, co the can sua lai migration + logic.
-        var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-            request.IdCaLamViec, 1, cancellationToken);
-
-        if (soSlotMoi is null)
-        {
-            // Stub da tu block (qua SoSlotToiDa hoac < 0) — khong can roll back.
-            throw new ConflictException("Ca lam viec da het slot.");
-        }
-
-        var giuCho = new GiuChoEntity
-        {
-            IdCaLamViec = request.IdCaLamViec,
-            IdBenhNhan = request.IdBenhNhan,
-            SoSlot = soSlotMoi.Value,
-            GioHetHan = now.AddMinutes(_options.GiuChoThoiHanPhut),
-            DaGiaiPhong = false,
-            NgayTao = now
-        };
-        _db.GiuCho.Add(giuCho);
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            await _db.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException)
-        {
-            try { await _caLamViecQueryService.IncrementSoSlotDaDatAsync(request.IdCaLamViec, -1, cancellationToken); }
-            catch { /* reconciliation Wave 4 */ }
-            throw new ConflictException("Khong the tao giu cho. Vui long thu lai.");
-        }
+            // NOTE: `GiuCho.SoSlot` dang tam hieu la ordinal (giong LichHen.SoSlot).
+            // Khi PM chot semantic chinh xac, co the can sua lai migration + logic.
+            var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
+                request.IdCaLamViec, 1, cancellationToken);
 
-        return new GiuChoResponse(
-            giuCho.IdGiuCho,
-            giuCho.IdCaLamViec,
-            giuCho.IdBenhNhan,
-            benhNhan.HoTen,
-            giuCho.SoSlot,
-            giuCho.GioHetHan,
-            giuCho.NgayTao);
+            if (soSlotMoi is null)
+            {
+                throw new ConflictException("Ca lam viec da het slot.");
+            }
+
+            var giuCho = new GiuChoEntity
+            {
+                IdCaLamViec = request.IdCaLamViec,
+                IdBenhNhan = request.IdBenhNhan,
+                SoSlot = soSlotMoi.Value,
+                GioHetHan = now.AddMinutes(_options.GiuChoThoiHanPhut),
+                DaGiaiPhong = false,
+                NgayTao = now
+            };
+            _db.GiuCho.Add(giuCho);
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return new GiuChoResponse(
+                giuCho.IdGiuCho,
+                giuCho.IdCaLamViec,
+                giuCho.IdBenhNhan,
+                benhNhan.HoTen,
+                giuCho.SoSlot,
+                giuCho.GioHetHan,
+                giuCho.NgayTao);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     private static string LyDoTuChoiMessage(LyDoKhongDatDuoc? lyDo) => lyDo switch

@@ -54,7 +54,7 @@ public static class DependencyInjection
         services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
         services.AddScoped<IOtpService, OtpServiceStub>();
 
-        // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
+        // Module 2: implementation ca lam viec query service
         services.AddScoped<INotificationService, NotificationServiceStub>();
 
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
