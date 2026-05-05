@@ -17,12 +17,13 @@ public sealed class LayBenhNhanByIdHandler : IRequestHandler<LayBenhNhanByIdQuer
 
     public async Task<BenhNhanResponse> Handle(LayBenhNhanByIdQuery request, CancellationToken cancellationToken)
     {
-        var entity = await _db.BenhNhan
+        var result = await _db.BenhNhan
             .AsNoTracking()
-            .Include(x => x.TaiKhoan)
-            .FirstOrDefaultAsync(x => x.IdBenhNhan == request.IdBenhNhan, cancellationToken)
+            .Where(x => x.IdBenhNhan == request.IdBenhNhan)
+            .Select(BenhNhanResponse.Projection)
+            .FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("Khong tim thay benh nhan.");
 
-        return BenhNhanResponse.TuEntity(entity);
+        return result;
     }
 }

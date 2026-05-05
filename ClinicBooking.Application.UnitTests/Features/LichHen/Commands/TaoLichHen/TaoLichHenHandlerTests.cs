@@ -73,7 +73,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var result = await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, "Dau dau"),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, "Dau dau"),
             CancellationToken.None);
 
         result.MaLichHen.Should().Be("LH-20260505-000001");
@@ -97,7 +97,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Le tan phai chon benh nhan de dat lich.");
@@ -116,10 +116,39 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Fact]
+    public async Task Handle_BenhNhanBiHanCheNhungDaHetHan_ChoPhepDatLich()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+        var tk = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
+        var bn = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk.IdTaiKhoan, biHanChe: true);
+        bn.NgayHetHanChe = FixedNow.AddHours(-1);
+        await db.SaveChangesAsync();
+
+        var ca = TestDataSeeder.SeedCaLamViec(db);
+        var dv = TestDataSeeder.SeedDichVu(db);
+        var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
+        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
+            .Returns(ThongTinCaOk(ca.IdCaLamViec));
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
+            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
+            .Returns((int?)1);
+
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var result = await handler.Handle(
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
+            CancellationToken.None);
+
+        result.IdBenhNhan.Should().Be(bn.IdBenhNhan);
+        result.TrangThai.Should().Be(TrangThaiLichHen.ChoXacNhan);
     }
 
     [Fact]
@@ -137,7 +166,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec chua duoc duyet.");
@@ -161,7 +190,7 @@ public sealed class TaoLichHenHandlerTests
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
         var act = async () => await handler.Handle(
-            new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, null),
+            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
@@ -193,8 +222,8 @@ public sealed class TaoLichHenHandlerTests
         var handler1 = new TaoLichHenHandler(db, d1.User, d1.Clock, d1.Scheduling, d1.Notif, d1.MaGen);
         var handler2 = new TaoLichHenHandler(db, d2.User, d2.Clock, d2.Scheduling, d2.Notif, d2.MaGen);
 
-        var task1 = handler1.Handle(new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, "A"), CancellationToken.None);
-        var task2 = handler2.Handle(new TaoLichHenCommand(ca.IdCaLamViec, dv.IdDichVu, null, null, null, "B"), CancellationToken.None);
+        var task1 = handler1.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "A"), CancellationToken.None);
+        var task2 = handler2.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "B"), CancellationToken.None);
         await Task.WhenAll(task1.ContinueWith(_ => { }), task2.ContinueWith(_ => { }));
 
         var results = new[] { task1, task2 };

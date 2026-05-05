@@ -22,7 +22,6 @@ public sealed class DanhSachCaLamViecCongKhaiHandler : IRequestHandler<DanhSachC
             .Include(x => x.BacSi)
             .Include(x => x.Phong)
             .Include(x => x.ChuyenKhoa)
-            .Where(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
             .AsQueryable();
 
         if (request.IdBacSi.HasValue)
@@ -50,17 +49,34 @@ public sealed class DanhSachCaLamViecCongKhaiHandler : IRequestHandler<DanhSachC
             query = query.Where(x => x.NgayLamViec <= request.DenNgay.Value);
         }
 
-        if (request.ConTrong.HasValue)
+        if (request.ConTrong is not null)
         {
             query = query.Where(x => (x.SoSlotDaDat < x.SoSlotToiDa) == request.ConTrong.Value);
         }
+
+        query = query.Where(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet);
 
         return await query
             .OrderBy(x => x.NgayLamViec)
             .ThenBy(x => x.GioBatDau)
             .Skip((request.SoTrang - 1) * request.KichThuocTrang)
             .Take(request.KichThuocTrang)
-            .Select(x => CaLamViecPublicResponse.TuEntity(x))
+            .Select(x => new CaLamViecPublicResponse(
+                x.IdCaLamViec,
+                x.IdBacSi,
+                x.IdPhong,
+                x.IdChuyenKhoa,
+                x.IdDinhNghiaCa,
+                x.NgayLamViec,
+                x.GioBatDau,
+                x.GioKetThuc,
+                x.ThoiGianSlot,
+                x.TrangThaiDuyet.ToString(),
+                x.NguonTaoCa.ToString(),
+                x.BacSi.HoTen,
+                x.Phong.MaPhong,
+                x.ChuyenKhoa.TenChuyenKhoa,
+                x.SoSlotDaDat < x.SoSlotToiDa))
             .ToListAsync(cancellationToken);
     }
 }

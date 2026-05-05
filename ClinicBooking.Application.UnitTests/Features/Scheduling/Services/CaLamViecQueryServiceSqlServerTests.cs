@@ -49,8 +49,8 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
         await Task.WhenAll(task1.ContinueWith(_ => { }), task2.ContinueWith(_ => { }));
 
         var results = new[] { await task1, await task2 };
-        results.Should().ContainSingle(x => x is not null);
-        results.Should().ContainSingle(x => x is null);
+        results.Count(x => x.HasValue).Should().Be(1);
+        results.Count(x => !x.HasValue).Should().Be(1);
 
         await using var dbCheck = CreateContext();
         (await dbCheck.CaLamViec.AsNoTracking().SingleAsync(x => x.IdCaLamViec == 1)).SoSlotDaDat.Should().Be(1);
@@ -87,7 +87,7 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
             NgayTao = DateTime.UtcNow
         });
 
-        db.BacSi.Add(new BacSi
+        db.BacSi.Add(new ClinicBooking.Domain.Entities.BacSi
         {
             IdBacSi = 1,
             IdTaiKhoan = 1,
@@ -107,8 +107,6 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
             TenDangNhap = "sql-user",
             Email = "sql-user@example.com",
             SoDienThoai = "0900000009",
-            HoTen = "SQL User",
-            MatKhauHash = "hash",
             VaiTro = VaiTro.BacSi,
             TrangThai = true,
             NgayTao = DateTime.UtcNow

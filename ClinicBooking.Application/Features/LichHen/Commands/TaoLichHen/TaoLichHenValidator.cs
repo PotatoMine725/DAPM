@@ -6,8 +6,11 @@ public class TaoLichHenValidator : AbstractValidator<TaoLichHenCommand>
 {
     public TaoLichHenValidator()
     {
-        RuleFor(x => x.IdCaLamViec)
-            .GreaterThan(0).WithMessage("IdCaLamViec khong hop le.");
+        RuleFor(x => x.NgayLamViec)
+            .NotEmpty().WithMessage("NgayLamViec khong hop le.");
+
+        RuleFor(x => x.GioMongMuon)
+            .NotEmpty().WithMessage("GioMongMuon khong hop le.");
 
         RuleFor(x => x.IdDichVu)
             .GreaterThan(0).WithMessage("IdDichVu khong hop le.");

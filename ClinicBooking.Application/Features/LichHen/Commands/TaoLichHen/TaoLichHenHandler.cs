@@ -44,7 +44,6 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
         var vaiTro = _currentUser.VaiTro
             ?? throw new ForbiddenException("Khong xac dinh duoc vai tro nguoi dung.");
 
-        // 1. Xac dinh IdBenhNhan va HinhThucDat dua tren vai tro.
         int idBenhNhan;
         HinhThucDat hinhThucDat;
         if (vaiTro == VaiTro.BenhNhan)
@@ -71,7 +70,6 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             throw new ForbiddenException("Vai tro hien tai khong duoc phep dat lich hen.");
         }
 
-        // 2. Kiem tra benh nhan co bi han che khong.
         var benhNhan = await _db.BenhNhan
             .FirstOrDefaultAsync(bn => bn.IdBenhNhan == idBenhNhan, cancellationToken)
             ?? throw new NotFoundException("Khong tim thay benh nhan.");
@@ -82,28 +80,35 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             throw new ConflictException("Tai khoan benh nhan dang bi han che dat lich.");
         }
 
-        // 3. Kiem tra dich vu ton tai.
         var dichVu = await _db.DichVu
             .AsNoTracking()
             .FirstOrDefaultAsync(d => d.IdDichVu == request.IdDichVu, cancellationToken)
             ?? throw new NotFoundException("Khong tim thay dich vu.");
 
-        // 4. Kiem tra ca lam viec + da duyet + con slot.
-        var thongTinCa = await _caLamViecQueryService.LayThongTinCaAsync(request.IdCaLamViec, cancellationToken)
-            ?? throw new NotFoundException("Khong tim thay ca lam viec.");
+        var slotPhuHop = await _db.CaLamViec
+            .AsNoTracking()
+            .Where(x => x.NgayLamViec == request.NgayLamViec)
+            .Where(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
+            .Where(x => x.SoSlotDaDat < x.SoSlotToiDa)
+            .OrderBy(x => x.GioBatDau)
+            .FirstOrDefaultAsync(x => request.GioMongMuon >= x.GioBatDau && request.GioMongMuon < x.GioKetThuc, cancellationToken)
+            ?? throw new ConflictException("Khong tim thay slot phu hop voi gio mong muon.");
 
-        if (thongTinCa.TrangThaiDuyet != TrangThaiDuyetCa.DaDuyet)
-        {
-            throw new ConflictException("Ca lam viec chua duoc duyet.");
-        }
+        var thongTinCa = new ThongTinCaLamViecDto(
+            slotPhuHop.IdCaLamViec,
+            slotPhuHop.IdBacSi,
+            slotPhuHop.IdPhong,
+            slotPhuHop.IdChuyenKhoa,
+            slotPhuHop.IdDinhNghiaCa,
+            slotPhuHop.NgayLamViec,
+            slotPhuHop.GioBatDau,
+            slotPhuHop.GioKetThuc,
+            slotPhuHop.ThoiGianSlot,
+            slotPhuHop.SoSlotToiDa,
+            slotPhuHop.SoSlotDaDat,
+            slotPhuHop.TrangThaiDuyet);
 
-        var thoiDiemBatDau = thongTinCa.NgayLamViec.ToDateTime(thongTinCa.GioBatDau, DateTimeKind.Utc);
-        if (thoiDiemBatDau <= now)
-        {
-            throw new ConflictException("Ca lam viec da qua thoi diem hien tai.");
-        }
-
-        var ketQuaKiemTra = await _caLamViecQueryService.KiemTraSlotTrongAsync(request.IdCaLamViec, cancellationToken);
+        var ketQuaKiemTra = await _caLamViecQueryService.KiemTraSlotTrongAsync(slotPhuHop.IdCaLamViec, cancellationToken);
         if (!ketQuaKiemTra.CoTheDat)
         {
             throw new ConflictException(LyDoTuChoiMessage(ketQuaKiemTra.LyDoTuChoi));
@@ -113,23 +118,21 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
 
         try
         {
-            // 5. Chiem slot bang atomic increment; SoSlot ordinal = gia tri tra ve.
             var soSlotMoi = await _caLamViecQueryService.IncrementSoSlotDaDatAsync(
-                request.IdCaLamViec, 1, cancellationToken);
+                slotPhuHop.IdCaLamViec, 1, cancellationToken);
 
             if (soSlotMoi is null)
             {
-                throw new ConflictException("Ca lam viec da het slot.");
+                throw new ConflictException("Ca lam viec da het slot hoac bi xung dot cap nhat.");
             }
 
-            // 6. Sinh MaLichHen + insert LichHen + LichSuLichHen.
             var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCa.NgayLamViec, cancellationToken);
 
             var lichHen = new LichHenEntity
             {
                 MaLichHen = maLichHen,
                 IdBenhNhan = idBenhNhan,
-                IdCaLamViec = request.IdCaLamViec,
+                IdCaLamViec = slotPhuHop.IdCaLamViec,
                 IdDichVu = request.IdDichVu,
                 SoSlot = soSlotMoi.Value,
                 HinhThucDat = hinhThucDat,
@@ -152,7 +155,6 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            // 7. Notification fire-and-forget.
             await _notificationService.GuiThongBaoTaoLichHenAsync(lichHen.IdLichHen, cancellationToken);
 
             return new LichHenResponse(
@@ -187,6 +189,8 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
         LyDoKhongDatDuoc.HetSlot => "Ca lam viec da het slot.",
         LyDoKhongDatDuoc.CaDaDiQua => "Ca lam viec da qua thoi diem hien tai.",
         LyDoKhongDatDuoc.KhongTonTai => "Khong tim thay ca lam viec.",
+        LyDoKhongDatDuoc.DongThoiXungDot => "Khong the dat lich do xung dot cap nhat dong thoi.",
+        LyDoKhongDatDuoc.CaKhongKhaDung => "Ca lam viec khong kha dung de dat lich.",
         _ => "Khong the dat lich hen vao ca nay."
     };
 }

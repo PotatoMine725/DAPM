@@ -66,7 +66,7 @@ public sealed class TaoBenhNhanWalkInHandler : IRequestHandler<TaoBenhNhanWalkIn
         _db.BenhNhan.Add(benhNhan);
 
         await _db.SaveChangesAsync(cancellationToken);
-        return new TaoBenhNhanWalkInResult(benhNhan.IdBenhNhan, taiKhoan.IdTaiKhoan);
+        return new TaoBenhNhanWalkInResult(benhNhan.IdBenhNhan);
     }
 
     private async Task<TaiKhoan> TaoTaiKhoanWalkInAsync(

@@ -1,3 +1,4 @@
+using ClinicBooking.Application.Abstractions.Scheduling.Dtos;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
@@ -22,6 +23,46 @@ public sealed class CaLamViecQueryServiceTests
         return new CaLamViecQueryService(db, clock);
     }
 
+    private static CaLamViec SeedCa(AppDbContext db, TrangThaiDuyetCa trangThai, int soSlotToiDa, int soSlotDaDat, DateOnly ngay)
+    {
+        var chuyenKhoa = TestDataSeeder.SeedChuyenKhoa(db, $"CK UT {Guid.NewGuid():N}");
+        var taiKhoan = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi, email: $"bs-{Guid.NewGuid():N}@ut.vn");
+        var phong = TestDataSeeder.SeedPhong(db);
+        var dinhNghiaCa = TestDataSeeder.SeedDinhNghiaCa(db);
+
+        var bacSi = new ClinicBooking.Domain.Entities.BacSi
+        {
+            IdTaiKhoan = taiKhoan.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS UT",
+            LoaiHopDong = LoaiHopDong.NoiTru,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = FixedNow
+        };
+        db.BacSi.Add(bacSi);
+        db.SaveChanges();
+
+        var ca = new CaLamViec
+        {
+            IdBacSi = bacSi.IdBacSi,
+            IdPhong = phong.IdPhong,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            IdDinhNghiaCa = dinhNghiaCa.IdDinhNghiaCa,
+            NgayLamViec = ngay,
+            GioBatDau = new TimeOnly(8, 0),
+            GioKetThuc = new TimeOnly(11, 0),
+            ThoiGianSlot = 15,
+            SoSlotToiDa = soSlotToiDa,
+            SoSlotDaDat = soSlotDaDat,
+            TrangThaiDuyet = trangThai,
+            NguonTaoCa = NguonTaoCa.TuDong,
+            NgayTao = FixedNow
+        };
+        db.CaLamViec.Add(ca);
+        db.SaveChanges();
+        return ca;
+    }
+
     [Fact]
     public async Task LayThongTinCaAsync_KhongTonTai_TraNull()
     {
@@ -38,12 +79,12 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 3, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 3, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.LayThongTinCaAsync(1, CancellationToken.None);
+        var result = await service.LayThongTinCaAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.Should().NotBeNull();
-        result!.IdCaLamViec.Should().Be(1);
+        result!.IdCaLamViec.Should().Be(ca.IdCaLamViec);
         result.SoSlotToiDa.Should().Be(10);
         result.SoSlotDaDat.Should().Be(3);
         result.TrangThaiDuyet.Should().Be(TrangThaiDuyetCa.DaDuyet);
@@ -54,9 +95,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.LaCaDuocDuyetAsync(1, CancellationToken.None);
+        var result = await service.LaCaDuocDuyetAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.Should().BeTrue();
     }
@@ -66,9 +107,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.ChoDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.ChoDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.LaCaDuocDuyetAsync(1, CancellationToken.None);
+        var result = await service.LaCaDuocDuyetAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.Should().BeFalse();
     }
@@ -90,9 +131,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.ChoDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.ChoDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.KiemTraSlotTrongAsync(1, CancellationToken.None);
+        var result = await service.KiemTraSlotTrongAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.CoTheDat.Should().BeFalse();
         result.LyDoTuChoi.Should().Be(LyDoKhongDatDuoc.CaChuaDuyet);
@@ -103,9 +144,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 4, 30));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 10, soSlotDaDat: 0, ngay: new DateOnly(2026, 4, 30));
 
-        var result = await service.KiemTraSlotTrongAsync(1, CancellationToken.None);
+        var result = await service.KiemTraSlotTrongAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.CoTheDat.Should().BeFalse();
         result.LyDoTuChoi.Should().Be(LyDoKhongDatDuoc.CaDaDiQua);
@@ -116,9 +157,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 2, soSlotDaDat: 2, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 2, soSlotDaDat: 2, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.KiemTraSlotTrongAsync(1, CancellationToken.None);
+        var result = await service.KiemTraSlotTrongAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.CoTheDat.Should().BeFalse();
         result.LyDoTuChoi.Should().Be(LyDoKhongDatDuoc.HetSlot);
@@ -129,19 +170,20 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 3, soSlotDaDat: 1, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 2, soSlotDaDat: 1, ngay: new DateOnly(2026, 5, 5));
+        var benhNhan = TestDataSeeder.SeedBenhNhan(db);
         db.GiuCho.Add(new GiuCho
         {
-            IdCaLamViec = 1,
-            IdBenhNhan = 1,
-            SoSlot = 2,
+            IdCaLamViec = ca.IdCaLamViec,
+            IdBenhNhan = benhNhan.IdBenhNhan,
+            SoSlot = 1,
             GioHetHan = FixedNow.AddMinutes(15),
             DaGiaiPhong = false,
             NgayTao = FixedNow
         });
         await db.SaveChangesAsync();
 
-        var result = await service.KiemTraSlotTrongAsync(1, CancellationToken.None);
+        var result = await service.KiemTraSlotTrongAsync(ca.IdCaLamViec, CancellationToken.None);
 
         result.CoTheDat.Should().BeFalse();
         result.SoGiuChoHieuLuc.Should().Be(1);
@@ -153,15 +195,15 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 1, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 1, ngay: new DateOnly(2026, 5, 5));
 
-        var tang = await service.IncrementSoSlotDaDatAsync(1, 1, CancellationToken.None);
+        var tang = await service.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, CancellationToken.None);
         tang.Should().Be(2);
 
-        var giam = await service.IncrementSoSlotDaDatAsync(1, -1, CancellationToken.None);
+        var giam = await service.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, -1, CancellationToken.None);
         giam.Should().Be(1);
 
-        var vuotTran = await service.IncrementSoSlotDaDatAsync(1, 10, CancellationToken.None);
+        var vuotTran = await service.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 10, CancellationToken.None);
         vuotTran.Should().BeNull();
     }
 
@@ -170,9 +212,9 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         var service = CreateService(factory, out var db);
-        SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
 
-        var result = await service.IncrementSoSlotDaDatAsync(1, -1, CancellationToken.None);
+        var result = await service.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, -1, CancellationToken.None);
 
         result.Should().BeNull();
     }
@@ -193,7 +235,7 @@ public sealed class CaLamViecQueryServiceTests
     {
         using var factory = new TestDbContextFactory();
         using var dbSetup = factory.CreateContext();
-        SeedCa(dbSetup, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 1, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var caSeed = SeedCa(dbSetup, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 1, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
 
         using var db1 = factory.CreateContext();
         using var db2 = factory.CreateContext();
@@ -204,67 +246,18 @@ public sealed class CaLamViecQueryServiceTests
         var service1 = new CaLamViecQueryService(db1, clock1);
         var service2 = new CaLamViecQueryService(db2, clock2);
 
-        var task1 = service1.IncrementSoSlotDaDatAsync(1, 1, CancellationToken.None);
-        var task2 = service2.IncrementSoSlotDaDatAsync(1, 1, CancellationToken.None);
+        var task1 = service1.IncrementSoSlotDaDatAsync(caSeed.IdCaLamViec, 1, CancellationToken.None);
+        var task2 = service2.IncrementSoSlotDaDatAsync(caSeed.IdCaLamViec, 1, CancellationToken.None);
         await Task.WhenAll(task1.ContinueWith(_ => { }), task2.ContinueWith(_ => { }));
 
         var ketQua1 = await task1;
         var ketQua2 = await task2;
 
-        new[] { ketQua1, ketQua2 }.Should().ContainSingle(x => x is not null);
-        new[] { ketQua1, ketQua2 }.Should().ContainSingle(x => x is null);
+        new[] { ketQua1, ketQua2 }.Count(x => x.HasValue).Should().Be(1);
+        new[] { ketQua1, ketQua2 }.Count(x => !x.HasValue).Should().Be(1);
 
         using var dbCheck = factory.CreateContext();
-        (await dbCheck.CaLamViec.AsNoTracking().SingleAsync(x => x.IdCaLamViec == 1)).SoSlotDaDat.Should().Be(1);
+        (await dbCheck.CaLamViec.AsNoTracking().SingleAsync(x => x.IdCaLamViec == caSeed.IdCaLamViec)).SoSlotDaDat.Should().Be(1);
     }
 
-    private static void SeedCa(AppDbContext db, TrangThaiDuyetCa trangThai, int soSlotToiDa, int soSlotDaDat, DateOnly ngay)
-    {
-        db.CaLamViec.Add(new CaLamViec
-        {
-            IdBacSi = 1,
-            IdPhong = 1,
-            IdChuyenKhoa = 1,
-            IdDinhNghiaCa = 1,
-            NgayLamViec = ngay,
-            GioBatDau = new TimeOnly(8, 0),
-            GioKetThuc = new TimeOnly(11, 0),
-            ThoiGianSlot = 15,
-            SoSlotToiDa = soSlotToiDa,
-            SoSlotDaDat = soSlotDaDat,
-            TrangThaiDuyet = trangThai,
-            NguonTaoCa = NguonTaoCa.TuDong,
-            NgayTao = FixedNow
-        });
-
-        db.BacSi.Add(new BacSi
-        {
-            IdBacSi = 1,
-            IdTaiKhoan = 1,
-            IdChuyenKhoa = 1,
-            HoTen = "BS UT",
-            LoaiHopDong = LoaiHopDong.NoiTru,
-            TrangThai = TrangThaiBacSi.DangLam,
-            NgayTao = FixedNow
-        });
-
-        db.ChuyenKhoa.Add(new ChuyenKhoa { IdChuyenKhoa = 1, TenChuyenKhoa = "CK UT", ThoiGianSlotMacDinh = 15, HienThi = true });
-        db.Phong.Add(new Phong { IdPhong = 1, MaPhong = "P-UT-1", TenPhong = "Phong UT", SucChua = 1, TrangThai = true });
-        db.DinhNghiaCa.Add(new DinhNghiaCa { IdDinhNghiaCa = 1, TenCa = "Sang", GioBatDauMacDinh = new TimeOnly(8, 0), GioKetThucMacDinh = new TimeOnly(11, 0), TrangThai = true });
-
-        db.TaiKhoan.Add(new TaiKhoan
-        {
-            IdTaiKhoan = 1,
-            TenDangNhap = "user-ut",
-            Email = "user-ut@example.com",
-            SoDienThoai = "0900000001",
-            HoTen = "User UT",
-            MatKhauHash = "hash",
-            VaiTro = VaiTro.BacSi,
-            TrangThai = true,
-            NgayTao = FixedNow
-        });
-
-        db.SaveChanges();
-    }
 }

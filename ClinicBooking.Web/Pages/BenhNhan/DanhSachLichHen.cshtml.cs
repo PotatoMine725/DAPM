@@ -13,7 +13,7 @@ namespace ClinicBooking.Web.Pages.BenhNhan;
 public class DanhSachLichHenModel : PageModel
 {
     private readonly IMediator _mediator;
-    private const int KichThuocTrang = 10;
+    private const int KichThuocTrang = 5;
 
     public DanhSachLichHenModel(IMediator mediator) => _mediator = mediator;
 
