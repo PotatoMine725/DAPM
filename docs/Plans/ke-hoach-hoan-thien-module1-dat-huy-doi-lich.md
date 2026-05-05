@@ -1,15 +1,15 @@
 # Kế hoạch hoàn thiện Module 1 — Đặt lịch hẹn & Hàng chờ
 
 > Ngày lập: 2026-05-03  
-> Ngày cập nhật: 2026-05-04 (Revision 4 — Phase 2 xanh hoàn toàn)  
-> Trạng thái: **Phase 2 hoàn thành — 11 pass, 1 skip. Tiếp theo: Phase 3 (background job tests)**  
-> Branch: `feature/module1`
+> Ngày cập nhật: 2026-05-05 (Revision 6 — DoiLich page đã hoàn tất, chuẩn bị smoke test Web UI)  
+> Trạng thái: **241 unit tests pass, 11 integration tests pass. Phase B: smoke test qua Web UI**  
+> Branch: `feature/module1/portal-sat-demo`
 
 ---
 
 ## Mục tiêu Revision 2
 
-**Test full chức năng đặt / hủy / đổi lịch với thao tác và data thật qua Swagger.** Được phép implement code cho Module 2/3/4 nếu cần để đảm bảo flow hoạt động end-to-end. Tất cả các chức năng cốt lõi phải chạy được mà không cần mock hay stub nào gây block.
+**Test full chức năng đặt / hủy / đổi lịch với thao tác và data thật qua Web UI.** Được phép implement code cho Module 2/3/4 nếu cần để đảm bảo flow hoạt động end-to-end. Tất cả các chức năng cốt lõi phải chạy được mà không cần mock hay stub nào gây block.
 
 ---
 
@@ -26,6 +26,8 @@
 ### Kết luận
 
 **Chỉ cần sửa 1 file production code** (`DatabaseSeeder.cs`) để unblock toàn bộ smoke test. Không cần viết thêm code cho Module 2/3. Module 4 là optional.
+
+> Ghi chú cập nhật 2026-05-05: page `/BenhNhan/DoiLich` đã được bổ sung ở Web UI, nên blocker demo hiện không còn ở layer giao diện.
 
 ---
 
@@ -52,72 +54,43 @@
 | **Phase 1a** — `ThuTuCuaToiHandlerTests.cs` | ✅ **Hoàn thành** | File đã tồn tại với đủ 3 tests từ session trước. |
 | **Phase 1b** — Bổ sung 3 test `DoiLichHenHandlerTests.cs` | ✅ **Hoàn thành** | 3 tests ownership + NotFound đã có từ session trước. |
 | **Phase 2** — Integration tests (11/11 tests pass) | ✅ **Hoàn thành** | 11 pass, 0 fail, 1 skip cũ. Root cause: migration seed LichHen 4001/4002 trên 3001 (SoSlot=1,2) nhưng SoSlotDaDat=0 → unique constraint collision. Fix: test dùng CaLamViec riêng (3002 cho Tra200, 3003 cho Tra403). |
-| **Phase B** — Smoke test thủ công | ⬜ **Chưa làm** | Unblock sau khi Phase 2 xanh hoàn toàn. ✅ Unblocked. |
+| **Phase B** — Smoke test thủ công qua Web UI | 🔄 **Đang làm** | Tool: `ClinicBooking.Web` (Razor Pages, gọi MediatR trực tiếp). Flow: đăng nhập → đặt lịch → xác nhận → check-in → hàng chờ → hoàn thành → hủy. |
 | **Phase 3** — Background job unit tests | ✅ **Hoàn thành** | 241 unit tests pass (237 + 4 mới). `QuetGiuChoHetHanJobTests` (2) + `ChuyenLichHenDaQuaHanJobTests` (2). |
 | **Phase C** — Module 4 ThongBao impl | ⬜ **Defer** | Chờ Module 4 owner. |
 
 ---
 
-## Bug đang mở — `Huy_BenhNhanKhongSoHuu_Tra403` fail khi chạy full suite
+## Bug đã đóng — `Huy_BenhNhanKhongSoHuu_Tra403` ✅ Fixed
 
-### Triệu chứng
+**Root cause:** Migration seed LichHen 4001/4002 trên CaLamViec 3001 (SoSlot=1,2) nhưng `SoSlotDaDat=0`. Khi test dùng CaLamViec 3001/3002 trùng nhau → `IncrementSoSlotDaDat` trả về slot đã tồn tại → unique index collision → 409.
 
-```
-System.Net.Http.HttpRequestException: Response status code does not indicate success: 409 (Conflict).
-  at HuyLichHenIntegrationTests.TaoLichHenAsync() (line 30)
-  at HuyLichHenIntegrationTests.Huy_BenhNhanKhongSoHuu_Tra403 (line 52)
-```
+**Fix:** Mỗi test dùng CaLamViec độc lập theo ngày:
+- `Huy_BenhNhanChuSoHuu_Tra200` → `NgayLamViecHomSau` (CaLamViec 3002, 13:15)
+- `Huy_BenhNhanKhongSoHuu_Tra403` → `NgayLamViecTiepTheo` (CaLamViec 3003, 08:00)
 
-- **Chạy riêng lẻ**: `dotnet test --filter Huy_BenhNhanKhongSoHuu_Tra403` → **PASS** ✓  
-- **Chạy full suite**: `dotnet test ClinicBooking.Integration.Tests` → **FAIL** ✗
-
-### Phân tích hiện tại
-
-Test helper `TaoLichHenAsync()` dùng cùng `(NgayLamViecHomSau, 13:15, idDichVu=2)` cho tất cả tests trong class `HuyLichHenIntegrationTests`. Với `IClassFixture`, các test trong class chạy **tuần tự** trên **cùng một DB**. Khi chạy full suite:
-
-- Test thứ 1 (`Huy_BenhNhanChuSoHuu_Tra200`): tạo appointment trên CaLamViec 3002 → hủy → slot được release (best-effort qua `IncrementSoSlotDaDatAsync(-1)`)
-- Test thứ 2 (`Huy_BenhNhanKhongSoHuu_Tra403`): gọi `TaoLichHenAsync()` → 409
-
-`SoSlotToiDa = 12` cho CaLamViec 3002 (xác nhận từ migration designer). Không phải do hết slot.
-
-### Nguyên nhân nghi ngờ chưa xác nhận
-
-`TaoLichHenHandler` query CaLamViec qua `CaLamViecQueryService.KiemTraSlotTrongAsync` và `IncrementSoSlotDaDatAsync`. **File chưa đọc:** `ClinicBooking.Infrastructure/Services/Scheduling/CaLamViecQueryService.cs` — có thể có logic kiểm tra thêm (ví dụ: BenhNhan đang có appointment active trên cùng ca, hoặc time check khác với test isolation).
-
-Khả năng khác: xUnit chạy test class **parallel** với class khác → có thể có shared state không phải DB (static field, singleton cache, v.v.).
-
-### Hướng fix đề xuất
-
-**Option A (nhanh, ít rủi ro):** Disable parallel execution cho integration test assembly bằng cách thêm vào `ClinicBookingApiFactory.cs` hoặc tạo file `xunit.runner.json`:
-```json
-{
-  "parallelizeAssembly": false,
-  "parallelizeTestCollections": false
-}
-```
-
-**Option B (đúng hơn, cần điều tra trước):** Đọc `CaLamViecQueryService.cs` để hiểu tại sao trả 409. Nếu do rule "một BenhNhan không được có 2 appointment active cùng ca", thì helper `TaoLichHenAsync` phải được sửa để dùng **ca khác nhau** cho mỗi test hoặc **cleanup** sau mỗi test.
-
-**Option C (robust nhất):** Mỗi test dùng CaLamViec riêng biệt — `Huy_BenhNhanChuSoHuu_Tra200` dùng 3001, `Huy_BenhNhanKhongSoHuu_Tra403` dùng 3002 (hoặc ngược lại). Tránh dùng cùng ca trong cùng class fixture.
+Thêm `xunit.runner.json` với `parallelizeTestCollections: false`. Kết quả: 11 pass, 0 fail.
 
 ---
 
 ## Thứ tự việc cần làm tiếp theo
 
 ```
-1. Fix Huy_BenhNhanKhongSoHuu_Tra403 (xem hướng fix ở trên)
-2. Verify: dotnet test ClinicBooking.Integration.Tests → 11 pass, 1 skip
-3. Phase B: Smoke test thủ công qua Swagger
-4. Phase 3: Background job unit tests
+1. [DONE] Fix Huy_BenhNhanKhongSoHuu_Tra403 → 11 integration tests pass
+2. [DONE] Phase 3: Background job unit tests → 241 unit tests pass
+3. [IN PROGRESS] Phase B: Smoke test qua Web UI (ClinicBooking.Web)
+4. [DEFER] Phase C: Module 4 ThongBao impl
 ```
 
 ---
 
-## Verify baseline trước khi bắt đầu
+## Verify baseline (đã xác nhận 2026-05-04)
 
 ```bash
 dotnet test ClinicBooking.Application.UnitTests
-# Kỳ vọng: Passed 237, Failed 0  (231 gốc + 6 tests bổ sung từ Phase 1a/1b)
+# Kết quả: Passed 241, Failed 0  (237 gốc + 4 background job tests từ Phase 3)
+
+dotnet test ClinicBooking.Integration.Tests
+# Kết quả: Passed 11, Failed 0, Skipped 1
 ```
 
 ---
@@ -200,139 +173,83 @@ dotnet run --project ClinicBooking.Api
 
 ---
 
-## Phase B — End-to-end smoke test flow
+## Phase B — Smoke test qua Web UI (ClinicBooking.Web)
 
-**Ước lượng:** ~1 giờ thực hiện thủ công  
-**Prerequisite:** Phase A hoàn thành, app đang chạy, CaLamViec đã refresh  
-**Tool:** Swagger UI (`http://localhost:<port>/swagger`) hoặc curl/Postman
+**Tool:** `ClinicBooking.Web` — Razor Pages, gọi MediatR trực tiếp (không qua REST API)  
+**Khởi động:** `dotnet run --project ClinicBooking.Web` rồi mở `http://localhost:<port>`  
+**Prerequisite:** `ClinicBooking.Api` phải chạy trước nếu Web dùng HTTP client; nếu Web gọi MediatR trực tiếp thì chỉ cần chạy Web.
 
-### B1. Lấy tokens
+### Pages đã implement (branch `portal-sat-demo`)
+
+| Page | Role | Chức năng |
+|---|---|---|
+| `/BenhNhan/DatLich` | benh_nhan | Chọn ngày, ca, dịch vụ → đặt lịch |
+| `/BenhNhan/DanhSachLichHen` | benh_nhan | Xem danh sách, lọc theo trạng thái, hủy |
+| `/BenhNhan/LichHen` | benh_nhan | Chi tiết một lịch hẹn |
+| `/BenhNhan/ThuTuHangCho` | benh_nhan | Xem số thứ tự hàng chờ |
+| `/LeTan/QuanLyLichHen` | le_tan, admin | Xác nhận, check-in, hủy lịch |
+| `/LeTan/HangCho` | le_tan | Quản lý hàng chờ |
+| `/BacSi/HangCho` | bac_si | Gọi kế tiếp, hoàn thành |
+
+### B1. Đăng nhập
 
 ```text
-POST /api/auth/dang-nhap  →  { "tenDangNhap": "patient001", "matKhau": "Demo@123456" }
-                              → PATIENT_TOKEN
-
-POST /api/auth/dang-nhap  →  { "tenDangNhap": "receptionist001", "matKhau": "Demo@123456" }
-                              → LETAM_TOKEN
-
-POST /api/auth/dang-nhap  →  { "tenDangNhap": "doctor001", "matKhau": "Demo@123456" }
-                              → BACSI_TOKEN
+URL: /Auth/DangNhap
+patient001 / Demo@123456     → redirect → /BenhNhan/DatLich (hoặc trang chính)
+receptionist001 / Demo@123456 → redirect → /LeTan/QuanLyLichHen
+doctor001 / Demo@123456      → redirect → /BacSi/HangCho
 ```
 
-### B2. Kiểm tra CaLamViec tồn tại
+### B2. [Core flow 1] Đặt lịch
 
 ```text
-Auth: LETAM_TOKEN
-GET /api/lich-hen/theo-ngay?ngay=2026-06-02
-→ Kỳ vọng: list CaLamViec gồm IdCaLamViec=3001, IdDichVu có sẵn
+[patient001] /BenhNhan/DatLich
+  → Chọn ngày: today+30 (RefreshCaLamViecDatesAsync đã set 3001/3002 → today+30)
+  → Chọn dịch vụ → Chọn giờ 08:00 → Submit
+  → Kỳ vọng: SuccessMessage "Đặt lịch thành công! Mã lịch hẹn: LH-..."
+  → Redirect → /BenhNhan/DanhSachLichHen, thấy lịch vừa đặt TrangThai=ChoXacNhan
 ```
 
-### B3. [Core flow 1] Đặt lịch mới
-
-> **Lưu ý API:** `TaoLichHenRequest` nhận `NgayLamViec + GioMongMuon + IdDichVu` (không phải `IdCaLamViec`).  
-> Handler nội bộ tìm CaLamViec phù hợp theo ngày / giờ / chuyên khoa.
+### B3. [Core flow 2] Xác nhận + Check-in (Lễ tân)
 
 ```text
-Auth: PATIENT_TOKEN
-POST /api/lich-hen/tao-lich-hen
-Body: {
-  "ngayLamViec": "2026-06-02",   ← today+30 (CaLamViec 3001/3002)
-  "gioMongMuon": "08:00",        ← 07:00–12:00 => CaLamViec 3001
-  "idDichVu": 1,
-  "trieuChung": "Smoke test — dau nguc nhe"
-}
-→ 201 Created, IdLichHen = X
+[receptionist001] /LeTan/QuanLyLichHen?ngay=<today+30>
+  → Thấy lịch vừa đặt
+  → Bấm "Xác nhận" → TrangThai=DaXacNhan ✓
+  → Bấm "Check-in" → TrangThai=DangKham ✓ (hoặc tạo HangCho)
 ```
 
-### B4. Xác nhận lịch
+### B4. [Core flow 3] Hàng chờ (Bác sĩ)
 
 ```text
-Auth: LETAM_TOKEN
-POST /api/lich-hen/{X}/xac-nhan
-→ 200
+[doctor001] /BacSi/HangCho
+  → Thấy bệnh nhân trong danh sách
+  → Bấm "Gọi kế tiếp" → SoThuTu tăng
+  → Bấm "Hoàn thành" → TrangThai=HoanThanh ✓
 
-Auth: PATIENT_TOKEN
-GET /api/lich-hen/{X}
-→ TrangThai = "DaXacNhan" ✓
+[patient001] /BenhNhan/ThuTuHangCho
+  → CoHangCho=true → hiển thị số thứ tự ✓
 ```
 
-### B5. Check-in và xử lý hàng chờ
+### B5. [Core flow 4] Hủy lịch
 
 ```text
-Auth: LETAM_TOKEN
-POST /api/lich-hen/{X}/check-in
-→ 200, IdHangCho = Y
-
-GET /api/hang-cho/theo-ca/3001
-→ Thấy bệnh nhân trong hàng chờ, TrangThai = ChoKham ✓
-
-Auth: PATIENT_TOKEN
-GET /api/hang-cho/thu-tu-cua-toi/3001
-→ CoHangCho = true, SoThuTu = N ✓
-
-Auth: BACSI_TOKEN
-POST /api/hang-cho/goi-ke-tiep/3001
-→ 200 ✓
-
-POST /api/hang-cho/{Y}/hoan-thanh
-→ 200 ✓
-```
-
-### B6. [Core flow 2] Đổi lịch
-
-```text
-Auth: PATIENT_TOKEN
-POST /api/lich-hen/tao-lich-hen
-Body: {
-  "ngayLamViec": "2026-06-02",
-  "gioMongMuon": "14:00",    ← 13:00–17:00 => CaLamViec 3002
-  "idDichVu": 1,
-  "trieuChung": "Lich can doi"
-}
-→ 201, IdLichHen = Z
-
-Auth: LETAM_TOKEN
-POST /api/lich-hen/{Z}/doi-lich
-Body: { "idCaLamViecMoi": 3003, "lyDo": "Doi sang ca khac" }
-→ 200, IdLichHenMoi = W ✓
-
-GET /api/lich-hen/{Z}
-→ TrangThai = "DaHuy" (lịch cũ bị hủy khi đổi) ✓
-
-GET /api/lich-hen/{W}
-→ TrangThai = "ChoXacNhan", IdCaLamViec = 3003 ✓
-```
-
-### B7. [Core flow 3] Hủy lịch (hủy sớm)
-
-```text
-Auth: PATIENT_TOKEN
-POST /api/lich-hen/tao-lich-hen
-Body: {
-  "ngayLamViec": "2026-06-02",
-  "gioMongMuon": "15:00",    ← 13:00–17:00 => CaLamViec 3002
-  "idDichVu": 1,
-  "trieuChung": "Lich se huy"
-}
-→ 201, IdLichHen = V
-
-POST /api/lich-hen/{V}/huy
-Body: { "lyDo": "Huy som de kiem tra" }
-→ 200 ✓ (hủy >24h trước ca → không bị tính SoLanHuyMuon)
+[patient001] /BenhNhan/DanhSachLichHen
+  → Đặt thêm lịch mới (DatLich)
+  → Bấm "Hủy" trên lịch vừa đặt → nhập lý do → Submit
+  → TrangThai=DaHuy, SoLanHuyMuon không tăng (hủy >24h) ✓
 ```
 
 ### Checklist smoke test
 
-- [ ] `POST /api/auth/dang-nhap` patient001 → 200 + token ✓
-- [ ] `GET /api/lich-hen/theo-ngay?ngay=2026-06-02` → có CaLamViec 3001/3002 ✓
-- [ ] Đặt lịch → 201 ✓
-- [ ] Xác nhận lịch → 200 ✓
-- [ ] Check-in → 200, IdHangCho ✓
-- [ ] Thu tự hàng chờ của tôi → CoHangCho=true ✓
-- [ ] Gọi kế tiếp → 200 ✓
-- [ ] Hoàn thành → 200 ✓
-- [ ] Đổi lịch → 200, IdLichHenMoi ✓
-- [ ] Hủy lịch sớm → 200, không tăng SoLanHuyMuon ✓
+- [ ] Đăng nhập patient001 → vào được /BenhNhan/DatLich
+- [ ] Chọn ngày today+30, có CaLamViec hiển thị
+- [ ] Đặt lịch → SuccessMessage + redirect DanhSachLichHen
+- [ ] [receptionist001] Xác nhận lịch → DaXacNhan
+- [ ] [receptionist001] Check-in → vào hàng chờ
+- [ ] [patient001] ThuTuHangCho → CoHangCho=true
+- [ ] [doctor001] Gọi kế tiếp → hoàn thành
+- [ ] [patient001] Hủy lịch mới → DaHuy, không tăng SoLanHuyMuon
 
 ---
 
@@ -366,11 +283,10 @@ Body: { "lyDo": "Huy som de kiem tra" }
 
 ---
 
-## Phase 2 — Integration test project 🟡 GẦN XONG (10/11 pass)
+## Phase 2 — Integration test project ✅ HOÀN THÀNH (11/11 pass)
 
-**Kết quả hiện tại:** `dotnet test ClinicBooking.Integration.Tests` → **10 pass, 1 fail, 1 skip**  
-**Fail:** `HuyLichHenIntegrationTests.Huy_BenhNhanKhongSoHuu_Tra403` (xem mục **Bug đang mở**)  
-**Skip:** `UnitTest1.Module1_Smoke_HuyVaDoiLichBangApiThat` (skip có chủ ý, khi fix bug trên có thể bỏ skip)
+**Kết quả:** `dotnet test ClinicBooking.Integration.Tests` → **11 pass, 0 fail, 1 skip**  
+**Skip:** `UnitTest1.Module1_Smoke_HuyVaDoiLichBangApiThat` (skip có chủ ý — replaced bởi smoke test qua Web UI)
 
 ### Files đã có
 
@@ -472,8 +388,8 @@ Lỗi chuẩn: 400 validation, 401/403 auth, 404 not found, 409 conflict. Messag
 | Rủi ro | Trạng thái | Hành động |
 |---|---|---|
 | CaLamViec seed dates hết hạn định kỳ | ✅ Mitigated | `RefreshCaLamViecDatesAsync` chạy mỗi startup → tự refresh. Không expire nữa. |
-| `Huy_BenhNhanKhongSoHuu_Tra403` fail khi full suite | ✅ **Đã fix** | Root cause: migration seed LichHen trên 3001 (SoSlot=1,2) với SoSlotDaDat=0 → unique index collision khi test tái dùng slot. Fix: mỗi test dùng CaLamViec độc lập (3002/3003). |
+| `Huy_BenhNhanKhongSoHuu_Tra403` fail khi full suite | ✅ **Đóng** | Root cause: migration seed LichHen trên 3001 (SoSlot=1,2) với SoSlotDaDat=0 → unique index collision. Fix: mỗi test dùng CaLamViec độc lập (3002/3003) + xunit.runner.json parallelizeTestCollections=false. |
 | Module 4 `ThongBao` ghi cùng transaction | 🟡 Còn mở | Review khi Module 4 owner lên; hiện fire-and-forget |
 | Timezone `NgayLamViec + GioBatDau` giờ địa phương | 🟡 Chưa có helper | Handlers giả định UTC-compatible; verify khi deploy production |
 | `BenhNhan.SoLanHuyMuon` cross-module write | 🟡 Cần coordinate | Notify owner Module 3 trước khi merge |
-| Background job tests chưa có | 🟡 Phase 3 | `QuetGiuChoHetHanJob`, `ChuyenLichHenDaQuaHanJob` — 4 tests ước lượng |
+| Background job tests | ✅ Đóng | Phase 3 hoàn thành — 4 tests pass. |
