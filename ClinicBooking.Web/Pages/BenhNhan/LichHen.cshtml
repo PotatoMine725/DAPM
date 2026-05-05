@@ -16,6 +16,9 @@
         </a>
         @if (Model.LichHen.TrangThai == TrangThaiLichHen.ChoXacNhan || Model.LichHen.TrangThai == TrangThaiLichHen.DaXacNhan)
         {
+            <a href="/BenhNhan/DoiLich/@Model.LichHen.IdLichHen" class="btn btn-primary">
+                <i class="ph ph-arrows-clockwise"></i> Đổi lịch
+            </a>
             <button type="button" class="btn btn-danger" onclick="openModal('modal-huy-lich-hen')">
                 <i class="ph ph-x-circle"></i> Huỷ lịch hẹn
             </button>
