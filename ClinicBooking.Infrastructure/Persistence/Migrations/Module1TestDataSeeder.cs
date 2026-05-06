@@ -88,7 +88,7 @@ public static class Module1TestDataSeeder
                 IdChuyenKhoa = 1,
                 IdDinhNghiaCa = 1,
                 NgayLamViec = tomorrowMorningDate,
-                GioBatDau = new TimeOnly(8, 0),
+                GioBatDau = new TimeOnly(7, 0),
                 GioKetThuc = new TimeOnly(12, 0),
                 ThoiGianSlot = 20,
                 SoSlotToiDa = 15,

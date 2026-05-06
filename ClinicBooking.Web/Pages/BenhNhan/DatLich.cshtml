@@ -158,9 +158,15 @@
 const ngayInput = document.querySelector('input[name="NgayChon"]');
 const gioInput = document.querySelector('input[name="GioMongMuon"]');
 const summaryGio = document.getElementById('summary-gio');
+const formatNgay = (value) => {
+    if (!value) return '';
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
+};
+
 if (ngayInput && gioInput && summaryGio) {
     const renderSummary = () => {
-        summaryGio.textContent = `${ngayInput.value ? new Date(ngayInput.value).toLocaleDateString('vi-VN') : ''} lúc ${gioInput.value}`;
+        summaryGio.textContent = `${formatNgay(ngayInput.value)} lúc ${gioInput.value}`;
     };
     ngayInput.addEventListener('change', renderSummary);
     gioInput.addEventListener('input', renderSummary);
