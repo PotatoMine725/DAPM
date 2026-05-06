@@ -1,0 +1,197 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.QuanLyKhamModel
+@{
+    ViewData["Title"] = "Quan ly kham";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quan ly kham</h1>
+        <div class="page-subtitle" style="margin-top:var(--space-1); color:var(--color-text-secondary); font-size:13px;">
+            Tao ho so kham, cap nhat chan doan va ke toa theo ho so.
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:var(--space-4); padding:var(--space-4);">
+    <form method="get" class="filter-bar" style="align-items:end;">
+        <div style="width:220px;">
+            <label class="form-label">ID ho so kham</label>
+            <input class="form-input" type="number" name="idHoSoKham" value="@Model.IdHoSoKham" min="1" placeholder="Nhap ID ho so" />
+        </div>
+        <button class="btn btn-secondary" type="submit">
+            <i class="ph ph-magnifying-glass"></i> Xem ho so
+        </button>
+        <a class="btn btn-secondary" href="/BacSi/HangCho">
+            <i class="ph ph-users-three"></i> Hang cho
+        </a>
+    </form>
+</div>
+
+<div class="module3-two-col">
+    <div class="card" style="padding:var(--space-4);">
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Tao ho so kham</h2>
+        <form method="post" asp-page-handler="TaoHoSo" class="module3-form">
+            <div>
+                <label class="form-label">ID lich hen</label>
+                <input class="form-input" asp-for="HoSo.IdLichHen" type="number" min="1" required />
+            </div>
+            <div>
+                <label class="form-label">Chan doan</label>
+                <textarea class="form-input" asp-for="HoSo.ChanDoan" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div>
+                <label class="form-label">Ket qua kham</label>
+                <textarea class="form-input" asp-for="HoSo.KetQuaKham" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div>
+                <label class="form-label">Ghi chu</label>
+                <textarea class="form-input" asp-for="HoSo.GhiChu" rows="2" maxlength="1000"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                <i class="ph ph-floppy-disk"></i> Tao ho so
+            </button>
+        </form>
+    </div>
+
+    <div class="card" style="padding:var(--space-4);">
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Ho so hien tai</h2>
+        @if (Model.HoSoHienTai is null)
+        {
+            <div class="empty-state" style="padding:var(--space-6);">
+                <div class="empty-state-icon"><i class="ph ph-file-magnifying-glass"></i></div>
+                <p>Nhap ID ho so de xem va cap nhat.</p>
+            </div>
+        }
+        else
+        {
+            <div class="module3-summary">
+                <div><span>Ma lich hen</span><strong>@Model.HoSoHienTai.MaLichHen</strong></div>
+                <div><span>Ngay kham</span><strong>@Model.HoSoHienTai.NgayKham.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                <div><span>Bac si</span><strong>@Model.HoSoHienTai.HoTenBacSi</strong></div>
+            </div>
+
+            <form method="post" asp-page-handler="CapNhatHoSo" class="module3-form" style="margin-top:var(--space-4);">
+                <input type="hidden" name="HoSo.IdHoSoKham" value="@Model.HoSoHienTai.IdHoSoKham" />
+                <div>
+                    <label class="form-label">Chan doan</label>
+                    <textarea class="form-input" name="HoSo.ChanDoan" rows="3">@Model.HoSoHienTai.ChanDoan</textarea>
+                </div>
+                <div>
+                    <label class="form-label">Ket qua kham</label>
+                    <textarea class="form-input" name="HoSo.KetQuaKham" rows="3">@Model.HoSoHienTai.KetQuaKham</textarea>
+                </div>
+                <div>
+                    <label class="form-label">Ghi chu</label>
+                    <textarea class="form-input" name="HoSo.GhiChu" rows="2">@Model.HoSoHienTai.GhiChu</textarea>
+                </div>
+                <button class="btn btn-primary" type="submit">
+                    <i class="ph ph-pencil-simple"></i> Cap nhat ho so
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (Model.HoSoHienTai is not null)
+{
+    <div class="card" style="margin-top:var(--space-4); padding:var(--space-4);">
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Ke toa thuoc</h2>
+        @if (Model.ToaHienTai.Any())
+        {
+            <table class="data-table" style="margin-bottom:var(--space-4);">
+                <thead>
+                    <tr>
+                        <th>Thuoc</th>
+                        <th>Lieu luong</th>
+                        <th>Cach dung</th>
+                        <th>So ngay</th>
+                        <th>Ghi chu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var toa in Model.ToaHienTai)
+                {
+                    <tr>
+                        <td>@toa.TenThuoc</td>
+                        <td>@toa.LieuLuong</td>
+                        <td>@toa.CachDung</td>
+                        <td>@toa.SoNgayDung</td>
+                        <td>@toa.GhiChu</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+
+        <form method="post" asp-page-handler="KeToa">
+            <input type="hidden" name="ToaThuoc.IdHoSoKham" value="@Model.HoSoHienTai.IdHoSoKham" />
+            <input type="hidden" name="ToaThuoc.CapNhatToaDangCo" value="@(Model.ToaHienTai.Any().ToString().ToLowerInvariant())" />
+            <div class="module3-prescription">
+                @for (var i = 0; i < 5; i++)
+                {
+                    <div class="module3-prescription-row">
+                        <select class="form-input" name="ToaThuoc.DanhSachThuoc[@i].IdThuoc">
+                            <option value="0">Chon thuoc</option>
+                            @foreach (var thuoc in Model.DanhSachThuoc)
+                            {
+                                <option value="@thuoc.IdThuoc">@thuoc.TenThuoc (@thuoc.DonVi)</option>
+                            }
+                        </select>
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].LieuLuong" placeholder="Lieu luong" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].CachDung" placeholder="Cach dung" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].SoNgayDung" type="number" min="1" placeholder="So ngay" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].GhiChu" placeholder="Ghi chu" />
+                    </div>
+                }
+            </div>
+            <button class="btn btn-primary" type="submit" style="margin-top:var(--space-3);">
+                <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cap nhat toa" : "Ke toa")
+            </button>
+        </form>
+    </div>
+}
+
+@section Scripts {
+<style>
+    .module3-two-col {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+    .module3-form {
+        display: grid;
+        gap: var(--space-3);
+    }
+    .module3-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
+    .module3-summary div {
+        border: 1px solid var(--color-border);
+        padding: var(--space-3);
+        border-radius: 8px;
+    }
+    .module3-summary span {
+        display: block;
+        color: var(--color-text-secondary);
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    .module3-prescription {
+        display: grid;
+        gap: var(--space-2);
+    }
+    .module3-prescription-row {
+        display: grid;
+        grid-template-columns: 2fr repeat(4, minmax(0, 1fr));
+        gap: var(--space-2);
+    }
+    @@media (max-width: 1000px) {
+        .module3-two-col { grid-template-columns: 1fr; }
+        .module3-summary { grid-template-columns: 1fr; }
+        .module3-prescription-row { grid-template-columns: 1fr; }
+    }
+</style>
+}

@@ -1,5 +1,6 @@
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Security;
+using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Domain.Enums;
 using MediatR;
@@ -35,6 +36,7 @@ public sealed class TaoHoSoKhamHandler : IRequestHandler<TaoHoSoKhamCommand, int
 
         var lichHen = await _db.LichHen
             .Include(x => x.CaLamViec)
+            .Include(x => x.BenhNhan)
             .FirstOrDefaultAsync(x => x.IdLichHen == request.IdLichHen, cancellationToken)
             ?? throw new NotFoundException("Khong tim thay lich hen.");
 
@@ -48,6 +50,13 @@ public sealed class TaoHoSoKhamHandler : IRequestHandler<TaoHoSoKhamCommand, int
             throw new ConflictException("Chi co the tao ho so cho lich hen dang kham hoac da hoan thanh.");
         }
 
+        // Kiem tra benh nhan co bi han che khong
+        var now = _dateTimeProvider.UtcNow;
+        if (lichHen.BenhNhan.BiHanChe && (lichHen.BenhNhan.NgayHetHanChe is null || lichHen.BenhNhan.NgayHetHanChe > now))
+        {
+            throw new ForbiddenException("Benh nhan nay dang bi han che, khong the tao ho so kham.");
+        }
+
         var daTonTai = await _db.HoSoKham
             .AnyAsync(x => x.IdLichHen == request.IdLichHen, cancellationToken);
         if (daTonTai)
@@ -55,7 +64,6 @@ public sealed class TaoHoSoKhamHandler : IRequestHandler<TaoHoSoKhamCommand, int
             throw new ConflictException("Lich hen nay da co ho so kham.");
         }
 
-        var now = _dateTimeProvider.UtcNow;
         var entity = new ClinicBooking.Domain.Entities.HoSoKham
         {
             IdLichHen = request.IdLichHen,

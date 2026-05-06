@@ -1,5 +1,9 @@
 using ClinicBooking.Application.Features.ThongBao.Commands.DanhDauDaDocThongBao;
 using ClinicBooking.Application.Features.ThongBao.Queries.DanhSachThongBaoCuaToi;
+using ClinicBooking.Application.Features.HoSoKham.Dtos;
+using ClinicBooking.Application.Features.HoSoKham.Queries.LichSuKhamCuaToi;
+using ClinicBooking.Application.Features.ToaThuoc.Dtos;
+using ClinicBooking.Application.Features.ToaThuoc.Queries.LayToaCuaToi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +22,9 @@ public class ThongBaoModel : PageModel
     public DanhSachThongBaoResponse DanhSach { get; private set; } =
         new([], 0, 1, KichThuocTrang, 0);
 
+    public IReadOnlyList<HoSoKhamTomTatResponse> LichSuKham { get; private set; } = [];
+    public IReadOnlyList<ToaThuocResponse> ToaThuocGanDay { get; private set; } = [];
+
     public bool? ChiChuaDocFilter { get; private set; }
 
     public int TongSoTrang =>
@@ -28,6 +35,8 @@ public class ThongBaoModel : PageModel
         ChiChuaDocFilter = chiChuaDoc;
         DanhSach = await _mediator.Send(
             new DanhSachThongBaoCuaToiQuery(chiChuaDoc, soTrang, KichThuocTrang));
+        LichSuKham = await _mediator.Send(new LichSuKhamCuaToiQuery(1, 5));
+        ToaThuocGanDay = await _mediator.Send(new LayToaCuaToiQuery(1, 8));
     }
 
     // Danh dau 1 thong bao la da doc

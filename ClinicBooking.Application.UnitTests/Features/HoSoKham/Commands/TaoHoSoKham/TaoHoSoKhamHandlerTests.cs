@@ -81,4 +81,35 @@ public sealed class TaoHoSoKhamHandlerTests
         await act.Should().ThrowAsync<ForbiddenException>()
             .WithMessage("Ban khong co quyen tao ho so cho lich hen nay.");
     }
+
+    [Fact]
+    public async Task Handle_BenhNhanBiHanChe_ThrowForbiddenException()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+        var now = new DateTime(2026, 4, 21, 7, 0, 0, DateTimeKind.Utc);
+        var duLieu = await HoSoKhamTestDataSeeder.TaoAsync(db, now);
+
+        // Cap nhat benh nhan: BiHanChe = true, NgayHetHanChe > now
+        var benhNhan = await db.BenhNhan
+            .FirstAsync(x => x.IdBenhNhan == duLieu.IdBenhNhan);
+        benhNhan.BiHanChe = true;
+        benhNhan.NgayHetHanChe = now.AddDays(10);
+        db.BenhNhan.Update(benhNhan);
+        await db.SaveChangesAsync();
+
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.IdTaiKhoan.Returns(duLieu.IdTaiKhoanBacSi);
+
+        var dateTimeProvider = Substitute.For<IDateTimeProvider>();
+        dateTimeProvider.UtcNow.Returns(now);
+
+        var handler = new TaoHoSoKhamHandler(db, currentUser, dateTimeProvider);
+        var act = async () => await handler.Handle(
+            new TaoHoSoKhamCommand(duLieu.IdLichHen, "Chan doan A", "Ket qua A", "Ghi chu A"),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<ForbiddenException>()
+            .WithMessage("Benh nhan nay dang bi han che, khong the tao ho so kham.");
+    }
 }

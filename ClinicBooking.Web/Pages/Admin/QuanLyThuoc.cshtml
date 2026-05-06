@@ -1,0 +1,136 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.QuanLyThuocModel
+@{
+    ViewData["Title"] = "Quan ly thuoc";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quan ly thuoc</h1>
+        <div class="page-subtitle" style="margin-top:var(--space-1); color:var(--color-text-secondary); font-size:13px;">
+            Quan ly danh muc thuoc dung khi ke don.
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:var(--space-4); padding:var(--space-4);">
+    <form method="get" class="filter-bar" style="align-items:end;">
+        <div style="flex:1; min-width:220px;">
+            <label class="form-label">Tim kiem</label>
+            <input class="form-input" name="tuKhoa" value="@Model.TuKhoa" placeholder="Ten thuoc hoac hoat chat" />
+        </div>
+        <button class="btn btn-secondary" type="submit">
+            <i class="ph ph-magnifying-glass"></i> Tim
+        </button>
+    </form>
+</div>
+
+<div class="card" style="margin-bottom:var(--space-4); padding:var(--space-4);">
+    <h2 class="card-title" style="margin-bottom:var(--space-3);">Them thuoc</h2>
+    <form method="post" asp-page-handler="Tao" class="module3-grid">
+        <input type="hidden" asp-for="TuKhoa" />
+        <input type="hidden" asp-for="SoTrang" />
+        <div>
+            <label class="form-label">Ten thuoc</label>
+            <input class="form-input" asp-for="Thuoc.TenThuoc" required maxlength="200" />
+        </div>
+        <div>
+            <label class="form-label">Hoat chat</label>
+            <input class="form-input" asp-for="Thuoc.HoatChat" maxlength="200" />
+        </div>
+        <div>
+            <label class="form-label">Don vi</label>
+            <input class="form-input" asp-for="Thuoc.DonVi" maxlength="50" />
+        </div>
+        <div>
+            <label class="form-label">Ghi chu</label>
+            <input class="form-input" asp-for="Thuoc.GhiChu" maxlength="500" />
+        </div>
+        <div style="display:flex; align-items:end;">
+            <button class="btn btn-primary" type="submit">
+                <i class="ph ph-plus"></i> Them
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Danh sach thuoc</span>
+    </div>
+    @if (!Model.DanhSachThuoc.Any())
+    {
+        <div class="empty-state" style="padding:var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-pill"></i></div>
+            <p>Chua co thuoc phu hop.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:80px;">ID</th>
+                    <th>Ten thuoc</th>
+                    <th>Hoat chat</th>
+                    <th>Don vi</th>
+                    <th>Ghi chu</th>
+                    <th style="width:230px;">Thao tac</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var thuoc in Model.DanhSachThuoc)
+            {
+                <tr>
+                    <td>@thuoc.IdThuoc</td>
+                    <td><strong>@thuoc.TenThuoc</strong></td>
+                    <td>@thuoc.HoatChat</td>
+                    <td>@thuoc.DonVi</td>
+                    <td>@thuoc.GhiChu</td>
+                    <td>
+                        <details>
+                            <summary class="btn btn-sm btn-secondary" style="display:inline-flex; cursor:pointer;">
+                                <i class="ph ph-pencil-simple"></i> Sua
+                            </summary>
+                            <form method="post" asp-page-handler="CapNhat" style="margin-top:var(--space-3); display:grid; gap:var(--space-2);">
+                                <input type="hidden" asp-for="TuKhoa" />
+                                <input type="hidden" asp-for="SoTrang" />
+                                <input type="hidden" name="Thuoc.IdThuoc" value="@thuoc.IdThuoc" />
+                                <input class="form-input" name="Thuoc.TenThuoc" value="@thuoc.TenThuoc" required maxlength="200" />
+                                <input class="form-input" name="Thuoc.HoatChat" value="@thuoc.HoatChat" maxlength="200" />
+                                <input class="form-input" name="Thuoc.DonVi" value="@thuoc.DonVi" maxlength="50" />
+                                <input class="form-input" name="Thuoc.GhiChu" value="@thuoc.GhiChu" maxlength="500" />
+                                <button class="btn btn-sm btn-primary" type="submit">Luu</button>
+                            </form>
+                        </details>
+                        <form method="post" asp-page-handler="Xoa" style="display:inline;" onsubmit="return confirm('Xoa thuoc nay?');">
+                            <input type="hidden" asp-for="TuKhoa" />
+                            <input type="hidden" asp-for="SoTrang" />
+                            <input type="hidden" name="idThuoc" value="@thuoc.IdThuoc" />
+                            <button class="btn btn-sm btn-secondary" type="submit">
+                                <i class="ph ph-trash"></i> Xoa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+<style>
+    .module3-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
+    @@media (max-width: 1000px) {
+        .module3-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 640px) {
+        .module3-grid { grid-template-columns: 1fr; }
+    }
+</style>
+}
