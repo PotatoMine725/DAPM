@@ -116,31 +116,60 @@ public class DatabaseSeeder
         var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
         var seededIds = new[] { 3001, 3002, 3003 };
 
-        var staleShifts = await _db.CaLamViec
-            .Where(c => seededIds.Contains(c.IdCaLamViec) && c.NgayLamViec <= today)
+        var allSeeded = await _db.CaLamViec
+            .Where(c => seededIds.Contains(c.IdCaLamViec))
             .ToListAsync(cancellationToken);
 
-        if (!staleShifts.Any())
-        {
-            _logger.LogDebug("[DevFixture] CaLamViec seed da co ngay tuong lai. Bo qua refresh.");
-            return;
-        }
+        _logger.LogWarning(
+            "[DevFixture][DIAG] Today(UTC)={Today:yyyy-MM-dd}. Tim thay {Count}/3 CaLamViec seed. Details: {Details}",
+            today,
+            allSeeded.Count,
+            string.Join(", ", allSeeded.Select(s => $"ID={s.IdCaLamViec} Ngay={s.NgayLamViec:yyyy-MM-dd} SoSlotDaDat={s.SoSlotDaDat}")));
 
-        foreach (var shift in staleShifts)
+        // Luon xoa LichHen/HangCho/LichSuLichHen seed de dam bao SoSlot khong bi xung dot
+        var seededLichHenIds = new[] { 4001, 4002 };
+        var lichSuToDelete = await _db.LichSuLichHen
+            .Where(ls => seededLichHenIds.Contains(ls.IdLichHen))
+            .ToListAsync(cancellationToken);
+        _db.LichSuLichHen.RemoveRange(lichSuToDelete);
+
+        var hangChoToDelete = await _db.HangCho
+            .Where(hc => seededLichHenIds.Contains(hc.IdLichHen))
+            .ToListAsync(cancellationToken);
+        _db.HangCho.RemoveRange(hangChoToDelete);
+
+        var lichHenToDelete = await _db.LichHen
+            .Where(lh => seededLichHenIds.Contains(lh.IdLichHen))
+            .ToListAsync(cancellationToken);
+        _db.LichHen.RemoveRange(lichHenToDelete);
+
+        if (lichHenToDelete.Count > 0)
+            _logger.LogWarning("[DevFixture] Da xoa {Count} LichHen seed de giai phong SoSlot.", lichHenToDelete.Count);
+
+        // Refresh khi ngay khong khop voi ngay mong doi
+        var shiftsCanRefresh = allSeeded.Where(c =>
         {
-            // 3001/3002 ban dau la "ngay mai" → giw nguyen y nghia: 30 ngay ke tu today
-            // 3003 ban dau la "tuan toi" → 37 ngay ke tu today
+            var ngayMongDoi = c.IdCaLamViec == 3003 ? today.AddDays(7) : today.AddDays(1);
+            return c.NgayLamViec != ngayMongDoi;
+        }).ToList();
+
+        foreach (var shift in shiftsCanRefresh)
+        {
             shift.NgayLamViec = shift.IdCaLamViec == 3003
-                ? today.AddDays(37)
-                : today.AddDays(30);
+                ? today.AddDays(7)
+                : today.AddDays(1);
+            shift.SoSlotDaDat = 0;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
 
-        _logger.LogWarning(
-            "[DevFixture] Da cap nhat {Count} CaLamViec stale (IDs: {Ids}) sang ngay tuong lai. CHI dung o Development.",
-            staleShifts.Count,
-            string.Join(", ", staleShifts.Select(s => s.IdCaLamViec)));
+        if (shiftsCanRefresh.Any())
+            _logger.LogWarning(
+                "[DevFixture] Da cap nhat {Count} CaLamViec sang ngay dung. Ket qua: {Details}",
+                shiftsCanRefresh.Count,
+                string.Join(", ", shiftsCanRefresh.Select(s => $"ID={s.IdCaLamViec} -> {s.NgayLamViec:yyyy-MM-dd}")));
+        else
+            _logger.LogWarning("[DevFixture] CaLamViec seed da co ngay dung. Bo qua refresh.");
     }
 
     private async Task SeedTaiKhoanFixtureAsync(
