@@ -27,6 +27,86 @@
     }
 </div>
 
+<div class="module3-patient-grid" style="margin-bottom:var(--space-4);">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-stethoscope"></i> Lich su kham gan day</span>
+        </div>
+        @if (!Model.LichSuKham.Any())
+        {
+            <div class="empty-state" style="padding:var(--space-6);">
+                <div class="empty-state-icon"><i class="ph ph-folder-simple-dashed"></i></div>
+                <p>Chua co ho so kham.</p>
+            </div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ngay kham</th>
+                        <th>Bac si</th>
+                        <th>Chan doan</th>
+                        <th>Ma lich hen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var hoSo in Model.LichSuKham)
+                {
+                    <tr>
+                        <td>@hoSo.NgayKham.ToString("dd/MM/yyyy")</td>
+                        <td>@hoSo.HoTenBacSi</td>
+                        <td>@(string.IsNullOrWhiteSpace(hoSo.ChanDoan) ? "Chua cap nhat" : hoSo.ChanDoan)</td>
+                        <td><span class="table-code">@hoSo.MaLichHen</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-pill"></i> Toa thuoc gan day</span>
+        </div>
+        @if (!Model.ToaThuocGanDay.Any())
+        {
+            <div class="empty-state" style="padding:var(--space-6);">
+                <div class="empty-state-icon"><i class="ph ph-prescription"></i></div>
+                <p>Chua co toa thuoc.</p>
+            </div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Thuoc</th>
+                        <th>Cach dung</th>
+                        <th>Ngay kham</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var toa in Model.ToaThuocGanDay)
+                {
+                    <tr>
+                        <td>@toa.TenThuoc</td>
+                        <td>
+                            @toa.LieuLuong
+                            @if (!string.IsNullOrWhiteSpace(toa.CachDung))
+                            {
+                                <span> - @toa.CachDung</span>
+                            }
+                        </td>
+                        <td>@toa.NgayKham.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
 <div class="card section-stack" style="margin-bottom: var(--space-4);">
     <div class="filter-bar">
         <span style="color:var(--color-text-secondary); font-size:14px;">Lọc</span>
@@ -174,6 +254,14 @@
 }
 .thong-bao-dot--chua-doc {
     background: var(--color-primary, #2563eb);
+}
+.module3-patient-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-4);
+}
+@@media (max-width: 1000px) {
+    .module3-patient-grid { grid-template-columns: 1fr; }
 }
 </style>
 }
