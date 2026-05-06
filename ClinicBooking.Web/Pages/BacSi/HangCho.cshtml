@@ -3,40 +3,63 @@
 @using ClinicBooking.Domain.Enums
 @{
     ViewData["Title"] = "Hàng chờ của tôi";
+    var tenBacSi = Model.HoSo?.HoTen ?? "Bác sĩ";
 }
 
 <div class="page-header">
-    <h1 class="page-title">Hàng chờ của tôi</h1>
+    <div>
+        <h1 class="page-title">Hàng chờ — @tenBacSi</h1>
+        <div class="page-subtitle">Bệnh nhân chờ khám theo ca hôm nay.</div>
+    </div>
     @if (Model.IdCaLamViec.HasValue && Model.SoChoKham > 0)
     {
         <form method="post" asp-page-handler="GoiKeTiep">
             <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
-            <button type="submit" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 3a4 4 0 0 0-4 4v4c0 .8-.3 1.6-.8 2.2L6 15h12l-1.2-1.8c-.5-.6-.8-1.4-.8-2.2V7a4 4 0 0 0-4-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Gọi bệnh nhân tiếp theo
+            <button type="submit" class="btn btn-primary hc-goi-btn">
+                <i class="ph ph-bell-ringing"></i> Gọi bệnh nhân tiếp theo
             </button>
         </form>
     }
 </div>
 
-<!-- Chọn ca làm việc -->
 <div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" style="display:flex; gap:var(--space-3); align-items:center;">
-        <label class="form-label" style="margin:0; white-space:nowrap;">Mã ca làm việc:</label>
-        <input type="number" class="form-input" name="idCaLamViec"
-               value="@Model.IdCaLamViec" placeholder="Nhập ID ca..." style="width:160px;" />
-        <button type="submit" class="btn btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Xem hàng chờ
-        </button>
+    <form method="get" style="display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap;">
+        <label class="form-label" style="margin:0; white-space:nowrap;">
+            <i class="ph ph-calendar-check"></i> Ca của tôi:
+        </label>
+        @if (Model.DanhSachCa.Any())
+        {
+            <select class="form-select" name="idCaLamViec" style="min-width:340px;" onchange="this.form.submit()">
+                <option value="">— Chọn ca —</option>
+                @foreach (var ca in Model.DanhSachCa)
+                {
+                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\:mm}–{ca.GioKetThuc:HH\:mm} | {ca.TenChuyenKhoa}";
+                    if (Model.IdCaLamViec == ca.IdCaLamViec)
+                    {
+                        <option value="@ca.IdCaLamViec" selected>@label</option>
+                    }
+                    else
+                    {
+                        <option value="@ca.IdCaLamViec">@label</option>
+                    }
+                }
+            </select>
+        }
+        else
+        {
+            <span style="color:var(--color-text-secondary); font-size:14px;">
+                Không có ca nào hôm nay và ngày mai.
+            </span>
+        }
     </form>
 </div>
 
 @if (Model.IdCaLamViec.HasValue)
 {
-    <!-- Thống kê nhanh -->
     <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
         <div class="stat-card">
             <div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+                <i class="ph ph-clock"></i>
             </div>
             <div>
                 <div class="stat-value">@Model.SoChoKham</div>
