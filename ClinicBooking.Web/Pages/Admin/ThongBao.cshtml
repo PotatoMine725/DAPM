@@ -1,0 +1,675 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.ThongBaoModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thông báo hệ thống - MedAdmin";
+    ViewData["PageName"] = "thongbao";
+    ViewData["PageTitle"] = "Thông báo hệ thống";
+}
+
+<!-- Stats Row -->
+<div class="notif-stats">
+    <div class="ns-card">
+        <div class="ns-icon" style="background: var(--primary-light); color: var(--primary);">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+        <div>
+            <div class="stat-value">24</div>
+            <div class="stat-label">Tổng thông báo</div>
+        </div>
+    </div>
+    <div class="ns-card">
+        <div class="ns-icon" style="background: var(--success-bg); color: var(--success);">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <div class="stat-value">18</div>
+            <div class="stat-label">Đã đọc</div>
+        </div>
+    </div>
+    <div class="ns-card">
+        <div class="ns-icon" style="background: var(--warning-bg); color: var(--warning);">
+            <i class="fa-solid fa-envelope"></i>
+        </div>
+        <div>
+            <div class="stat-value">6</div>
+            <div class="stat-label">Chưa đọc</div>
+        </div>
+    </div>
+    <div class="ns-card">
+        <div class="ns-icon" style="background: var(--danger-bg); color: var(--danger);">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+        </div>
+        <div>
+            <div class="stat-value">3</div>
+            <div class="stat-label">Ưu tiên cao</div>
+        </div>
+    </div>
+</div>
+
+<!-- Layout -->
+<div class="notif-layout">
+    <!-- Sidebar Filter -->
+    <div class="notif-sidebar">
+        <div class="notif-sb-title">Lọc thông báo</div>
+        
+        <div class="notif-filter-item active" onclick="filterNotifications('all', this)">
+            <div class="nf-icon" style="background: var(--primary-light); color: var(--primary);">
+                <i class="fa-solid fa-inbox"></i>
+            </div>
+            <div class="nf-label">Tất cả</div>
+            <div class="nf-count">24</div>
+        </div>
+        
+        <div class="notif-filter-item" onclick="filterNotifications('unread', this)">
+            <div class="nf-icon" style="background: var(--warning-bg); color: var(--warning);">
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div class="nf-label">Chưa đọc</div>
+            <div class="nf-count">6</div>
+        </div>
+        
+        <div class="notif-filter-item" onclick="filterNotifications('important', this)">
+            <div class="nf-icon" style="background: var(--danger-bg); color: var(--danger);">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="nf-label">Quan trọng</div>
+            <div class="nf-count">3</div>
+        </div>
+        
+        <div class="notif-divider"></div>
+        
+        <div class="notif-filter-item" onclick="filterNotifications('system', this)">
+            <div class="nf-icon" style="background: var(--primary-mid); color: white;">
+                <i class="fa-solid fa-cog"></i>
+            </div>
+            <div class="nf-label">Hệ thống</div>
+            <div class="nf-count">8</div>
+        </div>
+        
+        <div class="notif-filter-item" onclick="filterNotifications('appointment', this)">
+            <div class="nf-icon" style="background: var(--success-bg); color: var(--success);">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="nf-label">Lịch hẹn</div>
+            <div class="nf-count">12</div>
+        </div>
+        
+        <div class="notif-filter-item" onclick="filterNotifications('medical', this)">
+            <div class="nf-icon" style="background: var(--warning-bg); color: var(--warning);">
+                <i class="fa-solid fa-stethoscope"></i>
+            </div>
+            <div class="nf-label">Y tế</div>
+            <div class="nf-count">4</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div>
+        <!-- Notification List -->
+        <div class="notif-list" id="notification-list">
+            <div class="notif-item unread" onclick="showNotificationDetail(1)">
+                <div class="notif-icon" style="background: var(--danger-bg); color: var(--danger);">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Hệ thống bảo trì định kỳ</div>
+                        <div class="notif-time">2 giờ trước</div>
+                    </div>
+                    <div class="notif-desc">
+                        Hệ thống sẽ tiến hành bảo trì định kỳ vào lúc 22:00 tối nay. Dịch vụ có thể bị gián đoạn trong khoảng 30 phút.
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--danger-bg); color: var(--danger);">Ưu tiên cao</span>
+                        <span class="notif-tag" style="background: var(--primary-light); color: var(--primary);">Hệ thống</span>
+                    </div>
+                </div>
+                <div class="notif-dot"></div>
+                <div class="notif-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="markAsRead(1, event)">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification(1, event)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-item unread" onclick="showNotificationDetail(2)">
+                <div class="notif-icon" style="background: var(--success-bg); color: var(--success);">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Bệnh nhân mới đăng ký</div>
+                        <div class="notif-time">3 giờ trước</div>
+                    </div>
+                    <div class="notif-desc">
+                        Bệnh nhân Nguyễn Thị An đã hoàn tất đăng ký tài khoản và cần xác minh thông tin.
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--success-bg); color: var(--success);">Lịch hẹn</span>
+                    </div>
+                </div>
+                <div class="notif-dot"></div>
+                <div class="notif-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="markAsRead(2, event)">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification(2, event)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-item" onclick="showNotificationDetail(3)">
+                <div class="notif-icon" style="background: var(--primary-light); color: var(--primary);">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Báo cáo tuần hoàn tất</div>
+                        <div class="notif-time">1 ngày trước</div>
+                    </div>
+                    <div class="notif-desc">
+                        Báo cáo thống kê hoạt động tuần 18/05 - 24/05 đã được tạo. Tổng số bệnh nhân: 1,247.
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--primary-light); color: var(--primary);">Hệ thống</span>
+                    </div>
+                </div>
+                <div class="notif-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="markAsUnread(3, event)">
+                        <i class="fa-solid fa-envelope"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification(3, event)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-item unread" onclick="showNotificationDetail(4)">
+                <div class="notif-icon" style="background: var(--warning-bg); color: var(--warning);">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Lịch hẹn bị hủy</div>
+                        <div class="notif-time">1 ngày trước</div>
+                    </div>
+                    <div class="notif-desc">
+                        Bệnh nhân Trần Văn B đã hủy lịch hẹn với BS. Nguyễn Văn A vào 09:00 ngày 26/05.
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--success-bg); color: var(--success);">Lịch hẹn</span>
+                    </div>
+                </div>
+                <div class="notif-dot"></div>
+                <div class="notif-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="markAsRead(4, event)">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification(4, event)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-item" onclick="showNotificationDetail(5)">
+                <div class="notif-icon" style="background: var(--primary-mid); color: white;">
+                    <i class="fa-solid fa-shield-alt"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Cập nhật bảo mật</div>
+                        <div class="notif-time">2 ngày trước</div>
+                    </div>
+                    <div class="notif-desc">
+                        Chính sách bảo mật đã được cập nhật. Vui lòng xem lại để đảm bảo tuân thủ quy định mới.
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--primary-light); color: var(--primary);">Hệ thống</span>
+                    </div>
+                </div>
+                <div class="notif-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="markAsUnread(5, event)">
+                        <i class="fa-solid fa-envelope"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification(5, event)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Panel (Hidden by default) -->
+        <div class="notif-detail" id="notification-detail" style="display: none;">
+            <div class="nd-header">
+                <div class="notif-icon" style="background: var(--danger-bg); color: var(--danger);">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-head">
+                        <div class="notif-title">Hệ thống bảo trì định kỳ</div>
+                        <div class="notif-time">2 giờ trước</div>
+                    </div>
+                    <div class="notif-meta">
+                        <span class="notif-tag" style="background: var(--danger-bg); color: var(--danger);">Ưu tiên cao</span>
+                        <span class="notif-tag" style="background: var(--primary-light); color: var(--primary);">Hệ thống</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nd-body">
+                <h4 style="margin-bottom: 12px;">Nội dung thông báo</h4>
+                <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">
+                    Kính gửi Quản trị viên,
+                </p>
+                <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">
+                    Hệ thống MediCare sẽ tiến hành bảo trì định kỳ vào lúc <strong>22:00 ngày 25/05/2026</strong>. 
+                    Quá trình bảo trì dự kiến kéo dài trong khoảng <strong>30 phút</strong>.
+                </p>
+                <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">
+                    Trong thời gian bảo trì, các dịch vụ sau có thể bị gián đoạn:
+                </p>
+                <ul style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px; padding-left: 20px;">
+                    <li>Đăng nhập và xác thực người dùng</li>
+                    <li>Đặt lịch hẹn mới</li>
+                    <li>Truy cập hồ sơ bệnh án</li>
+                    <li>Thanh toán trực tuyến</li>
+                </ul>
+                <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">
+                    Chúng tôi xin lỗi vì sự bất tiện này và cam kết hoàn thành bảo trì trong thời gian sớm nhất.
+                </p>
+                
+                <div class="nd-meta-grid">
+                    <div>
+                        <label style="font-size: 12px; color: var(--text-secondary);">Người gửi</label>
+                        <div style="font-weight: 600;">Hệ thống MediCare</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--text-secondary);">Loại thông báo</label>
+                        <div style="font-weight: 600;">Hệ thống</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--text-secondary);">Mức độ ưu tiên</label>
+                        <div style="font-weight: 600; color: var(--danger);">Cao</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--text-secondary);">Thời gian gửi</label>
+                        <div style="font-weight: 600;">25/05/2026 14:30</div>
+                    </div>
+                </div>
+            </div>
+            <div class="nd-footer">
+                <button class="btn btn-primary" onclick="markAsRead(1)">
+                    <i class="fa-solid fa-check"></i> Đã đọc
+                </button>
+                <button class="btn btn-ghost" onclick="hideNotificationDetail()">
+                    <i class="fa-solid fa-xmark"></i> Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== STATS ROW ===== */
+.notif-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.ns-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.ns-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.stat-value {
+    font-family: 'Lexend', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ===== LAYOUT ===== */
+.notif-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 18px;
+}
+
+/* ===== SIDEBAR FILTER ===== */
+.notif-sidebar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.notif-sb-title {
+    padding: 16px 20px;
+    font-family: 'Lexend', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.notif-filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 20px;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: .15s;
+    border-left: 3px solid transparent;
+}
+
+.notif-filter-item:hover {
+    background: var(--page-bg);
+}
+
+.notif-filter-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-left-color: var(--primary);
+    font-weight: 600;
+}
+
+.notif-filter-item .nf-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.notif-filter-item .nf-label {
+    flex: 1;
+}
+
+.notif-filter-item .nf-count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.notif-filter-item.active .nf-count {
+    background: var(--primary);
+    color: #fff;
+}
+
+.notif-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+}
+
+/* ===== NOTIFICATION ITEMS ===== */
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--subtle);
+    cursor: pointer;
+    transition: .15s;
+    position: relative;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item:hover {
+    background: var(--page-bg);
+}
+
+.notif-item.unread {
+    background: #fafcff;
+    border-left: 3px solid var(--primary);
+}
+
+.notif-item.unread:hover {
+    background: var(--primary-light);
+}
+
+.notif-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.notif-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-time {
+    font-size: 11.5px;
+    color: var(--text-disabled);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notif-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.notif-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    position: absolute;
+    top: 18px;
+    right: 18px;
+}
+
+.notif-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: .15s;
+}
+
+.notif-item:hover .notif-actions {
+    opacity: 1;
+}
+
+/* ===== DETAIL PANEL ===== */
+.notif-detail {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+}
+
+.nd-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.nd-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.nd-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+}
+
+.nd-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: var(--page-bg);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+</style>
+
+<script>
+function filterNotifications(type, element) {
+    // Update active state
+    document.querySelectorAll('.notif-filter-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Filter notifications
+    const notifications = document.querySelectorAll('.notif-item');
+    notifications.forEach(notif => {
+        notif.style.display = '';
+    });
+    
+    showToast(`Đang lọc: ${type}`, 'info');
+}
+
+function showNotificationDetail(id) {
+    // Hide list, show detail
+    document.getElementById('notification-list').style.display = 'none';
+    document.getElementById('notification-detail').style.display = 'flex';
+    
+    // Mark as read
+    const notifItem = document.querySelector(`.notif-item:nth-child(${id})`);
+    if (notifItem && notifItem.classList.contains('unread')) {
+        notifItem.classList.remove('unread');
+        const dot = notifItem.querySelector('.notif-dot');
+        if (dot) dot.remove();
+    }
+}
+
+function hideNotificationDetail() {
+    // Show list, hide detail
+    document.getElementById('notification-list').style.display = 'flex';
+    document.getElementById('notification-detail').style.display = 'none';
+}
+
+function markAsRead(id, event) {
+    event.stopPropagation();
+    const notifItem = document.querySelector(`.notif-item:nth-child(${id})`);
+    if (notifItem) {
+        notifItem.classList.remove('unread');
+        const dot = notifItem.querySelector('.notif-dot');
+        if (dot) dot.remove();
+        showToast('Đã đánh dấu đã đọc', 'success');
+    }
+}
+
+function markAsUnread(id, event) {
+    event.stopPropagation();
+    const notifItem = document.querySelector(`.notif-item:nth-child(${id})`);
+    if (notifItem) {
+        notifItem.classList.add('unread');
+        if (!notifItem.querySelector('.notif-dot')) {
+            const dot = document.createElement('div');
+            dot.className = 'notif-dot';
+            notifItem.appendChild(dot);
+        }
+        showToast('Đã đánh dấu chưa đọc', 'info');
+    }
+}
+
+function deleteNotification(id, event) {
+    event.stopPropagation();
+    if (confirm('Bạn có chắc muốn xóa thông báo này?')) {
+        const notifItem = document.querySelector(`.notif-item:nth-child(${id})`);
+        if (notifItem) {
+            notifItem.remove();
+            showToast('Thông báo đã được xóa', 'success');
+        }
+    }
+}
+</script>
