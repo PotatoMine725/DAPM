@@ -1,0 +1,566 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.LichNoiTruModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Lịch bác sĩ nội trú - MedAdmin";
+    ViewData["PageName"] = "lichnoitru";
+    ViewData["PageTitle"] = "Lịch bác sĩ nội trú";
+}
+
+<div class="section-title">Thiết lập lịch bác sĩ nội trú</div>
+<div class="section-sub">Cấu hình mẫu lịch tuần cho bác sĩ nội trú — hệ thống tự sinh ca làm việc hàng tuần</div>
+
+<!-- Info Alert -->
+<div style="background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--primary)">
+    <i class="fa-solid fa-circle-info fa-lg"></i>
+    <div>Mẫu lịch này được dùng để <strong>tự động tạo ca làm việc hàng tuần</strong> cho bác sĩ nội trú. Thay đổi mẫu không ảnh hưởng đến ca đã tạo trước đó.</div>
+</div>
+
+<!-- 2 Column Layout -->
+<div class="layout-2col">
+    <!-- Left: Doctor list -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Bác sĩ nội trú</div>
+        </div>
+        <div class="card-body-pad" style="display:flex;flex-direction:column;gap:4px">
+            <div class="search-box" style="width:100%;margin-bottom:8px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Tìm bác sĩ..." id="search-doctors">
+            </div>
+
+            <div class="bs-list-item active" onclick="selectDoctor(this,'Trần Minh Khoa','Tim mạch','P101')">
+                <div class="bs-ava" style="background:var(--primary)">K</div>
+                <div>
+                    <div style="font-size:13.5px;font-weight:600">BS. Trần Minh Khoa</div>
+                    <div style="font-size:11.5px;color:var(--text-secondary)">Tim mạch · P101</div>
+                </div>
+                <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+            </div>
+
+            <div class="bs-list-item" onclick="selectDoctor(this,'Phạm Thu Hà','Nhi khoa','P203')">
+                <div class="bs-ava" style="background:#059669">H</div>
+                <div>
+                    <div style="font-size:13.5px;font-weight:600">BS. Phạm Thu Hà</div>
+                    <div style="font-size:11.5px;color:var(--text-secondary)">Nhi khoa · P203</div>
+                </div>
+                <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+            </div>
+
+            <div class="bs-list-item" onclick="selectDoctor(this,'Vũ Đức Thắng','Da liễu','P102')">
+                <div class="bs-ava" style="background:#dc2626">V</div>
+                <div>
+                    <div style="font-size:13.5px;font-weight:600">BS. Vũ Đức Thắng</div>
+                    <div style="font-size:11.5px;color:var(--text-secondary)">Da liễu · P102</div>
+                </div>
+                <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+            </div>
+
+            <div class="bs-list-item" onclick="selectDoctor(this,'Phùng Minh Đức','Tim mạch','P101')">
+                <div class="bs-ava" style="background:#0891b2">P</div>
+                <div>
+                    <div style="font-size:13.5px;font-weight:600">BS. Phùng Minh Đức</div>
+                    <div style="font-size:11.5px;color:var(--text-secondary)">Tim mạch · P101</div>
+                </div>
+                <span class="badge badge-warning" style="margin-left:auto">Nghỉ phép</span>
+            </div>
+
+            <div class="bs-list-item" onclick="selectDoctor(this,'Lê Thị Mai','Sản','P102')">
+                <div class="bs-ava" style="background:#7c3aed">M</div>
+                <div>
+                    <div style="font-size:13.5px;font-weight:600">BS. Lê Thị Mai</div>
+                    <div style="font-size:11.5px;color:var(--text-secondary)">Sản · P102</div>
+                </div>
+                <span class="badge badge-success" style="margin-left:auto">Đang làm</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Schedule table -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Mẫu lịch tuần - <span id="selected-doctor-name">BS. Trần Minh Khoa</span></div>
+            <div class="card-sub">Tim mạch · P101</div>
+        </div>
+        <div class="card-body">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Ca</th>
+                        <th>T2</th>
+                        <th>T3</th>
+                        <th>T4</th>
+                        <th>T5</th>
+                        <th>T6</th>
+                        <th>T7</th>
+                        <th>CN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Sáng</strong><br><small>08:00-12:00</small></td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chiều</strong><br><small>14:00-18:00</small></td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tối</strong><br><small>18:00-22:00</small></td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end">
+                <button class="btn btn-ghost" onclick="resetSchedule()">
+                    <i class="fa-solid fa-rotate-left"></i> Đặt lại
+                </button>
+                <button class="btn btn-primary" onclick="saveSchedule()">
+                    <i class="fa-solid fa-save"></i> Lưu mẫu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Templates -->
+<div class="card" style="margin-top:20px;">
+    <div class="card-header">
+        <div class="card-title">Mẫu lịch nhanh</div>
+        <div class="card-sub">Áp dụng các mẫu lịch có sẵn</div>
+    </div>
+    <div class="card-body">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('fulltime')">
+                <i class="fa-solid fa-briefcase"></i> Toàn thời gian (T2-CN)
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('weekday')">
+                <i class="fa-solid fa-calendar-week"></i> Ngày thường (T2-T6)
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('morning')">
+                <i class="fa-solid fa-sun"></i> Chỉ sáng (T2-T6)
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('afternoon')">
+                <i class="fa-solid fa-cloud-sun"></i> Chỉ chiều (T2-T6)
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('weekend')">
+                <i class="fa-solid fa-umbrella-beach"></i> Cuối tuần (T7-CN)
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="applyTemplate('clear')">
+                <i class="fa-solid fa-xmark"></i> Xóa tất cả
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.section-sub {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.layout-2col {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.bs-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: .15s;
+    border: 1.5px solid transparent;
+}
+
+.bs-list-item:hover {
+    background: var(--primary-light);
+}
+
+.bs-list-item.active {
+    background: var(--primary-light);
+    border-color: var(--primary-mid);
+    color: var(--primary);
+}
+
+.bs-list-item .bs-ava {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-disabled);
+    font-size: 13px;
+}
+
+.search-box input {
+    padding-left: 36px;
+    width: 100%;
+}
+
+.schedule-table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+
+.schedule-table thead th {
+    text-align: center;
+}
+
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+</style>
+
+<script>
+let selectedDoctor = {
+    name: 'Trần Minh Khoa',
+    specialty: 'Tim mạch',
+    room: 'P101'
+};
+
+function selectDoctor(element, name, specialty, room) {
+    // Update active state
+    document.querySelectorAll('.bs-list-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Update selected doctor
+    selectedDoctor = { name, specialty, room };
+    
+    // Update header
+    document.getElementById('selected-doctor-name').textContent = `BS. ${name}`;
+    document.querySelector('.card-sub').textContent = `${specialty} · ${room}`;
+    
+    // Load schedule for this doctor
+    loadDoctorSchedule(name);
+}
+
+function loadDoctorSchedule(doctorName) {
+    // Simulate loading schedule
+    showToast(`Đang tải lịch cho BS. ${doctorName}`, 'info');
+    
+    // Reset all checkboxes first
+    document.querySelectorAll('.schedule-table input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    // Apply different schedules based on doctor
+    if (doctorName === 'Trần Minh Khoa') {
+        // Full weekday schedule
+        applyWeekdaySchedule();
+    } else if (doctorName === 'Phạm Thu Hà') {
+        // Morning only schedule
+        applyMorningSchedule();
+    } else if (doctorName === 'Vũ Đức Thắng') {
+        // Weekend schedule
+        applyWeekendSchedule();
+    }
+    
+    setTimeout(() => {
+        showToast('Lịch đã được tải', 'success');
+    }, 500);
+}
+
+function applyWeekdaySchedule() {
+    const checkboxes = document.querySelectorAll('.schedule-table input[type="checkbox"]');
+    // Morning and afternoon for weekdays (T2-T6)
+    for (let i = 0; i < 2; i++) { // Morning and Afternoon rows
+        for (let j = 1; j <= 5; j++) { // T2-T6 columns
+            const index = i * 8 + j;
+            if (checkboxes[index]) checkboxes[index].checked = true;
+        }
+    }
+}
+
+function applyMorningSchedule() {
+    const checkboxes = document.querySelectorAll('.schedule-table input[type="checkbox"]');
+    // Morning only for weekdays (T2-T6)
+    for (let j = 1; j <= 5; j++) { // T2-T6 columns
+        const index = j; // First row (morning)
+        if (checkboxes[index]) checkboxes[index].checked = true;
+    }
+}
+
+function applyWeekendSchedule() {
+    const checkboxes = document.querySelectorAll('.schedule-table input[type="checkbox"]');
+    // All shifts for weekend (T7-CN)
+    for (let i = 0; i < 3; i++) { // All rows
+        for (let j = 6; j <= 7; j++) { // T7-CN columns
+            const index = i * 8 + j;
+            if (checkboxes[index]) checkboxes[index].checked = true;
+        }
+    }
+}
+
+function applyTemplate(template) {
+    // Reset first
+    document.querySelectorAll('.schedule-table input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    switch(template) {
+        case 'fulltime':
+            document.querySelectorAll('.schedule-table input[type="checkbox"]').forEach(cb => cb.checked = true);
+            break;
+        case 'weekday':
+            applyWeekdaySchedule();
+            break;
+        case 'morning':
+            applyMorningSchedule();
+            break;
+        case 'afternoon':
+            // Afternoon only for weekdays
+            for (let j = 1; j <= 5; j++) {
+                const index = 8 + j; // Second row (afternoon)
+                const checkbox = document.querySelectorAll('.schedule-table input[type="checkbox"]')[index];
+                if (checkbox) checkbox.checked = true;
+            }
+            break;
+        case 'weekend':
+            applyWeekendSchedule();
+            break;
+        case 'clear':
+            // Already reset
+            break;
+    }
+    
+    showToast(`Đã áp dụng mẫu: ${template}`, 'success');
+}
+
+function resetSchedule() {
+    applyTemplate('clear');
+    showToast('Lịch đã được đặt lại', 'info');
+}
+
+function saveSchedule() {
+    // Collect schedule data
+    const schedule = [];
+    const rows = ['Sáng', 'Chiều', 'Tối'];
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    
+    document.querySelectorAll('.schedule-table tr').forEach((row, rowIndex) => {
+        if (rowIndex === 0) return; // Skip header
+        
+        const cells = row.querySelectorAll('td');
+        const shift = rows[rowIndex - 1];
+        
+        cells.forEach((cell, cellIndex) => {
+            if (cellIndex === 0) return; // Skip shift label
+            
+            const checkbox = cell.querySelector('input[type="checkbox"]');
+            const day = days[cellIndex - 1];
+            
+            if (checkbox && checkbox.checked) {
+                schedule.push({ doctor: selectedDoctor.name, shift, day });
+            }
+        });
+    });
+    
+    // Save to backend
+    console.log('Saving schedule:', schedule);
+    showToast(`Mẫu lịch cho BS. ${selectedDoctor.name} đã được lưu`, 'success');
+}
+
+// Search functionality
+document.getElementById('search-doctors')?.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const items = document.querySelectorAll('.bs-list-item');
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? '' : 'none';
+    });
+});
+</script>
