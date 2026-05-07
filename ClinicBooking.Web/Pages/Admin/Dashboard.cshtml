@@ -1,7 +1,17 @@
 @page
 @model ClinicBooking.Web.Pages.Admin.DashboardModel
 @{
-    ViewData["Title"] = "Bảng điều khiển Admin";
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard - MedAdmin";
+    ViewData["PageName"] = "dashboard";
+    ViewData["PageTitle"] = "Tổng quan hệ thống";
+}
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @Model.ErrorMessage
+    </div>
 }
 
 <div class="page-header">
@@ -28,7 +38,7 @@
             <div class="card" style="border:1px solid var(--color-border-subtle); box-shadow:none; margin-bottom: var(--space-3);">
                 <div class="card-header">
                     <span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M10 3h4v2h-4z" stroke="currentColor" stroke-width="2"/><path d="M9 5h6v4H9z" stroke="currentColor" stroke-width="2"/><path d="M7 9h10v11H7z" stroke="currentColor" stroke-width="2"/><path d="M10 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> @ck.TenChuyenKhoa <span class="badge @severityClass" style="margin-left:8px;">@ck.NgayThieu.Count ngày thiếu</span></span>
-                    <a class="btn btn-sm btn-secondary" href="/Admin/QuanLyCaLamViec?chuyenKhoa=@ck.IdChuyenKhoa">Xem ca</a>
+                    <a class="btn btn-sm btn-secondary" href="/Admin/DuyetCa">Xem ca</a>
                 </div>
                 @if (!ck.NgayThieu.Any())
                 {
@@ -55,45 +65,4 @@
             </div>
         }
     }
-</div>
-
-<div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-top: 20px;">
-    <a href="/LeTan/Dashboard" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);">
-            <i class="ph ph-user-gear"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Xem giao diện lễ tân</div>
-            <div class="stat-label">Tạm dùng chung trong lúc chờ UI admin</div>
-        </div>
-    </a>
-    <a href="/BacSi/HangCho" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
-            <i class="ph ph-stethoscope"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Hàng chờ bác sĩ</div>
-            <div class="stat-label">Theo dõi luồng khám</div>
-        </div>
-    </a>
-    <a href="/Admin/QuanLyThuoc" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);">
-            <i class="ph ph-pill"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Quản lý thuốc</div>
-            <div class="stat-label">Danh mục thuốc Module 3</div>
-        </div>
-    </a>
-    <form method="post" asp-page="/Auth/DangXuat" class="stat-card" style="border:none; background:var(--color-danger-bg); cursor:pointer;">
-        <button type="submit" style="all:unset; display:contents;">
-            <div class="stat-icon" style="background:var(--color-danger-text); color:white;">
-                <i class="ph ph-sign-out"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="font-size:16px;">Đăng xuất</div>
-                <div class="stat-label">Kết thúc phiên admin</div>
-            </div>
-        </button>
-    </form>
 </div>

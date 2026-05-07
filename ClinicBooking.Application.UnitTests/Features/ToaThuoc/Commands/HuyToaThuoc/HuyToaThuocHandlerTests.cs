@@ -2,7 +2,6 @@ using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.ToaThuoc.Commands.HuyToaThuoc;
 using ClinicBooking.Application.UnitTests.Common;
-using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using FluentAssertions;
 using NSubstitute;
@@ -62,7 +61,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     [Fact]
     public async Task Handle_ValidInput_DeletesToaThuoc()
     {
-        // Arrange
         var (context, idBacSiTaiKhoan, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
         _currentUserService.IdTaiKhoan.Returns(idBacSiTaiKhoan);
@@ -71,10 +69,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
         var handler = new HuyToaThuocHandler(context, _currentUserService);
         var command = new HuyToaThuocCommand(hoSoKham.IdHoSoKham, toaThuoc.IdToaThuoc);
 
-        // Act
         await handler.Handle(command, CancellationToken.None);
 
-        // Assert
         var deletedToa = context.ToaThuoc.FirstOrDefault(x => x.IdToaThuoc == toaThuoc.IdToaThuoc);
         deletedToa.Should().BeNull();
     }
@@ -82,7 +78,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     [Fact]
     public async Task Handle_ToaThuocNotFound_ThrowsNotFoundException()
     {
-        // Arrange
         var context = _dbContextFactory.CreateContext();
         _currentUserService.IdTaiKhoan.Returns(1);
         _currentUserService.VaiTro.Returns(VaiTro.BacSi);
@@ -90,7 +85,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
         var handler = new HuyToaThuocHandler(context, _currentUserService);
         var command = new HuyToaThuocCommand(999, 999);
 
-        // Act & Assert
         await handler.Invoking(x => x.Handle(command, CancellationToken.None))
             .Should().ThrowAsync<NotFoundException>();
     }
@@ -98,7 +92,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     [Fact]
     public async Task Handle_UnauthorizedBacSi_ThrowsForbiddenException()
     {
-        // Arrange
         var (context, _, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
         _currentUserService.IdTaiKhoan.Returns(999);
@@ -107,7 +100,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
         var handler = new HuyToaThuocHandler(context, _currentUserService);
         var command = new HuyToaThuocCommand(hoSoKham.IdHoSoKham, toaThuoc.IdToaThuoc);
 
-        // Act & Assert
         await handler.Invoking(x => x.Handle(command, CancellationToken.None))
             .Should().ThrowAsync<ForbiddenException>();
     }
@@ -115,7 +107,6 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     [Fact]
     public async Task Handle_AdminUser_CanDeleteAnyToa()
     {
-        // Arrange
         var (context, _, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
         _currentUserService.IdTaiKhoan.Returns(1);
@@ -124,10 +115,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
         var handler = new HuyToaThuocHandler(context, _currentUserService);
         var command = new HuyToaThuocCommand(hoSoKham.IdHoSoKham, toaThuoc.IdToaThuoc);
 
-        // Act
         await handler.Handle(command, CancellationToken.None);
 
-        // Assert
         var deletedToa = context.ToaThuoc.FirstOrDefault(x => x.IdToaThuoc == toaThuoc.IdToaThuoc);
         deletedToa.Should().BeNull();
     }

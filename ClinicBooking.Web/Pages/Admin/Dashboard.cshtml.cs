@@ -18,6 +18,7 @@ public class DashboardModel : PageModel
         _mediator = mediator;
     }
 
+    public string? ErrorMessage { get; private set; }
     public sealed record CanhBaoChuyenKhoaVm(int IdChuyenKhoa, string TenChuyenKhoa, IReadOnlyList<NgayThieuBacSiDto> NgayThieu);
 
     public IReadOnlyList<ChuyenKhoaResponse> DanhSachChuyenKhoa { get; private set; } = [];
