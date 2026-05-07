@@ -1,79 +1,243 @@
 @page
 @model ClinicBooking.Web.Pages.Admin.DashboardModel
 @{
-    ViewData["Title"] = "Bảng điều khiển Admin";
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard - MedAdmin";
+    ViewData["PageName"] = "dashboard";
+    ViewData["PageTitle"] = "Tổng quan hệ thống";
 }
 
-<div class="page-header">
-    <h1 class="page-title">Bảng điều khiển Admin</h1>
-    <span style="font-size:13px; color:var(--color-text-secondary);">
-        <i class="ph ph-shield-check"></i> Vai trò: quản trị viên
-    </span>
-</div>
-
-<div class="card" style="border-left: 4px solid var(--color-warning-text);">
-    <div class="card-header">
-        <span class="card-title">
-            <i class="ph ph-warning-circle"></i>
-            Giao diện admin đang được phát triển
-        </span>
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @Model.ErrorMessage
     </div>
-    <div style="padding: 16px 20px; line-height: 1.6;">
-        <p>
-            Module <strong>Quản trị hệ thống</strong> (do thành viên Module 4 phụ trách) hiện chưa có UI hoàn chỉnh.
-            Trang này là placeholder để tài khoản admin có landing page riêng, không trùng với lễ tân.
-        </p>
-        <p>Các chức năng dự kiến:</p>
-        <ul style="padding-left: 20px;">
-            <li>Duyệt ca làm việc của bác sĩ</li>
-            <li>Quản lý tài khoản nhân viên</li>
-            <li>Quản lý chuyên khoa, dịch vụ, phòng</li>
-            <li>Báo cáo thống kê doanh thu, lượt khám</li>
-            <li>Cấu hình hệ thống (mẫu thông báo, giới hạn đặt lịch)</li>
-        </ul>
-        <p style="margin-top: 16px;">
-            Tham chiếu: <code>docs/phan-chia-module-va-huong-dan-du-an.md</code> — Module 4.
-        </p>
-    </div>
-</div>
+}
 
-<div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-top: 20px;">
-    <a href="/LeTan/Dashboard" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);">
-            <i class="ph ph-user-gear"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Xem giao diện lễ tân</div>
-            <div class="stat-label">Tạm dùng chung trong lúc chờ UI admin</div>
-        </div>
-    </a>
-    <a href="/BacSi/HangCho" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
-            <i class="ph ph-stethoscope"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Hàng chờ bác sĩ</div>
-            <div class="stat-label">Theo dõi luồng khám</div>
-        </div>
-    </a>
-    <a href="/Admin/QuanLyThuoc" class="stat-card" style="text-decoration:none; color:inherit;">
-        <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);">
-            <i class="ph ph-pill"></i>
-        </div>
-        <div>
-            <div class="stat-value" style="font-size:16px;">Quản lý thuốc</div>
-            <div class="stat-label">Danh mục thuốc Module 3</div>
-        </div>
-    </a>
-    <form method="post" asp-page="/Auth/DangXuat" class="stat-card" style="border:none; background:var(--color-danger-bg); cursor:pointer;">
-        <button type="submit" style="all:unset; display:contents;">
-            <div class="stat-icon" style="background:var(--color-danger-text); color:white;">
-                <i class="ph ph-sign-out"></i>
+@if (Model.DashboardData != null)
+{
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card sc-blue">
+            <div class="sc-top">
+                <div>
+                    <div class="sc-label">Tổng lịch hẹn hôm nay</div>
+                </div>
+                <div class="sc-icon">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
             </div>
-            <div>
-                <div class="stat-value" style="font-size:16px;">Đăng xuất</div>
-                <div class="stat-label">Kết thúc phiên admin</div>
+            <div class="sc-value" data-val="@Model.DashboardData.Statistics.TongLichHenHomNay">@Model.DashboardData.Statistics.TongLichHenHomNay</div>
+            <div class="sc-footer">
+                <i class="fa-solid fa-arrow-trend-up up"></i>
+                <span class="up">+12%</span>
+                <span>so với hôm qua</span>
             </div>
-        </button>
-    </form>
-</div>
+        </div>
+        
+        <div class="stat-card sc-green">
+            <div class="sc-top">
+                <div>
+                    <div class="sc-label">Bệnh nhân đã khám</div>
+                </div>
+                <div class="sc-icon">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+            </div>
+            <div class="sc-value" data-val="@Model.DashboardData.Statistics.BenhNhanDaKham">@Model.DashboardData.Statistics.BenhNhanDaKham</div>
+            <div class="sc-footer">
+                <i class="fa-solid fa-circle-check up"></i>
+                <span class="up">Hoàn thành</span>
+                <span>@(Model.DashboardData.Statistics.TongLichHenHomNay > 0 ? Math.Round((double)Model.DashboardData.Statistics.BenhNhanDaKham / Model.DashboardData.Statistics.TongLichHenHomNay * 100, 1) : 0)%</span>
+            </div>
+        </div>
+        
+        <div class="stat-card sc-orange">
+            <div class="sc-top">
+                <div>
+                    <div class="sc-label">Ca chờ duyệt</div>
+                </div>
+                <div class="sc-icon">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+            </div>
+            <div class="sc-value" data-val="@Model.DashboardData.Statistics.CaChoDuyet">@Model.DashboardData.Statistics.CaChoDuyet</div>
+            <div class="sc-footer">
+                <i class="fa-solid fa-arrow-trend-up" style="color:var(--warning)"></i>
+                <span style="color:var(--warning)">Cần xử lý</span>
+            </div>
+        </div>
+        
+        <div class="stat-card sc-red">
+            <div class="sc-top">
+                <div>
+                    <div class="sc-label">Lịch bị hủy hôm nay</div>
+                </div>
+                <div class="sc-icon">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+            </div>
+            <div class="sc-value" data-val="@Model.DashboardData.Statistics.LichHenBiHuy">@Model.DashboardData.Statistics.LichHenBiHuy</div>
+            <div class="sc-footer">
+                <i class="fa-solid fa-arrow-trend-down down"></i>
+                <span class="down">-3 so với</span>
+                <span>hôm qua</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Recent appointments -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Lịch hẹn gần đây</div>
+                    <div class="card-sub">Cập nhật lúc @DateTime.Now.ToString("HH:mm tt")</div>
+                </div>
+                <a href="/Admin/CaLamViec" class="btn btn-ghost btn-sm">
+                    <i class="fa-solid fa-arrow-right"></i> Xem tất cả
+                </a>
+            </div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã lịch</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var apt in Model.DashboardData.RecentAppointments)
+                        {
+                            <tr>
+                                <td>
+                                    <code style="font-size:12px;color:var(--primary)">@apt.MaLichHen</code>
+                                </td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <div class="avatar-circle avatar-sm">@apt.TenBenhNhan.Substring(0, 1).ToUpper()</div>
+                                        @apt.TenBenhNhan
+                                    </div>
+                                </td>
+                                <td>@apt.TenBacSi</td>
+                                <td>@apt.ThoiGian</td>
+                                <td>
+                                    <span class="badge @(apt.TrangThai switch
+                                    {
+                                        "HoanThanh" => "badge-success",
+                                        "DangKham" => "badge-primary", 
+                                        "ChoXacNhan" => "badge-warning",
+                                        "DaXacNhan" => "badge-neutral",
+                                        _ => "badge-danger"
+                                    })">
+                                        @(apt.TrangThai switch
+                                        {
+                                            "HoanThanh" => "Hoàn thành",
+                                            "DangKham" => "Đang khám",
+                                            "ChoXacNhan" => "Chờ xác nhận",
+                                            "DaXacNhan" => "Chờ khám",
+                                            "HuyBenhNhan" => "Đã hủy",
+                                            "HuyPhongKham" => "Đã hủy",
+                                            _ => apt.TrangThai
+                                        })
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div style="display:flex;flex-direction:column;gap:18px">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Lịch hẹn 7 ngày qua</div>
+                </div>
+                <div style="padding:20px 24px">
+                    <div class="mini-bar" id="miniBar">
+                        @for (int i = 0; i < Model.DashboardData.ChartData.Count; i++)
+                        {
+                            var value = Model.DashboardData.ChartData[i];
+                            var maxValue = Model.DashboardData.ChartData.Max();
+                            var height = maxValue.Value > 0 ? (int)Math.Round((double)(value.Value / maxValue.Value) * 90) : 0;
+                            var dayNames = new[] { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+                            
+                            <div class="bar-col">
+                                <div class="bar" style="height:90px;width:100%;position:relative">
+                                    <div class="bar-inner" style="height:@height%"></div>
+                                    <div class="bar-val" style="top:-18px">@value</div>
+                                </div>
+                                <div class="bl">@dayNames[i]</div>
+                            </div>
+                        }
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-disabled)">
+                        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Ca chờ duyệt</div>
+                    <a href="/Admin/CaLamViec" class="btn btn-primary btn-sm">Duyệt ngay</a>
+                </div>
+                <div class="card-body-pad" style="display:flex;flex-direction:column;gap:10px">
+                    @foreach (var shift in Model.DashboardData.PendingShifts)
+                    {
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--warning-bg);border-radius:var(--radius-sm);border:1px solid #f5ddb0">
+                            <div>
+                                <div style="font-size:13px;font-weight:600">@shift.TenBacSi</div>
+                                <div style="font-size:12px;color:var(--text-secondary)">
+                                    @shift.Ngay @shift.Ca @shift.SoSlot slot
+                                </div>
+                            </div>
+                            <span class="badge badge-warning">Chờ duyệt</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Đang tải dữ liệu...</div>
+        </div>
+        <div class="card-body">
+            <p>Vui lòng đợi trong giây lát.</p>
+        </div>
+    </div>
+}
+
+
+<script>
+// Animate stats - matching Admin_Van design
+document.querySelectorAll('.sc-value[data-val]').forEach(el => {
+  const target = parseInt(el.dataset.val);
+  let cur = 0; const step = target / 40;
+  const id = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = Math.round(cur).toLocaleString('vi-VN');
+    if(cur >= target) clearInterval(id);
+  }, 20);
+});
+
+// Bar chart animation - matching Admin_Van design
+setTimeout(() => {
+  document.querySelectorAll('.bar-inner').forEach(b => {
+    const targetHeight = b.style.height;
+    b.style.height = '0%';
+    setTimeout(() => {
+      b.style.height = targetHeight;
+    }, 100);
+  });
+}, 150);
+</script>

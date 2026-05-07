@@ -5,6 +5,8 @@ using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using NSubstitute;
+using FluentAssertions;
+using FluentAssertions.Extensions;
 
 namespace ClinicBooking.Application.UnitTests.Features.ToaThuoc.Commands.HuyToaThuoc;
 
@@ -18,7 +20,7 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     {
         _dbContextFactory = new TestDbContextFactory();
         _currentUserService = Substitute.For<ICurrentUserService>();
-        var context = _dbContextFactory.CreateDbContext();
+        var context = _dbContextFactory.CreateContext();
         _handler = new HuyToaThuocHandler(context, _currentUserService);
     }
 
@@ -31,9 +33,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_ValidInput_DeletesToaThuoc()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
+        var context = _dbContextFactory.CreateContext();
+        await HoSoKhamTestDataSeeder.TaoAsync(context, DateTime.UtcNow);
         await context.SaveChangesAsync();
 
         var toaThuoc = context.ToaThuoc.First();
@@ -58,7 +59,7 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_ToaThuocNotFound_ThrowsNotFoundException()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
+        var context = _dbContextFactory.CreateContext();
         _currentUserService.IdTaiKhoan.Returns(1);
         _currentUserService.VaiTro.Returns(VaiTro.BacSi);
 
@@ -74,9 +75,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_UnauthorizedBacSi_ThrowsForbiddenException()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
+        var context = _dbContextFactory.CreateContext();
+        await HoSoKhamTestDataSeeder.TaoAsync(context, DateTime.UtcNow);
         await context.SaveChangesAsync();
 
         var toaThuoc = context.ToaThuoc.First();
@@ -98,9 +98,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_AdminUser_CanDeleteAnyToa()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
+        var context = _dbContextFactory.CreateContext();
+        await HoSoKhamTestDataSeeder.TaoAsync(context, DateTime.UtcNow);
         await context.SaveChangesAsync();
 
         var toaThuoc = context.ToaThuoc.First();
