@@ -59,6 +59,23 @@
                         <i class="ph ph-clipboard-text"></i> Hàng chờ của tôi
                     </a>
                 </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/QuanLyKham") ? "active" : "")"
+                       href="/BacSi/QuanLyKham">
+                        <i class="ph ph-stethoscope"></i> Quản lý khám
+                    </a>
+                </li>
+            }
+
+            @if (vaiTro == "admin")
+            {
+                <li class="sidebar-section-label">Module 3</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyThuoc") ? "active" : "")"
+                       href="/Admin/QuanLyThuoc">
+                        <i class="ph ph-pill"></i> Quản lý thuốc
+                    </a>
+                </li>
             }
 
             @if (vaiTro == "benh_nhan")

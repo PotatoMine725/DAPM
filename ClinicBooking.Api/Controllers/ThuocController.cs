@@ -13,6 +13,7 @@ namespace ClinicBooking.Api.Controllers;
 
 [ApiController]
 [Route("api/thuoc")]
+[Route("api/danh-muc/thuoc")]
 [Authorize]
 public class ThuocController : ControllerBase
 {

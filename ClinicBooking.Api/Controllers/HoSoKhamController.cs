@@ -3,6 +3,7 @@ using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.HoSoKham.Commands.CapNhatHoSoKham;
 using ClinicBooking.Application.Features.HoSoKham.Commands.TaoHoSoKham;
 using ClinicBooking.Application.Features.HoSoKham.Queries.LayHoSoKhamById;
+using ClinicBooking.Application.Features.HoSoKham.Queries.LichSuHoSoKhamCuaBacSi;
 using ClinicBooking.Application.Features.HoSoKham.Queries.LichSuKhamCuaToi;
 using ClinicBooking.Application.Features.HoSoKham.Queries.LichSuKhamTheoBenhNhan;
 using MediatR;
@@ -86,6 +87,22 @@ public class HoSoKhamController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new LichSuKhamCuaToiQuery(soTrang, kichThuocTrang), cancellationToken);
+        return Ok(result.Select(x => x.TuDto()).ToList());
+    }
+
+    [HttpGet("bac-si/{idBacSi:int}")]
+    [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan},{VaiTroConstants.BacSi}")]
+    [ProducesResponseType(typeof(IReadOnlyList<HoSoKhamTomTatDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<HoSoKhamTomTatDto>>> LichSuCuaBacSi(
+        int idBacSi,
+        [FromQuery] int soTrang = 1,
+        [FromQuery] int kichThuocTrang = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new LichSuHoSoKhamCuaBacSiQuery(idBacSi, soTrang, kichThuocTrang),
+            cancellationToken);
+
         return Ok(result.Select(x => x.TuDto()).ToList());
     }
 }
