@@ -1,0 +1,143 @@
+@page "{idLichHen:int}"
+@model ClinicBooking.Web.Pages.BenhNhan.DoiLichModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Đổi lịch hẹn";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Đổi lịch hẹn</h1>
+        <div class="page-subtitle">Chọn ca làm việc mới cho lịch hẹn hiện tại.</div>
+    </div>
+    <div class="action-bar">
+        <a href="/BenhNhan/LichHen/@Model.LichHen.IdLichHen" class="btn btn-secondary">
+            <i class="ph ph-arrow-left"></i> Quay lại chi tiết
+        </a>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+<div class="panel-grid-2">
+    <div class="section-stack">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Thông tin lịch hẹn hiện tại</span>
+                @Html.Raw(BadgeHelper.TrangThaiLichHen(Model.LichHen.TrangThai))
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Mã lịch hẹn</div>
+                    <div class="detail-value table-code">@Model.LichHen.MaLichHen</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ngày khám</div>
+                    <div class="detail-value">@Model.LichHen.NgayLamViec.ToString("dd/MM/yyyy")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Khung giờ</div>
+                    <div class="detail-value">@Model.LichHen.GioBatDau.ToString("HH:mm") - @Model.LichHen.GioKetThuc.ToString("HH:mm")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Dịch vụ</div>
+                    <div class="detail-value">@Model.LichHen.TenDichVu</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Chọn ca làm việc mới</span>
+            </div>
+
+            @if (!Model.DanhSachCa.Any())
+            {
+                <div class="empty-state" style="padding: var(--space-8);">
+                    <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
+                    <p>Không có ca phù hợp để đổi lịch ở thời điểm này.</p>
+                </div>
+            }
+            else
+            {
+                <form method="post" class="section-stack" style="padding: var(--space-4);">
+                    <input type="hidden" name="IdLichHenCu" value="@Model.LichHen.IdLichHen" />
+
+                    <div class="form-group">
+                        <label class="form-label">Ca làm việc mới</label>
+                        <select class="form-select" asp-for="IdCaLamViecMoi" required>
+                            <option value="0">— Chọn ca —</option>
+                            @foreach (var ca in Model.DanhSachCa)
+                            {
+                                <option value="@ca.IdCaLamViec">
+                                    @ca.NgayLamViec.ToString("dd/MM/yyyy") · @ca.GioBatDau.ToString("HH:mm")-@ca.GioKetThuc.ToString("HH:mm") · @ca.TenChuyenKhoa · @ca.MaPhong
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Lý do đổi lịch</label>
+                        <textarea class="form-input" asp-for="LyDo" rows="3" maxlength="200" placeholder="Nhập lý do đổi lịch (tuỳ chọn)"></textarea>
+                    </div>
+
+                    <div class="action-bar">
+                        <a href="/BenhNhan/LichHen/@Model.LichHen.IdLichHen" class="btn btn-secondary">Huỷ</a>
+                        <button type="submit" class="btn btn-primary" @(Model.CanSubmit ? "" : "disabled")>
+                            <i class="ph ph-calendar-check"></i> Xác nhận đổi lịch
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="section-stack">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Thông tin ca mới</span>
+            </div>
+            <div class="summary-stack">
+                <div class="summary-item">
+                    <span class="summary-label">Ca được chọn</span>
+                    <span>@Model.TenCaDaChon</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Ngày giờ</span>
+                    <span>@Model.NgayCaDaChon</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Phòng</span>
+                    <span>@Model.MaPhongDaChon</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Chuyên khoa</span>
+                    <span>@Model.TenChuyenKhoaDaChon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Lưu ý</span>
+            </div>
+            <div class="summary-stack">
+                <div class="summary-item">
+                    <span class="summary-label">Điều kiện</span>
+                    <span>Chỉ đổi sang ca tương lai còn slot trống.</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Trạng thái</span>
+                    <span>Lịch hiện tại phải còn ở trạng thái cho phép đổi.</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Kết quả</span>
+                    <span>Lịch mới sẽ được tạo với trạng thái chờ xác nhận.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

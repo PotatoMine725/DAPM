@@ -20,13 +20,35 @@
 
 <!-- Chọn ca làm việc -->
 <div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" style="display:flex; gap:var(--space-3); align-items:center;">
-        <label class="form-label" style="margin:0; white-space:nowrap;">Mã ca làm việc:</label>
-        <input type="number" class="form-input" name="idCaLamViec"
-               value="@Model.IdCaLamViec" placeholder="Nhập ID ca..." style="width:160px;" />
-        <button type="submit" class="btn btn-secondary">
-            <i class="ph ph-magnifying-glass"></i> Xem hàng chờ
-        </button>
+    <form method="get" style="display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap;">
+        <label class="form-label" style="margin:0; white-space:nowrap;">
+            <i class="ph ph-calendar-check"></i> Ca làm việc:
+        </label>
+        @if (Model.DanhSachCa.Any())
+        {
+            <select class="form-select" name="idCaLamViec" style="min-width:340px;"
+                    onchange="this.form.submit()">
+                <option value="">— Chọn ca —</option>
+                @foreach (var ca in Model.DanhSachCa)
+                {
+                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\\:mm}–{ca.GioKetThuc:HH\\:mm} | {ca.HoTenBacSi}";
+                    if (Model.IdCaLamViec == ca.IdCaLamViec)
+                    {
+                        <option value="@ca.IdCaLamViec" selected>@label</option>
+                    }
+                    else
+                    {
+                        <option value="@ca.IdCaLamViec">@label</option>
+                    }
+                }
+            </select>
+        }
+        else
+        {
+            <span style="color:var(--color-text-secondary); font-size:14px;">
+                Không có ca nào hôm nay và ngày mai.
+            </span>
+        }
     </form>
 </div>
 

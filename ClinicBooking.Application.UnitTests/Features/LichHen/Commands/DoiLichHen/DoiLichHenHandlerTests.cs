@@ -160,4 +160,85 @@ public sealed class DoiLichHenHandlerTests
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Khong the giai phong slot cua ca cu.");
         await d.Notif.DidNotReceive().GuiThongBaoDoiLichHenAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
+
+    // -----------------------------------------------------------------------
+    // Phase 1b — 3 test con thieu
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Handle_BenhNhanDoiLichCuaNguoiKhac_ThrowForbidden()
+    {
+        // Arrange: tao 2 benh nhan khac nhau, benh nhan B co lich hen
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+
+        // Tai khoan A — se thuc hien request
+        var tkA = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
+        var bnA = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tkA.IdTaiKhoan);
+        _ = bnA; // bnA khong co lich hen
+
+        // Tai khoan B — so huu lich hen
+        var tkB = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
+        var bnB = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tkB.IdTaiKhoan);
+        var caCu = TestDataSeeder.SeedCaLamViec(db);
+        var caMoi = TestDataSeeder.SeedCaLamViec(db);
+        var lhCuaB = TestDataSeeder.SeedLichHen(db, bnB.IdBenhNhan, caCu.IdCaLamViec,
+            trangThai: TrangThaiLichHen.ChoXacNhan);
+
+        // User la benh nhan A — thu doi lich cua benh nhan B
+        var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tkA.IdTaiKhoan);
+        var handler = new DoiLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+
+        var act = async () => await handler.Handle(
+            new DoiLichHenCommand(lhCuaB.IdLichHen, caMoi.IdCaLamViec, null, null, null, null, null),
+            CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ForbiddenException>();
+    }
+
+    [Fact]
+    public async Task Handle_LichHenKhongTonTai_ThrowNotFound()
+    {
+        // Arrange
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+
+        var caMoi = TestDataSeeder.SeedCaLamViec(db);
+        var d = CreateDeps(VaiTro.LeTan);
+        var handler = new DoiLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+
+        const int idKhongTonTai = 999_999;
+        var act = async () => await handler.Handle(
+            new DoiLichHenCommand(idKhongTonTai, caMoi.IdCaLamViec, null, null, null, null, null),
+            CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_BacSiDoiLich_ThrowForbidden()
+    {
+        // Arrange
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+
+        var bn = TestDataSeeder.SeedBenhNhan(db);
+        var caCu = TestDataSeeder.SeedCaLamViec(db);
+        var caMoi = TestDataSeeder.SeedCaLamViec(db);
+        var lh = TestDataSeeder.SeedLichHen(db, bn.IdBenhNhan, caCu.IdCaLamViec,
+            trangThai: TrangThaiLichHen.ChoXacNhan);
+
+        // Role BacSi khong duoc phep doi lich
+        var d = CreateDeps(VaiTro.BacSi);
+        var handler = new DoiLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+
+        var act = async () => await handler.Handle(
+            new DoiLichHenCommand(lh.IdLichHen, caMoi.IdCaLamViec, null, null, null, null, null),
+            CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ForbiddenException>();
+    }
 }

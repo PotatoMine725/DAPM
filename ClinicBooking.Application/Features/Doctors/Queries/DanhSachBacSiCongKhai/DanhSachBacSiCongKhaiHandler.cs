@@ -27,9 +27,15 @@ public sealed class DanhSachBacSiCongKhaiHandler : IRequestHandler<DanhSachBacSi
             query = query.Where(x => x.IdChuyenKhoa == request.IdChuyenKhoa.Value);
         }
 
+        // Mac dinh chi hien bac si dang lam viec cho portal benh nhan.
+        // Truyen DangLamViec=false de lay bac si da nghi viec (admin use case).
         if (request.DangLamViec.HasValue)
         {
             query = query.Where(x => (x.TrangThai == TrangThaiBacSi.DangLam) == request.DangLamViec.Value);
+        }
+        else
+        {
+            query = query.Where(x => x.TrangThai == TrangThaiBacSi.DangLam);
         }
 
         // Public portal should still prefer visible departments, but do not hard-drop

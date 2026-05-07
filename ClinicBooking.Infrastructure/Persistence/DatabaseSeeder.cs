@@ -103,6 +103,165 @@ public class DatabaseSeeder
         await SeedTaiKhoanFixtureAsync(fixture.BacSi, VaiTro.BacSi, matKhau, cancellationToken);
         await SeedTaiKhoanFixtureAsync(fixture.LeTan, VaiTro.LeTan, matKhau, cancellationToken);
         await SeedTaiKhoanFixtureAsync(fixture.Admin, VaiTro.Admin, matKhau, cancellationToken);
+        await SyncCaLamViecVaLichHenDemoAsync(cancellationToken);
+    }
+
+    // CaLamViec IDs 3001-3005 la du lieu seed demo.
+    // 3001/3002 → ngay mai (today+1), 3003 → tuan sau (today+7), 3004/3005 → hom nay (today).
+    private static readonly int[] SeededCaLamViecIds = [3001, 3002, 3003, 3004, 3005];
+
+    // LichHen co MaLichHen bat dau bang "DEMO-" la du lieu demo, bi xoa va tao lai moi startup.
+    // LichHen IDs 4001/4002 la du lieu migration cu, cung bi xoa.
+    private static readonly int[] LegacySeededLichHenIds = [4001, 4002];
+    private const string DemoLichHenPrefix = "DEMO-";
+
+    // IdBenhNhan cua patient001 — duoc seed bang migration HasData (Module1_TestDataSeed).
+    private const int IdBenhNhanDemo = 2001;
+    // IdDichVu mac dinh — seed tu migration SeedDanhMuc (ID=1 luon ton tai).
+    private const int IdDichVuDefault = 1;
+
+    /// <summary>
+    /// Moi lan app khoi dong:
+    ///   1. Xoa LichHen demo cu (legacy IDs + DEMO- prefix) de tranh loi slot va trung key.
+    ///   2. Refresh NgayLamViec cho tat ca CaLamViec seed (3001-3005).
+    ///   3. Tao lai LichHen demo voi cac trang thai khac nhau cho 3 flow demo hom nay (3004).
+    ///   4. Cap nhat SoSlotDaDat cho phu hop.
+    /// </summary>
+    private async Task SyncCaLamViecVaLichHenDemoAsync(CancellationToken cancellationToken)
+    {
+        var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
+        var now = _dateTimeProvider.UtcNow;
+
+        // --- Buoc 1: Xoa LichHen demo cu ---
+        var demoLichHen = await _db.LichHen
+            .Where(lh => LegacySeededLichHenIds.Contains(lh.IdLichHen)
+                         || lh.MaLichHen.StartsWith(DemoLichHenPrefix)
+                         || SeededCaLamViecIds.Contains(lh.IdCaLamViec))
+            .ToListAsync(cancellationToken);
+
+        var demoLichHenIds = demoLichHen.Select(lh => lh.IdLichHen).ToList();
+
+        var lichSuToDelete = await _db.LichSuLichHen
+            .Where(ls => demoLichHenIds.Contains(ls.IdLichHen))
+            .ToListAsync(cancellationToken);
+        _db.LichSuLichHen.RemoveRange(lichSuToDelete);
+
+        var hangChoToDelete = await _db.HangCho
+            .Where(hc => demoLichHenIds.Contains(hc.IdLichHen))
+            .ToListAsync(cancellationToken);
+        _db.HangCho.RemoveRange(hangChoToDelete);
+
+        _db.LichHen.RemoveRange(demoLichHen);
+
+        if (demoLichHen.Count > 0)
+            _logger.LogWarning("[DevFixture] Xoa {Count} LichHen demo cu.", demoLichHen.Count);
+
+        // --- Buoc 2: Refresh CaLamViec dates ---
+        var allSeeded = await _db.CaLamViec
+            .Where(c => SeededCaLamViecIds.Contains(c.IdCaLamViec))
+            .ToListAsync(cancellationToken);
+
+        foreach (var ca in allSeeded)
+        {
+            ca.NgayLamViec = ca.IdCaLamViec switch
+            {
+                3004 or 3005 => today,           // hom nay
+                3003         => today.AddDays(7), // tuan sau
+                _            => today.AddDays(1)  // ngay mai (3001, 3002)
+            };
+            ca.SoSlotDaDat = 0;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "[DevFixture] Refresh {Count}/5 CaLamViec. Today={Today:yyyy-MM-dd}. Details: {Details}",
+            allSeeded.Count,
+            today,
+            string.Join(", ", allSeeded.Select(s => $"ID={s.IdCaLamViec}→{s.NgayLamViec:MM-dd}")));
+
+        // --- Buoc 3: Tao LichHen demo cho hom nay (3004) ---
+        // Flow 2a: receptionist xac nhan
+        var lichHen_ChoXacNhan = new LichHen
+        {
+            MaLichHen = $"{DemoLichHenPrefix}{today:yyyyMMdd}-01",
+            IdBenhNhan = IdBenhNhanDemo,
+            IdCaLamViec = 3004,
+            IdDichVu = IdDichVuDefault,
+            SoSlot = 1,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            TrieuChung = "Dau nguc nhe (demo - cho xac nhan)",
+            TrangThai = TrangThaiLichHen.ChoXacNhan,
+            NgayTao = now
+        };
+
+        // Flow 2b: receptionist check-in
+        var lichHen_DaXacNhan = new LichHen
+        {
+            MaLichHen = $"{DemoLichHenPrefix}{today:yyyyMMdd}-02",
+            IdBenhNhan = IdBenhNhanDemo,
+            IdCaLamViec = 3004,
+            IdDichVu = IdDichVuDefault,
+            SoSlot = 2,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            TrieuChung = "Kho tho (demo - da xac nhan)",
+            TrangThai = TrangThaiLichHen.DaXacNhan,
+            NgayTao = now
+        };
+
+        // Flow 2c/d: bac si goi ke tiep va hoan thanh
+        // CheckIn khong doi TrangThaiLichHen — van la DaXacNhan, chi them HangCho.ChoKham
+        var lichHen_DangCho = new LichHen
+        {
+            MaLichHen = $"{DemoLichHenPrefix}{today:yyyyMMdd}-03",
+            IdBenhNhan = IdBenhNhanDemo,
+            IdCaLamViec = 3004,
+            IdDichVu = IdDichVuDefault,
+            SoSlot = 3,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            TrieuChung = "Sot cao (demo - da check-in)",
+            TrangThai = TrangThaiLichHen.DaXacNhan,
+            NgayTao = now
+        };
+
+        // Ngay mai (3001): dem xuat dat lich moi
+        var lichHen_NgayMai = new LichHen
+        {
+            MaLichHen = $"{DemoLichHenPrefix}{today.AddDays(1):yyyyMMdd}-01",
+            IdBenhNhan = IdBenhNhanDemo,
+            IdCaLamViec = 3001,
+            IdDichVu = IdDichVuDefault,
+            SoSlot = 1,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            TrieuChung = "Kiem tra dinh ky (demo - ngay mai)",
+            TrangThai = TrangThaiLichHen.ChoXacNhan,
+            NgayTao = now
+        };
+
+        _db.LichHen.AddRange(lichHen_ChoXacNhan, lichHen_DaXacNhan, lichHen_DangCho, lichHen_NgayMai);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        // --- Buoc 4: Tao HangCho cho LichHen DangCho ---
+        _db.HangCho.Add(new HangCho
+        {
+            IdCaLamViec = 3004,
+            IdLichHen = lichHen_DangCho.IdLichHen,
+            SoThuTu = 1,
+            TrangThai = TrangThaiHangCho.ChoKham,
+            NgayCheckIn = now.AddMinutes(-15)
+        });
+
+        // --- Buoc 5: Cap nhat SoSlotDaDat cho dung so luong LichHen vua seed ---
+        var ca3004 = allSeeded.FirstOrDefault(c => c.IdCaLamViec == 3004);
+        var ca3001 = allSeeded.FirstOrDefault(c => c.IdCaLamViec == 3001);
+        if (ca3004 != null) ca3004.SoSlotDaDat = 3;
+        if (ca3001 != null) ca3001.SoSlotDaDat = 1;
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "[DevFixture] Da seed 4 LichHen demo: 3x ca {Ca1} (hom nay), 1x ca {Ca2} (ngay mai).",
+            3004, 3001);
     }
 
     private async Task SeedTaiKhoanFixtureAsync(

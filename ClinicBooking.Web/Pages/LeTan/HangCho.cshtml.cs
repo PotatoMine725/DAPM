@@ -2,6 +2,8 @@ using ClinicBooking.Application.Features.HangCho.Commands.GoiBenhNhanKeTiep;
 using ClinicBooking.Application.Features.HangCho.Commands.HoanThanhLuotKham;
 using ClinicBooking.Application.Features.HangCho.Dtos;
 using ClinicBooking.Application.Features.HangCho.Queries.XemHangChoTheoCa;
+using ClinicBooking.Application.Features.Scheduling.Dtos;
+using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
 using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +20,7 @@ public class HangChoModel : PageModel
     public HangChoModel(IMediator mediator) => _mediator = mediator;
 
     public IReadOnlyList<HangChoResponse> HangCho { get; private set; } = [];
+    public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
     public int? IdCaLamViec { get; private set; }
 
     public int SoChoKham   => HangCho.Count(x => x.TrangThai == TrangThaiHangCho.ChoKham);
@@ -26,6 +29,12 @@ public class HangChoModel : PageModel
 
     public async Task OnGetAsync(int? idCaLamViec)
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
+            TuNgay: today,
+            DenNgay: today.AddDays(1),
+            KichThuocTrang: 50));
+
         IdCaLamViec = idCaLamViec;
         if (idCaLamViec.HasValue)
         {
