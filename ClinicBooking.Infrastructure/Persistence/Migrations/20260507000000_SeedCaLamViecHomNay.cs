@@ -11,14 +11,19 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
         {
             // CaLamViec 3004/3005: hom nay (today placeholder).
             // DatabaseSeeder.RefreshCaLamViecDatesAsync cap nhat NgayLamViec sang today() moi lan startup.
-            migrationBuilder.InsertData(
-                table: "CaLamViec",
-                columns: new[] { "IdCaLamViec", "GioBatDau", "GioKetThuc", "IdAdminDuyet", "IdBacSi", "IdBacSiYeuCau", "IdChuyenKhoa", "IdDinhNghiaCa", "IdPhong", "LyDoTuChoi", "NgayDuyet", "NgayLamViec", "NgayTao", "NguonTaoCa", "SoSlotToiDa", "ThoiGianSlot", "TrangThaiDuyet" },
-                values: new object[,]
-                {
-                    { 3004, new TimeOnly(7, 0, 0), new TimeOnly(12, 0, 0), 2004, 2001, null, 1, 1, 1, null, new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc), new DateOnly(2026, 5, 7), new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc), "TuDong", 15, 20, "DaDuyet" },
-                    { 3005, new TimeOnly(13, 0, 0), new TimeOnly(17, 0, 0), 2004, 2001, null, 1, 2, 1, null, new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc), new DateOnly(2026, 5, 7), new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc), "TuDong", 12, 20, "DaDuyet" }
-                });
+            migrationBuilder.Sql(@"
+                SET IDENTITY_INSERT CaLamViec ON;
+
+                IF NOT EXISTS (SELECT 1 FROM CaLamViec WHERE IdCaLamViec = 3004)
+                INSERT INTO CaLamViec (IdCaLamViec, GioBatDau, GioKetThuc, IdAdminDuyet, IdBacSi, IdBacSiYeuCau, IdChuyenKhoa, IdDinhNghiaCa, IdPhong, LyDoTuChoi, NgayDuyet, NgayLamViec, NgayTao, NguonTaoCa, SoSlotToiDa, ThoiGianSlot, TrangThaiDuyet)
+                VALUES (3004, '07:00:00', '12:00:00', 2004, 2001, NULL, 1, 1, 1, NULL, '2026-05-07', CAST(GETDATE() AS DATE), GETUTCDATE(), 'TuDong', 15, 20, 'DaDuyet');
+
+                IF NOT EXISTS (SELECT 1 FROM CaLamViec WHERE IdCaLamViec = 3005)
+                INSERT INTO CaLamViec (IdCaLamViec, GioBatDau, GioKetThuc, IdAdminDuyet, IdBacSi, IdBacSiYeuCau, IdChuyenKhoa, IdDinhNghiaCa, IdPhong, LyDoTuChoi, NgayDuyet, NgayLamViec, NgayTao, NguonTaoCa, SoSlotToiDa, ThoiGianSlot, TrangThaiDuyet)
+                VALUES (3005, '13:00:00', '17:00:00', 2004, 2001, NULL, 1, 2, 1, NULL, '2026-05-07', CAST(GETDATE() AS DATE), GETUTCDATE(), 'TuDong', 12, 20, 'DaDuyet');
+
+                SET IDENTITY_INSERT CaLamViec OFF;
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
