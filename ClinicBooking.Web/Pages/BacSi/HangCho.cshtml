@@ -127,6 +127,9 @@
                             <td class="table-actions">
                                 @if (hc.TrangThai == TrangThaiHangCho.DangKham)
                                 {
+                                    <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
+                                        <i class="ph ph-file-plus"></i> Tao ho so
+                                    </a>
                                     <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
                                         <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
                                         <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
