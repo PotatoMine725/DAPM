@@ -135,7 +135,8 @@ public class DatabaseSeeder
         // --- Buoc 1: Xoa LichHen demo cu ---
         var demoLichHen = await _db.LichHen
             .Where(lh => LegacySeededLichHenIds.Contains(lh.IdLichHen)
-                         || lh.MaLichHen.StartsWith(DemoLichHenPrefix))
+                         || lh.MaLichHen.StartsWith(DemoLichHenPrefix)
+                         || SeededCaLamViecIds.Contains(lh.IdCaLamViec))
             .ToListAsync(cancellationToken);
 
         var demoLichHenIds = demoLichHen.Select(lh => lh.IdLichHen).ToList();
