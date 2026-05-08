@@ -40,6 +40,8 @@ public static class DependencyInjection
             configuration.GetSection(AdminSeederSettings.SectionName));
         services.Configure<OtpOptions>(
             configuration.GetSection(OtpOptions.SectionName));
+        services.Configure<EmailSettings>(
+            configuration.GetSection(EmailSettings.SectionName));
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -55,11 +57,13 @@ public static class DependencyInjection
             configuration.GetSection(LichHenOptions.SectionName));
 
         services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
+        
         services.AddMemoryCache();
-        services.AddScoped<IOtpService, OtpServiceStub>();
-
-        // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
-        services.AddScoped<INotificationService, NotificationServiceStub>();
+        
+        // Module 4: Email & Notification services
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
 

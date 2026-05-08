@@ -1,0 +1,443 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.CaLamViecModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý ca làm việc - MedAdmin";
+    ViewData["PageName"] = "calamviec";
+    ViewData["PageTitle"] = "Quản lý ca làm việc";
+}
+
+<!-- Search and Filters -->
+<div class="card">
+    <div class="card-header-flex">
+        <div class="card-title">Danh sách ca làm việc</div>
+        <button class="btn btn-primary" onclick="showModal('modal-create-shift')">
+            <i class="fa-solid fa-plus"></i> Tạo ca làm việc mới
+        </button>
+    </div>
+    
+    <div class="search-bar" style="padding: 0 24px 20px;">
+        <div class="search-input">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="form-control" id="search-shifts" placeholder="Tìm theo bác sĩ, phòng...">
+        </div>
+        <select class="form-select" style="width: 200px;" id="filter-doctor">
+            <option value="">Tất cả bác sĩ</option>
+            <option value="1001">BS. Nguyen Van A</option>
+            <option value="1002">BS. Tran Minh Khoa</option>
+            <option value="1003">BS. Pham Thu Ha</option>
+        </select>
+        <select class="form-select" style="width: 200px;" id="filter-date">
+            <option value="">Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="week">Tuần này</option>
+            <option value="month">Tháng này</option>
+        </select>
+        <select class="form-select" style="width: 200px;" id="filter-status">
+            <option value="">Tất cả trạng thái</option>
+            <option value="DaDuyet">Đã duyệt</option>
+            <option value="ChoDuyet">Chờ duyệt</option>
+            <option value="TuChoi">Từ chối</option>
+        </select>
+    </div>
+</div>
+
+<!-- Shifts Table -->
+<div class="card">
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Bác sĩ</th>
+                    <th>Phòng</th>
+                    <th>Thời gian</th>
+                    <th>Slot</th>
+                    <th>Trạng thái</th>
+                    <th>Người tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="shifts-table">
+                <tr>
+                    <td><code style="font-size:12px;">#3001</code></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div class="avatar-circle avatar-sm" style="background:var(--success)">N</div>
+                            <div>
+                                <div style="font-weight:600;">BS. Nguyen Van A</div>
+                                <div style="font-size:12px;color:var(--text-secondary);">Nội tổng quát</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>P201</td>
+                    <td>
+                        <div style="font-size:13px;font-weight:600;">08/05/2026</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">08:00 - 11:00</div>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-weight:600;">12/15</span>
+                            <div style="width:60px;height:4px;background:var(--subtle);border-radius:2px;overflow:hidden;">
+                                <div style="width:80%;height:100%;background:var(--success);"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-success">Đã duyệt</span></td>
+                    <td>
+                        <div style="font-size:13px;">Admin</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">08/05 07:30</div>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="icon-btn" title="Chỉnh sửa">
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
+                            <button class="icon-btn" title="Xem lịch hẹn">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </button>
+                            <button class="icon-btn" title="Hủy ca" style="color:var(--danger)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><code style="font-size:12px;">#3002</code></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div class="avatar-circle avatar-sm" style="background:var(--primary-mid)">T</div>
+                            <div>
+                                <div style="font-weight:600;">BS. Tran Minh Khoa</div>
+                                <div style="font-size:12px;color:var(--text-secondary);">Tim mạch</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>P305</td>
+                    <td>
+                        <div style="font-size:13px;font-weight:600;">08/05/2026</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">14:00 - 17:00</div>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-weight:600;">8/12</span>
+                            <div style="width:60px;height:4px;background:var(--subtle);border-radius:2px;overflow:hidden;">
+                                <div style="width:67%;height:100%;background:var(--primary);"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-warning">Chờ duyệt</span></td>
+                    <td>
+                        <div style="font-size:13px;">Auto</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">07/05 23:00</div>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="icon-btn" title="Duyệt ca" style="color:var(--success)">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button class="icon-btn" title="Từ chối" style="color:var(--danger)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            <button class="icon-btn" title="Xem lịch hẹn">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><code style="font-size:12px;">#3003</code></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div class="avatar-circle avatar-sm" style="background:var(--warning)">P</div>
+                            <div>
+                                <div style="font-weight:600;">BS. Pham Thu Ha</div>
+                                <div style="font-size:12px;color:var(--text-secondary);">Sản</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>P102</td>
+                    <td>
+                        <div style="font-size:13px;font-weight:600;">09/05/2026</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">08:00 - 11:00</div>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-weight:600;">0/15</span>
+                            <div style="width:60px;height:4px;background:var(--subtle);border-radius:2px;overflow:hidden;">
+                                <div style="width:0%;height:100%;background:var(--primary);"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-success">Đã duyệt</span></td>
+                    <td>
+                        <div style="font-size:13px;">Admin</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">08/05 09:15</div>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="icon-btn" title="Chỉnh sửa">
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
+                            <button class="icon-btn" title="Xem lịch hẹn">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </button>
+                            <button class="icon-btn" title="Hủy ca" style="color:var(--danger)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Shift Modal -->
+<div class="modal-overlay" id="modal-create-shift">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Tạo ca làm việc mới</div>
+            <button class="modal-close" onclick="hideModal('modal-create-shift')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="create-shift-form">
+                <div class="section-title">Thông tin ca làm việc</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Bác sĩ *</label>
+                        <select class="form-select" name="idBacSi" required>
+                            <option value="">Chọn bác sĩ</option>
+                            <option value="1001">BS. Nguyen Van A (Nội tổng quát)</option>
+                            <option value="1002">BS. Tran Minh Khoa (Tim mạch)</option>
+                            <option value="1003">BS. Pham Thu Ha (Sản)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phòng khám *</label>
+                        <select class="form-select" name="idPhong" required>
+                            <option value="">Chọn phòng</option>
+                            <option value="201">P201 - Nội tổng quát</option>
+                            <option value="305">P305 - Tim mạch</option>
+                            <option value="102">P102 - Sản</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Ngày làm việc *</label>
+                        <input type="date" class="form-control" name="ngayLamViec" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chuyên khoa *</label>
+                        <select class="form-select" name="idChuyenKhoa" required>
+                            <option value="">Chọn chuyên khoa</option>
+                            <option value="1">Nội tổng quát</option>
+                            <option value="2">Tim mạch</option>
+                            <option value="3">Sản</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Giờ bắt đầu *</label>
+                        <input type="time" class="form-control" name="gioBatDau" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giờ kết thúc *</label>
+                        <input type="time" class="form-control" name="gioKetThuc" required>
+                    </div>
+                </div>
+                
+                <div class="section-title">Cấu hình ca</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Thời gian mỗi slot (phút) *</label>
+                        <input type="number" class="form-control" name="thoiGianSlot" value="20" min="10" max="60" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số slot tối đa *</label>
+                        <input type="number" class="form-control" name="soSlotToiDa" value="15" min="1" max="50" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái duyệt *</label>
+                        <select class="form-select" name="trangThaiDuyet" required>
+                            <option value="DaDuyet">Đã duyệt</option>
+                            <option value="ChoDuyet">Chờ duyệt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nguồn tạo *</label>
+                        <select class="form-select" name="nguonTaoCa">
+                            <option value="Admin">Admin</option>
+                            <option value="TuDong">Tự động</option>
+                            <option value="BacSi">Bác sĩ</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" onclick="hideModal('modal-create-shift')">
+                Hủy
+            </button>
+            <button type="button" class="btn btn-primary" onclick="createShift()">
+                Tạo ca làm việc
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.search-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    position: relative;
+}
+
+.search-input i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-disabled);
+    font-size: 13px;
+}
+
+.search-input input {
+    padding-left: 40px;
+}
+
+.action-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: var(--subtle);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .2s;
+    font-size: 14px;
+}
+
+.icon-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 24px 0 16px 0;
+    border-bottom: 1px dashed var(--primary-light);
+    padding-bottom: 8px;
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+</style>
+
+<script>
+function createShift() {
+    const form = document.getElementById('create-shift-form');
+    const formData = new FormData(form);
+    
+    // Validate form
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Validate time
+    const gioBatDau = formData.get('gioBatDau');
+    const gioKetThuc = formData.get('gioKetThuc');
+    
+    if (gioBatDau >= gioKetThuc) {
+        showToast('Giờ kết thúc phải sau giờ bắt đầu!', 'error');
+        return;
+    }
+    
+    // Create shift logic here
+    showToast('Ca làm việc đã được tạo thành công!', 'success');
+    hideModal('modal-create-shift');
+    form.reset();
+}
+
+// Search functionality
+document.getElementById('search-shifts')?.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#shifts-table tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+    });
+});
+
+// Filter functionality
+document.getElementById('filter-doctor')?.addEventListener('change', filterShifts);
+document.getElementById('filter-date')?.addEventListener('change', filterShifts);
+document.getElementById('filter-status')?.addEventListener('change', filterShifts);
+
+function filterShifts() {
+    const doctor = document.getElementById('filter-doctor').value;
+    const date = document.getElementById('filter-date').value;
+    const status = document.getElementById('filter-status').value;
+    const rows = document.querySelectorAll('#shifts-table tr');
+    
+    rows.forEach(row => {
+        let show = true;
+        
+        if (doctor && !row.textContent.includes(doctor)) {
+            show = false;
+        }
+        
+        if (status && !row.textContent.includes(status)) {
+            show = false;
+        }
+        
+        if (date && !row.textContent.includes(date)) {
+            show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+// Set default date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.querySelector('input[name="ngayLamViec"]');
+    if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+});
+</script>

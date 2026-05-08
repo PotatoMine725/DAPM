@@ -79,7 +79,8 @@ public sealed class DanhSachCaLamViecCongKhaiHandlerTests
 
         var result = await handler.Handle(new DanhSachCaLamViecCongKhaiQuery(ConTrong: true), CancellationToken.None);
 
-        result.Should().ContainSingle(x => x.ConTrong);
+        result.Should().OnlyContain(x => x.ConTrong);
+        result.Should().ContainSingle(x => x.NgayLamViec == new DateOnly(2026, 4, 23));
     }
 
     [Fact]
