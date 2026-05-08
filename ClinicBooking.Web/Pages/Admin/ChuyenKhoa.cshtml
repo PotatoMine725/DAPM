@@ -9,19 +9,19 @@
 
 <!-- Search and Actions -->
 <div class="card">
-    <div class="card-header-flex">
+    <div class="card-header">
         <div class="card-title">Danh sách chuyên khoa</div>
-        <button class="btn btn-primary" onclick="showModal('modal-create-specialty')">
+        <button class="btn btn-primary" onclick="openModal('modal-create-specialty')">
             <i class="fa-solid fa-plus"></i> Thêm chuyên khoa mới
         </button>
     </div>
     
-    <div class="search-bar" style="padding: 0 24px 20px;">
-        <div class="search-input">
+    <div class="toolbar">
+        <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" class="form-control" id="search-specialties" placeholder="Tìm theo tên chuyên khoa...">
         </div>
-        <select class="form-select" style="width: 200px;" id="filter-status">
+        <select class="form-control" style="width: 200px;" id="filter-status">
             <option value="">Tất cả trạng thái</option>
             <option value="true">Hoạt động</option>
             <option value="false">Ngừng hoạt động</option>
@@ -57,13 +57,13 @@
             </div>
         </div>
         <div class="specialty-actions">
-            <button class="icon-btn" title="Chỉnh sửa">
+            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
                 <i class="fa-solid fa-edit"></i>
             </button>
-            <button class="icon-btn" title="Xem chi tiết">
+            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
                 <i class="fa-solid fa-eye"></i>
             </button>
-            <button class="icon-btn" title="Ngừng hoạt động" style="color: var(--warning)">
+            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
                 <i class="fa-solid fa-pause"></i>
             </button>
         </div>
@@ -95,13 +95,13 @@
             </div>
         </div>
         <div class="specialty-actions">
-            <button class="icon-btn" title="Chỉnh sửa">
+            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
                 <i class="fa-solid fa-edit"></i>
             </button>
-            <button class="icon-btn" title="Xem chi tiết">
+            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
                 <i class="fa-solid fa-eye"></i>
             </button>
-            <button class="icon-btn" title="Ngừng hoạt động" style="color: var(--warning)">
+            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
                 <i class="fa-solid fa-pause"></i>
             </button>
         </div>
@@ -133,13 +133,13 @@
             </div>
         </div>
         <div class="specialty-actions">
-            <button class="icon-btn" title="Chỉnh sửa">
+            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
                 <i class="fa-solid fa-edit"></i>
             </button>
-            <button class="icon-btn" title="Xem chi tiết">
+            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
                 <i class="fa-solid fa-eye"></i>
             </button>
-            <button class="icon-btn" title="Ngừng hoạt động" style="color: var(--warning)">
+            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
                 <i class="fa-solid fa-pause"></i>
             </button>
         </div>
@@ -171,13 +171,13 @@
             </div>
         </div>
         <div class="specialty-actions">
-            <button class="icon-btn" title="Chỉnh sửa">
+            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
                 <i class="fa-solid fa-edit"></i>
             </button>
-            <button class="icon-btn" title="Xem chi tiết">
+            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
                 <i class="fa-solid fa-eye"></i>
             </button>
-            <button class="icon-btn" title="Ngừng hoạt động" style="color: var(--warning)">
+            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
                 <i class="fa-solid fa-pause"></i>
             </button>
         </div>
@@ -186,12 +186,10 @@
 
 <!-- Create Specialty Modal -->
 <div class="modal-overlay" id="modal-create-specialty">
-    <div class="modal-content">
+    <div class="modal">
         <div class="modal-header">
             <div class="modal-title">Thêm chuyên khoa mới</div>
-            <button class="modal-close" onclick="hideModal('modal-create-specialty')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <div class="modal-close" onclick="closeModal('modal-create-specialty')"><i class="fa-solid fa-xmark"></i></div>
         </div>
         <div class="modal-body">
             <form id="create-specialty-form">
@@ -226,7 +224,7 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-ghost" onclick="hideModal('modal-create-specialty')">
+            <button type="button" class="btn btn-ghost" onclick="closeModal('modal-create-specialty')">
                 Hủy
             </button>
             <button type="button" class="btn btn-primary" onclick="createSpecialty()">
@@ -237,29 +235,13 @@
 </div>
 
 <style>
-.search-bar {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
 
-.search-input {
-    flex: 1;
-    position: relative;
-}
 
-.search-input i {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-disabled);
-    font-size: 13px;
-}
 
-.search-input input {
-    padding-left: 40px;
-}
+
+
+
+
 
 .specialties-grid {
     display: grid;
@@ -349,25 +331,9 @@
     flex-wrap: wrap;
 }
 
-.icon-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    border: none;
-    background: var(--subtle);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: .2s;
-    font-size: 14px;
-}
 
-.icon-btn:hover {
-    background: var(--primary-light);
-    color: var(--primary);
-}
+
+
 
 .form-row {
     display: grid;
@@ -389,7 +355,7 @@ function createSpecialty() {
     
     // Create specialty logic here
     showToast('Chuyên khoa đã được thêm thành công!', 'success');
-    hideModal('modal-create-specialty');
+    closeModal('modal-create-specialty');
     form.reset();
 }
 

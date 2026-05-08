@@ -33,12 +33,12 @@
 <!-- Toolbar -->
 <div class="toolbar">
   <div class="toolbar-left">
-    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Tìm tên dịch vụ..."></div>
-    <select class="filter-select">
+    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="search-services" placeholder="Tìm tên dịch vụ..."></div>
+    <select class="filter-select" id="filter-specialty">
       <option value="">Tất cả chuyên khoa</option><option>Tim mạch</option><option>Nhi khoa</option><option>Thần kinh</option><option>Da liễu</option>
     </select>
-    <select class="filter-select">
-      <option value="">Tất cả trạng thái</option><option>Đang hiển thị</option><option>Đã ẩn</option>
+    <select class="filter-select" id="filter-status">
+      <option value="">Tất cả trạng thái</option><option value="true">Đang hiển thị</option><option value="false">Đã ẩn</option>
     </select>
   </div>
   <div class="toolbar-right">
@@ -48,148 +48,101 @@
 
 <!-- Services Table -->
 <div class="card">
-      <table>
-        <thead>
-          <tr><th>ID</th><th>Tên dịch vụ</th><th>Chuyên khoa</th><th>Thời gian (phút)</th><th>Mô tả</th><th>Lượt dùng</th><th>Hiển thị</th><th>Thao tác</th></tr>
-        </thead>
-        <tbody id="services-table">
-            <tr>
-                <td style="color:var(--text-disabled)">#1</td>
-                <td><strong>Khám tổng quát Tim mạch</strong></td>
-                <td><span class="badge badge-primary">Tim mạch</span></td>
-                <td><span class="badge badge-neutral">30 phút</span></td>
-                <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo ECG, siêu âm tim cơ bản</td>
-                <td>
-                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">142</div>
-                    <div class="progress" style="width:80px"><div class="progress-bar" style="width:83%"></div></div>
-                </td>
-                <td>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-ghost btn-sm" onclick="editService(1)">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(1)">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color:var(--text-disabled)">#2</td>
-                <td><strong>Siêu âm ổ bụng</strong></td>
-                <td><span class="badge badge-primary">Tim mạch</span></td>
-                <td><span class="badge badge-neutral">20 phút</span></td>
-                <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Siêu âm chẩn đoán ổ bụng toàn diện</td>
-                <td>
-                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">98</div>
-                    <div class="progress" style="width:80px"><div class="progress-bar" style="width:57%;background:var(--success)"></div></div>
-                </td>
-                <td>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-ghost btn-sm" onclick="editService(2)">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(2)">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color:var(--text-disabled)">#3</td>
-                <td><strong>Khám Nhi tổng quát</strong></td>
-                <td><span class="badge" style="background:#e8f5e9;color:#2e7d32">Nhi khoa</span></td>
-                <td><span class="badge badge-neutral">15 phút</span></td>
-                <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Khám sức khỏe định kỳ trẻ em</td>
-                <td>
-                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">67</div>
-                    <div class="progress" style="width:80px"><div class="progress-bar" style="width:39%;background:#059669"></div></div>
-                </td>
-                <td>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-ghost btn-sm" onclick="editService(3)">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(3)">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color:var(--text-disabled)">#4</td>
-                <td><strong>Điện não đồ</strong></td>
-                <td><span class="badge" style="background:#f3e8ff;color:#7c3aed">Thần kinh</span></td>
-                <td><span class="badge badge-neutral">45 phút</span></td>
-                <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo hoạt động điện não EEG</td>
-                <td>
-                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">35</div>
-                    <div class="progress" style="width:80px"><div class="progress-bar" style="width:20%;background:#7c3aed"></div></div>
-                </td>
-                <td>
-                    <label class="toggle">
-                        <input type="checkbox">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-ghost btn-sm" onclick="editService(4)">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(4)">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color:var(--text-disabled)">#5</td>
-                <td><strong>Laser điều trị da</strong></td>
-                <td><span class="badge" style="background:#fae8ff;color:#9333ea">Da liễu</span></td>
-                <td><span class="badge badge-neutral">60 phút</span></td>
-                <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Laser CO2 điều trị các bệnh lý da</td>
-                <td>
-                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">28</div>
-                    <div class="progress" style="width:80px"><div class="progress-bar" style="width:16%;background:#9333ea"></div></div>
-                </td>
-                <td>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-ghost btn-sm" onclick="editService(5)">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(5)">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Tên dịch vụ</th><th>Chuyên khoa</th><th>Thời gian (phút)</th><th>Mô tả</th><th>Lượt dùng</th><th>Hiển thị</th><th>Thao tác</th></tr>
+    </thead>
+    <tbody id="services-table">
+      <tr>
+        <td style="color:var(--text-disabled)">#1</td>
+        <td><strong>Khám tổng quát Tim mạch</strong></td>
+        <td><span class="badge badge-primary">Tim mạch</span></td>
+        <td><span class="badge badge-neutral">30 phút</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo ECG, siêu âm tim cơ bản</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">142</div>
+          <div class="progress" style="width:80px"><div class="progress-bar" style="width:83%"></div></div>
+        </td>
+        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+        <td><div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(1)"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-disabled)">#2</td>
+        <td><strong>Siêu âm ổ bụng</strong></td>
+        <td><span class="badge badge-primary">Tim mạch</span></td>
+        <td><span class="badge badge-neutral">20 phút</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Siêu âm chẩn đoán ổ bụng toàn diện</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">98</div>
+          <div class="progress" style="width:80px"><div class="progress-bar" style="width:57%;background:var(--success)"></div></div>
+        </td>
+        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+        <td><div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(2)"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-disabled)">#3</td>
+        <td><strong>Khám Nhi tổng quát</strong></td>
+        <td><span class="badge" style="background:#e8f5e9;color:#2e7d32">Nhi khoa</span></td>
+        <td><span class="badge badge-neutral">15 phút</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Khám sức khỏe định kỳ trẻ em</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">67</div>
+          <div class="progress" style="width:80px"><div class="progress-bar" style="width:39%;background:#059669"></div></div>
+        </td>
+        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+        <td><div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(3)"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-disabled)">#4</td>
+        <td><strong>Điện não đồ</strong></td>
+        <td><span class="badge" style="background:#f3e8ff;color:#7c3aed">Thần kinh</span></td>
+        <td><span class="badge badge-neutral">45 phút</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo hoạt động điện não EEG</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">35</div>
+          <div class="progress" style="width:80px"><div class="progress-bar" style="width:20%;background:#7c3aed"></div></div>
+        </td>
+        <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+        <td><div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(4)"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-disabled)">#5</td>
+        <td><strong>Laser điều trị da</strong></td>
+        <td><span class="badge" style="background:#fae8ff;color:#9333ea">Da liễu</span></td>
+        <td><span class="badge badge-neutral">60 phút</span></td>
+        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Điều trị các tổn thương da bằng laser</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">22</div>
+          <div class="progress" style="width:80px"><div class="progress-bar" style="width:13%;background:#9333ea"></div></div>
+        </td>
+        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+        <td><div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(5)"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="pagination">
+    <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+    <span class="page-info">Hiển thị 1–5 / 18 dịch vụ</span>
+  </div>
 </div>
 
 <!-- Modal: Thêm dịch vụ -->
@@ -230,67 +183,66 @@
   </div>
 </div>
 
+<!-- Modal: Sửa dịch vụ -->
+<div class="modal-overlay" id="modal-edit-dv">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Sửa — Khám tổng quát Tim mạch</div>
+      <div class="modal-close" onclick="closeModal('modal-edit-dv')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Tên dịch vụ <span class="req">*</span></label><input type="text" class="form-control" value="Khám tổng quát Tim mạch"></div>
+        <div class="form-group"><label>Chuyên khoa</label><select class="form-control"><option selected>Tim mạch</option><option>Nhi khoa</option></select></div>
+        <div class="form-group"><label>Mô tả dịch vụ</label><textarea class="form-control">Đo ECG, siêu âm tim cơ bản</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Thời gian ước tính (phút)</label><input type="number" class="form-control" value="30"></div>
+          <div class="form-group" style="justify-content:flex-end;padding-top:22px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              <span style="font-size:13.5px;font-weight:500">Đang hiển thị</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--primary)">
+          <i class="fa-solid fa-circle-info"></i> Dịch vụ này được dùng <strong>142 lần</strong>. Ẩn sẽ không ảnh hưởng lịch hẹn đã đặt.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-dv')">Hủy</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
 
 <script>
-function addService() {
-    const form = document.getElementById('add-service-form');
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    showToast('Dịch vụ đã được thêm thành công!', 'success');
-    hideModal('modal-add-service');
-    form.reset();
-}
-
-function editService(id) {
-    showToast('Chức năng chỉnh sửa đang phát triển', 'info');
-}
-
 function deleteService(id) {
     if (confirm('Bạn có chắc muốn xóa dịch vụ này?')) {
         showToast('Dịch vụ đã được xóa!', 'success');
     }
 }
 
-// Search functionality
 document.getElementById('search-services')?.addEventListener('input', function() {
     const query = this.value.toLowerCase();
-    const rows = document.querySelectorAll('#services-table tr');
-    
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(query) ? '' : 'none';
+    document.querySelectorAll('#services-table tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
     });
 });
 
-// Filter functionality
 document.getElementById('filter-specialty')?.addEventListener('change', filterServices);
 document.getElementById('filter-status')?.addEventListener('change', filterServices);
 
 function filterServices() {
     const specialty = document.getElementById('filter-specialty').value;
     const status = document.getElementById('filter-status').value;
-    const rows = document.querySelectorAll('#services-table tr');
-    
-    rows.forEach(row => {
+    document.querySelectorAll('#services-table tr').forEach(row => {
         let show = true;
-        
-        if (specialty && !row.textContent.includes(specialty)) {
-            show = false;
-        }
-        
+        if (specialty && !row.textContent.includes(specialty)) show = false;
         if (status) {
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            if (checkbox) {
-                const isChecked = checkbox.checked;
-                if ((status === 'true' && !isChecked) || (status === 'false' && isChecked)) {
-                    show = false;
-                }
-            }
+            const cb = row.querySelector('input[type="checkbox"]');
+            if (cb && ((status === 'true' && !cb.checked) || (status === 'false' && cb.checked))) show = false;
         }
-        
         row.style.display = show ? '' : 'none';
     });
 }

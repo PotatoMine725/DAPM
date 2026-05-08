@@ -1,141 +1,26 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - MedAdmin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/admin-shared.css">
-</head>
-<body data-page="@ViewData["PageName"]">
-    <div id="sidebar-slot"></div>
-    <div class="main">
-        <div id="header-slot"></div>
-        <div class="page-content">
-            @RenderBody()
+@{
+    var pageName = ViewData["PageName"]?.ToString() ?? string.Empty;
+    var pageTitle = ViewData["PageTitle"]?.ToString() ?? string.Empty;
+}
+
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <div class="admin-brand">MedAdmin</div>
+            <div class="admin-brand-sub">Quản trị hệ thống</div>
         </div>
-    </div>
-
-    <script src="/js/admin-shared.js"></script>
-    <script>
-        // Render shell exactly like Admin_Van design
-        function renderShell(pageTitle, pageCrumb) {
-            const navItems = [
-                { id: 'dashboard', href: '/Admin/Dashboard', icon: 'fa-chart-pie', label: 'Dashboard', section: 'Tổng quan' },
-                { id: 'accounts', href: '/Admin/Accounts', icon: 'fa-users-gear', label: 'Tài khoản người dùng', section: 'Quản lý' },
-                { id: 'chuyenkhoa', href: '/Admin/ChuyenKhoa', icon: 'fa-stethoscope', label: 'Chuyên khoa' },
-                { id: 'bacsi', href: '/Admin/BacSi', icon: 'fa-user-doctor', label: 'Bác sĩ' },
-                { id: 'dichvu', href: '/Admin/DichVu', icon: 'fa-syringe', label: 'Dịch vụ' },
-                { id: 'phong', href: '/Admin/Phong', icon: 'fa-door-open', label: 'Phòng khám' },
-                { id: 'calamviec', href: '/Admin/CaLamViec', icon: 'fa-calendar-days', label: 'Lịch bác sĩ nội trú', section: 'Ca làm việc' },
-                { id: 'duyetca', href: '/Admin/DuyetCa', icon: 'fa-clipboard-check', label: 'Duyệt ca hợp đồng', badge: '5' },
-                { id: 'thongke', href: '/Admin/ThongKe', icon: 'fa-chart-bar', label: 'Thống kê bệnh nhân', section: 'Báo cáo' },
-                { id: 'thongbao', href: '/Admin/ThongBao', icon: 'fa-bell', label: 'Thông báo hệ thống', badge: '12' },
-            ];
-
-            let navHtml = '';
-            let lastSection = '';
-            navItems.forEach(item => {
-                if (item.section && item.section !== lastSection) {
-                    navHtml += `<div class="sidebar-section">${item.section}</div>`;
-                    lastSection = item.section;
-                }
-                const active = item.id === '@ViewData["PageName"]' ? 'active' : '';
-                const badge = item.badge ? `<span class="badge">${item.badge}</span>` : '';
-                navHtml += `<a href="${item.href}" class="nav-item ${active}">
-                  <i class="fa-solid ${item.icon} nav-icon"></i> ${item.label}${badge}
-                </a>`;
-            });
-
-            const sidebar = `
-            <aside class="sidebar">
-                <div class="sidebar-logo">
-                    <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
-                    <div class="logo-text">
-                        <div class="brand">MedAdmin</div>
-                        <div class="sub">Phòng Khám Đa Khoa</div>
-                    </div>
-                </div>
-                ${navHtml}
-                <div class="sidebar-footer">
-                    <div class="avatar">A</div>
-                    <div class="info">
-                        <div class="name">Admin Hệ thống</div>
-                        <div class="role">Quản trị viên</div>
-                    </div>
-                    <i class="fa-solid fa-right-from-bracket logout" title="Đăng xuất" onclick="confirmLogout()"></i>
-                </div>
-            </aside>`;
-
-            const header = `
-            <header class="header">
-                <div class="header-breadcrumb">
-                    <span class="page-title">@ViewData["PageTitle"]</span>
-                    <span class="sep"><i class="fa-solid fa-chevron-right" style="font-size:10px"></i></span>
-                    <span class="crumb">${pageCrumb || ''}</span>
-                </div>
-                <div class="header-actions">
-                    <div class="header-search">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="Tìm kiếm nhanh..." id="globalSearch">
-                    </div>
-                    <a href="/Admin/ThongBao" class="header-btn has-notif" title="Thông báo" id="notifBtn">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="notif-dot"></span>
-                    </a>
-                    <div class="header-btn" title="Cài đặt" id="settingsBtn" onclick="toggleSettings(event)">
-                        <i class="fa-solid fa-gear"></i>
-                    </div>
-                    <div class="header-avatar-wrap" id="avatarWrap">
-                        <div class="header-avatar" onclick="toggleAvatarMenu(event)" title="Tài khoản">A</div>
-                        <!-- Avatar dropdown -->
-                        <div class="avatar-dropdown" id="avatarDropdown">
-                            <div class="avatar-dropdown-header">
-                                <div class="avd-avatar">A</div>
-                                <div>
-                                    <div class="avd-name">Admin Hệ thống</div>
-                                    <div class="avd-email">admin@medadmin.vn</div>
-                                </div>
-                            </div>
-                            <div class="avd-divider"></div>
-                            <a href="/Admin/Accounts" class="avd-item"><i class="fa-solid fa-user-circle"></i> Hồ sơ cá nhân</a>
-                            <a href="#" class="avd-item" onclick="toggleSettings(event); closeAvatarMenu()"><i class="fa-solid fa-gear"></i> Cài đặt hệ thống</a>
-                            <a href="/Admin/ThongBao" class="avd-item"><i class="fa-solid fa-bell"></i> Thông báo <span class="avd-badge">12</span></a>
-                            <div class="avd-divider"></div>
-                            <div class="avd-item avd-item-danger" onclick="confirmLogout()"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</div>
-                        </div>
-                    </div>
-                </div>
-            </header>`;
-
-            document.getElementById('sidebar-slot').innerHTML = sidebar;
-            document.getElementById('header-slot').innerHTML = header;
-        }
-
-        // Initialize shell
-        renderShell('@ViewData["PageTitle"]', '');
-
-        // Basic modal functions
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-        function confirmLogout() { 
-            if (confirm('Bạn có chắc muốn đăng xuất?')) {
-                window.location.href = '/Auth/DangXuat';
-            }
-        }
-        function toggleSettings(e) { e.stopPropagation(); }
-        function toggleAvatarMenu(e) {
-            e.stopPropagation();
-            const dd = document.getElementById('avatarDropdown');
-            if (dd) dd.classList.toggle('open');
-        }
-        function closeAvatarMenu() {
-            const dd = document.getElementById('avatarDropdown');
-            if (dd) dd.classList.remove('open');
-        }
-        document.addEventListener('click', closeAvatarMenu);
-    </script>
-    @RenderSection("Scripts", required: false)
-</body>
-</html>
+        <nav class="admin-nav">
+            <a class="admin-nav-item @(pageName == "dashboard" ? "active" : "")" href="/Admin/Dashboard">Tổng quan</a>
+            <a class="admin-nav-item @(pageName == "bacsi" ? "active" : "")" href="/Admin/BacSi">Bác sĩ</a>
+            <a class="admin-nav-item @(pageName == "calamviec" ? "active" : "")" href="/Admin/CaLamViec">Ca làm việc</a>
+            <a class="admin-nav-item @(pageName == "nghiphep" ? "active" : "")" href="/Admin/NghiPhep">Nghỉ phép</a>
+            <a class="admin-nav-item @(pageName == "danhmuc" ? "active" : "")" href="/Admin/QuanLyDanhMuc">Danh mục</a>
+        </nav>
+    </aside>
+    <main class="admin-content">
+        <div class="admin-content-header">
+            <h1>@pageTitle</h1>
+        </div>
+        @RenderBody()
+    </main>
+</div>
