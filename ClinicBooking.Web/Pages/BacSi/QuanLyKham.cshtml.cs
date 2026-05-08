@@ -41,6 +41,8 @@ public class QuanLyKhamModel : PageModel
 
     public async Task OnGetAsync()
     {
+        if (IdLichHenMoi.HasValue)
+            HoSo = new HoSoKhamFormInput { IdLichHen = IdLichHenMoi.Value };
         await TaiDuLieuTrangAsync();
     }
 
