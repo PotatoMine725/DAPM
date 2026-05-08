@@ -151,6 +151,19 @@ public class DatabaseSeeder
             .ToListAsync(cancellationToken);
         _db.HangCho.RemoveRange(hangChoToDelete);
 
+        var hoSoKhamToDelete = await _db.HoSoKham
+            .Where(hsk => demoLichHenIds.Contains(hsk.IdLichHen))
+            .ToListAsync(cancellationToken);
+        if (hoSoKhamToDelete.Count > 0)
+        {
+            var hoSoKhamIds = hoSoKhamToDelete.Select(h => h.IdHoSoKham).ToList();
+            var toaThuocToDelete = await _db.ToaThuoc
+                .Where(t => hoSoKhamIds.Contains(t.IdHoSoKham))
+                .ToListAsync(cancellationToken);
+            _db.ToaThuoc.RemoveRange(toaThuocToDelete);
+            _db.HoSoKham.RemoveRange(hoSoKhamToDelete);
+        }
+
         _db.LichHen.RemoveRange(demoLichHen);
 
         if (demoLichHen.Count > 0)
