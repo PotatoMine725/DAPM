@@ -16,19 +16,23 @@ public sealed class NotificationServiceStub : INotificationService
         _logger = logger;
     }
 
-    public Task GuiThongBaoTaoLichHenAsync(int idLichHen, CancellationToken ct = default)
+    public Task GuiThongBaoTaoLichHenAsync(int idLichHen, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("[STUB] GuiThongBaoTaoLichHen: IdLichHen={IdLichHen}", idLichHen);
         return Task.CompletedTask;
     }
 
-    public Task GuiThongBaoXacNhanLichHenAsync(int idLichHen, CancellationToken ct = default)
+    public Task GuiThongBaoXacNhanLichHenAsync(int idLichHen, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("[STUB] GuiThongBaoXacNhanLichHen: IdLichHen={IdLichHen}", idLichHen);
         return Task.CompletedTask;
     }
 
-    public Task GuiThongBaoHuyLichHenAsync(int idLichHen, string lyDo, bool doPhongKhamHuy, CancellationToken ct = default)
+    public Task GuiThongBaoHuyLichHenAsync(
+        int idLichHen,
+        string lyDo,
+        bool doPhongKhamHuy,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(
             "[STUB] GuiThongBaoHuyLichHen: IdLichHen={IdLichHen}, LyDo={LyDo}, DoPhongKhamHuy={DoPhongKhamHuy}",
@@ -36,7 +40,10 @@ public sealed class NotificationServiceStub : INotificationService
         return Task.CompletedTask;
     }
 
-    public Task GuiThongBaoDoiLichHenAsync(int idLichHenCu, int idLichHenMoi, CancellationToken ct = default)
+    public Task GuiThongBaoDoiLichHenAsync(
+        int idLichHenCu,
+        int idLichHenMoi,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(
             "[STUB] GuiThongBaoDoiLichHen: IdLichHenCu={IdLichHenCu}, IdLichHenMoi={IdLichHenMoi}",
@@ -44,15 +51,33 @@ public sealed class NotificationServiceStub : INotificationService
         return Task.CompletedTask;
     }
 
-    public Task GuiThongBaoCheckInAsync(int idHangCho, CancellationToken ct = default)
+    public Task GuiThongBaoCheckInAsync(int idHangCho, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("[STUB] GuiThongBaoCheckIn: IdHangCho={IdHangCho}", idHangCho);
         return Task.CompletedTask;
     }
 
-    public Task GuiThongBaoGoiBenhNhanAsync(int idHangCho, CancellationToken ct = default)
+    public Task GuiThongBaoGoiBenhNhanAsync(int idHangCho, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("[STUB] GuiThongBaoGoiBenhNhan: IdHangCho={IdHangCho}", idHangCho);
+        return Task.CompletedTask;
+    }
+
+    public Task GuiAsync(
+        int idTaiKhoanNhan,
+        LoaiThongBao loai,
+        Dictionary<string, string> duLieu,
+        LoaiThamChieu? loaiThamChieu = null,
+        int? idThamChieu = null,
+        CancellationToken ct = default)
+    {
+        _logger.LogInformation(
+            "[STUB] GuiAsync: IdTaiKhoanNhan={IdTaiKhoanNhan}, Loai={Loai}, IdThamChieu={IdThamChieu}, LoaiThamChieu={LoaiThamChieu}, DuLieu={DuLieu}",
+            idTaiKhoanNhan,
+            loai,
+            idThamChieu,
+            loaiThamChieu,
+            string.Join("; ", duLieu.Select(kv => $"{kv.Key}={kv.Value}")));
         return Task.CompletedTask;
     }
 }
