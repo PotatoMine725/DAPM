@@ -138,6 +138,33 @@ public class NotificationServiceStub : INotificationService
             ct);
     }
 
+    public async Task GuiAsync(
+        int idTaiKhoanNhan,
+        LoaiThongBao loai,
+        Dictionary<string, string> duLieu,
+        LoaiThamChieu? loaiThamChieu = null,
+        int? idThamChieu = null,
+        CancellationToken ct = default)
+    {
+        var idMau = loai switch
+        {
+            LoaiThongBao.HuyLich => 4,
+            LoaiThongBao.CheckIn => 5,
+            _ => 1
+        };
+        duLieu.TryGetValue("tieuDe", out var tieuDe);
+        duLieu.TryGetValue("noiDung", out var noiDung);
+        await GhiThongBao(
+            idTaiKhoan: idTaiKhoanNhan,
+            idMau: idMau,
+            tieuDe: tieuDe ?? loai.ToString(),
+            noiDung: noiDung ?? string.Join("; ", duLieu.Select(kv => $"{kv.Key}={kv.Value}")),
+            kenhGui: KenhGui.TrongApp,
+            idThamChieu: idThamChieu,
+            loaiThamChieu: loaiThamChieu,
+            ct);
+    }
+
     private async Task GhiThongBao(
         int idTaiKhoan, int idMau,
         string tieuDe, string noiDung,

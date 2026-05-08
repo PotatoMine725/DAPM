@@ -357,6 +357,44 @@ Phòng khám";
         }
     }
 
+    public async Task GuiAsync(
+        int idTaiKhoanNhan,
+        LoaiThongBao loai,
+        Dictionary<string, string> duLieu,
+        LoaiThamChieu? loaiThamChieu = null,
+        int? idThamChieu = null,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var idMau = loai switch
+            {
+                LoaiThongBao.HuyLich => 3,
+                LoaiThongBao.CheckIn => 5,
+                _ => 1
+            };
+            duLieu.TryGetValue("tieuDe", out var tieuDe);
+            duLieu.TryGetValue("noiDung", out var noiDung);
+            _db.ThongBao.Add(new ThongBao
+            {
+                IdTaiKhoan = idTaiKhoanNhan,
+                IdMau = idMau,
+                KenhGui = KenhGui.TrongApp,
+                TieuDe = tieuDe ?? loai.ToString(),
+                NoiDung = noiDung ?? string.Join("; ", duLieu.Select(kv => $"{kv.Key}={kv.Value}")),
+                DaDoc = false,
+                NgayGui = DateTime.UtcNow,
+                LoaiThamChieu = loaiThamChieu,
+                IdThamChieu = idThamChieu
+            });
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[NotificationService] Loi GuiAsync loai {Loai} cho TaiKhoan #{IdTaiKhoan}", loai, idTaiKhoanNhan);
+        }
+    }
+
     public async Task GuiThongBaoGoiBenhNhanAsync(int idHangCho, CancellationToken cancellationToken = default)
     {
         try
