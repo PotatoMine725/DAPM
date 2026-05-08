@@ -26,6 +26,9 @@ public class QuanLyKhamModel : PageModel
     [BindProperty(SupportsGet = true)]
     public int? IdHoSoKham { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public int? IdLichHenMoi { get; set; }
+
     [BindProperty]
     public HoSoKhamFormInput HoSo { get; set; } = new();
 
@@ -38,6 +41,8 @@ public class QuanLyKhamModel : PageModel
 
     public async Task OnGetAsync()
     {
+        if (IdLichHenMoi.HasValue)
+            HoSo = new HoSoKhamFormInput { IdLichHen = IdLichHenMoi.Value };
         await TaiDuLieuTrangAsync();
     }
 

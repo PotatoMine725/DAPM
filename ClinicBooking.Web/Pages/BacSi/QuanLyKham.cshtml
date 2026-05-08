@@ -26,6 +26,12 @@
             <i class="ph ph-users-three"></i> Hang cho
         </a>
     </form>
+    @if (Model.IdLichHenMoi.HasValue && Model.HoSoHienTai is null)
+    {
+        <div style="margin-top:var(--space-3); padding:var(--space-3) var(--space-4); background:var(--color-active-bg); border:1px solid var(--color-active-text); border-radius:8px; color:var(--color-active-text); font-size:14px;">
+            <i class="ph ph-info"></i> Benh nhan tu hang cho — lich hen ID <strong>@Model.IdLichHenMoi</strong>. Dien thong tin va bam "Tao ho so".
+        </div>
+    }
 </div>
 
 <div class="module3-two-col">

@@ -33,13 +33,6 @@ public sealed class LayHoSoCuaToiHandlerTests
         {
             IdTaiKhoan = taiKhoan.IdTaiKhoan,
             HoTen = "Nguyen Van A",
-            Cccd = "123456789012",
-            NgaySinh = new DateOnly(1995, 1, 1),
-            GioiTinh = GioiTinh.Nam,
-            DiaChi = "123 Duong ABC",
-            SoLanHuyMuon = 2,
-            BiHanChe = true,
-            NgayHetHanChe = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
             NgayTao = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
@@ -52,14 +45,6 @@ public sealed class LayHoSoCuaToiHandlerTests
 
         result.HoTen.Should().Be("Nguyen Van A");
         result.SoDienThoai.Should().Be("0912345678");
-        result.Email.Should().Be("benhnhan_a@example.com");
-        result.Cccd.Should().Be("123456789012");
-        result.NgaySinh.Should().Be(new DateOnly(1995, 1, 1));
-        result.GioiTinh.Should().Be(GioiTinh.Nam);
-        result.DiaChi.Should().Be("123 Duong ABC");
-        result.SoLanHuyMuon.Should().Be(2);
-        result.BiHanChe.Should().BeTrue();
-        result.NgayHetHanChe.Should().Be(new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [Fact]

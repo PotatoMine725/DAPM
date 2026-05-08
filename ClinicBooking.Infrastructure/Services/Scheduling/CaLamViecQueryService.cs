@@ -129,14 +129,10 @@ public class CaLamViecQueryService : ICaLamViecQueryService
         {
             var soSlotTinhLai = item.TongLichHen + item.TongGiuCho;
             if (soSlotTinhLai < 0 || soSlotTinhLai > item.SoSlotToiDa)
-            {
                 continue;
-            }
 
             if (soSlotTinhLai == item.SoSlotDaDat)
-            {
                 continue;
-            }
 
             var rowsAffected = await _db.CaLamViec
                 .Where(c => c.IdCaLamViec == item.IdCaLamViec)
