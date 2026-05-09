@@ -39,7 +39,7 @@ public class NghiPhepModel : PageModel
         try
         {
             var idNguoiDuyet = _currentUser.IdTaiKhoan ?? 0;
-            await _mediator.Send(new DuyetDonNghiPhepCommand(idDonNghiPhep, idNguoiDuyet));
+            await _mediator.Send(new DuyetDonNghiPhepCommand(idDonNghiPhep, true, null, idNguoiDuyet));
             TempData["SuccessMessage"] = "Đã duyệt đơn nghỉ phép.";
         }
         catch (Exception ex)

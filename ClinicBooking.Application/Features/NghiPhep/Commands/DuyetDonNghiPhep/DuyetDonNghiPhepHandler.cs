@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClinicBooking.Application.Features.NghiPhep.Commands.DuyetDonNghiPhep;
 
-public sealed class DuyetDonNghiPhepHandler : IRequestHandler<DuyetDonNghiPhepCommand>
+public sealed class DuyetDonNghiPhepHandler : IRequestHandler<DuyetDonNghiPhepCommand, Unit>
 {
     private readonly IAppDbContext _db;
 
@@ -15,7 +15,7 @@ public sealed class DuyetDonNghiPhepHandler : IRequestHandler<DuyetDonNghiPhepCo
         _db = db;
     }
 
-    public async Task Handle(DuyetDonNghiPhepCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(DuyetDonNghiPhepCommand request, CancellationToken cancellationToken)
     {
         var don = await _db.DonNghiPhep
             .Include(x => x.BacSi)
@@ -62,5 +62,6 @@ public sealed class DuyetDonNghiPhepHandler : IRequestHandler<DuyetDonNghiPhepCo
         don.LyDoTuChoi = request.ChapNhan ? null : request.LyDoTuChoi;
 
         await _db.SaveChangesAsync(cancellationToken);
+        return Unit.Value;
     }
 }

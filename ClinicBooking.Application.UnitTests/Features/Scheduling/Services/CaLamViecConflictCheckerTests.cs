@@ -138,7 +138,7 @@ public sealed class CaLamViecConflictCheckerTests
         {
             IdBacSi = bs.IdBacSi,
             IdCaLamViec = caNghiPhep.IdCaLamViec,
-            LoaiNghiPhep = LoaiNghiPhep.TamNghi,
+            LoaiNghiPhep = LoaiNghiPhep.CoKeHoach,
             LyDo = "Nghi benh",
             TrangThaiDuyet = TrangThaiDuyetDon.DaDuyet,
             NgayGuiDon = DateTime.UtcNow,

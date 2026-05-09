@@ -20,7 +20,8 @@ public sealed class CaLamViecQueryServiceTests
         db = factory.CreateContext();
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(FixedNow);
-        return new CaLamViecQueryService(db, clock);
+        var logger = Substitute.For<Microsoft.Extensions.Logging.ILogger<CaLamViecQueryService>>();
+        return new CaLamViecQueryService(db, clock, logger);
     }
 
     private static CaLamViec SeedCa(AppDbContext db, TrangThaiDuyetCa trangThai, int soSlotToiDa, int soSlotDaDat, DateOnly ngay)
@@ -247,13 +248,17 @@ public sealed class CaLamViecQueryServiceTests
             DaGiaiPhong = false,
             NgayTao = FixedNow
         });
-        db.LichHen.Add(new LichHen
+        db.LichHen.Add(new ClinicBooking.Domain.Entities.LichHen
         {
             IdCaLamViec = ca.IdCaLamViec,
             IdBenhNhan = benhNhan.IdBenhNhan,
+            IdDichVu = TestDataSeeder.SeedDichVu(db, ca.IdChuyenKhoa).IdDichVu,
             TrangThai = TrangThaiLichHen.DangKham,
             NgayTao = FixedNow,
-            MaLichHen = "LH-UT-1"
+            MaLichHen = "LH-UT-1",
+            SoSlot = 1,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
         });
         await db.SaveChangesAsync();
 
@@ -276,8 +281,10 @@ public sealed class CaLamViecQueryServiceTests
         clock1.UtcNow.Returns(FixedNow);
         var clock2 = Substitute.For<IDateTimeProvider>();
         clock2.UtcNow.Returns(FixedNow);
-        var service1 = new CaLamViecQueryService(db1, clock1);
-        var service2 = new CaLamViecQueryService(db2, clock2);
+        var logger1 = Substitute.For<Microsoft.Extensions.Logging.ILogger<CaLamViecQueryService>>();
+        var logger2 = Substitute.For<Microsoft.Extensions.Logging.ILogger<CaLamViecQueryService>>();
+        var service1 = new CaLamViecQueryService(db1, clock1, logger1);
+        var service2 = new CaLamViecQueryService(db2, clock2, logger2);
 
         var task1 = service1.IncrementSoSlotDaDatAsync(caSeed.IdCaLamViec, 1, CancellationToken.None);
         var task2 = service2.IncrementSoSlotDaDatAsync(caSeed.IdCaLamViec, 1, CancellationToken.None);

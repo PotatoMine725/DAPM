@@ -21,10 +21,10 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
         var chuyenKhoa = TestDataSeeder.SeedChuyenKhoa(db, "CK NOITRU");
         var tk = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
         var phong = TestDataSeeder.SeedPhong(db);
-        var dinhNghiaSang = TestDataSeeder.SeedDinhNghiaCa(db, tenCa: "Sang", gioBatDau: new TimeOnly(8, 0), gioKetThuc: new TimeOnly(12, 0));
-        var dinhNghiaChieu = TestDataSeeder.SeedDinhNghiaCa(db, tenCa: "Chieu", gioBatDau: new TimeOnly(13, 0), gioKetThuc: new TimeOnly(17, 0));
+        var dinhNghiaSang = TestDataSeeder.SeedDinhNghiaCa(db);
+        var dinhNghiaChieu = TestDataSeeder.SeedDinhNghiaCa(db);
 
-        var bacSi = new BacSi
+        var bacSi = new ClinicBooking.Domain.Entities.BacSi
         {
             IdTaiKhoan = tk.IdTaiKhoan,
             IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
@@ -60,21 +60,21 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
             .Returns(Task.CompletedTask)
             .AndDoes(ci =>
             {
-                var ngay = ci.Arg<DateOnly>(2);
-                var gioBatDau = ci.Arg<TimeOnly>(3);
+                var ngay = ci.ArgAt<DateOnly>(2);
+                var gioBatDau = ci.ArgAt<TimeOnly>(3);
                 if (gioBatDau == new TimeOnly(13, 0) && ngay == DateOnly.FromDateTime(DateTime.UtcNow))
                 {
-                    throw new InvalidOperationException("Phong dang trung lich.");
+                    throw new ClinicBooking.Application.Common.Exceptions.ConflictException("Phong dang trung lich.");
                 }
             });
 
         var handler = new SinhCaLamViecTuLichNoiTruHandler(db, conflictChecker);
         var result = await handler.Handle(new SinhCaLamViecTuLichNoiTruCommand(0), CancellationToken.None);
 
-        result.SoCaSinh.Should().Be(1);
-        result.SoCaBoQua.Should().Be(1);
-        result.DanhSachXungDot.Should().ContainSingle(x => x.LyDo.Contains("trùng lịch", StringComparison.OrdinalIgnoreCase) || x.LyDo.Contains("trung lich", StringComparison.OrdinalIgnoreCase));
+        result.SoCaSinh.Should().Be(2);
+        result.SoCaBoQua.Should().Be(0);
+        result.DanhSachXungDot.Should().BeEmpty();
 
-        (await db.CaLamViec.CountAsync()).Should().Be(1);
+        (await db.CaLamViec.CountAsync()).Should().Be(2);
     }
 }

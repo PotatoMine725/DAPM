@@ -111,7 +111,7 @@ public sealed class SinhCaLamViecTuLichNoiTruHandler : IRequestHandler<SinhCaLam
                     lich.IdBacSi,
                     lich.IdPhong,
                     LoaiXungDotSinhCa.TrungLichBacSi,
-                    $"Bác sĩ {existingCa.BacSi.HoTen} đã có ca khác lúc {existingCa.GioBatDau:HH\:mm}-{existingCa.GioKetThuc:HH\:mm} ngày {ngay:dd/MM/yyyy}.");
+                    $"Bác sĩ {existingCa.BacSi.HoTen} đã có ca khác lúc {existingCa.GioBatDau:HH\\:mm}-{existingCa.GioKetThuc:HH\\:mm} ngày {ngay:dd/MM/yyyy}.");
             }
 
             if (existingCa.IdPhong == lich.IdPhong)
@@ -121,7 +121,7 @@ public sealed class SinhCaLamViecTuLichNoiTruHandler : IRequestHandler<SinhCaLam
                     lich.IdBacSi,
                     lich.IdPhong,
                     LoaiXungDotSinhCa.TrungLichPhong,
-                    $"Phòng {existingCa.Phong.MaPhong} đã được đặt lúc {existingCa.GioBatDau:HH\:mm}-{existingCa.GioKetThuc:HH\:mm} ngày {ngay:dd/MM/yyyy}.");
+                    $"Phòng {existingCa.Phong.MaPhong} đã được đặt lúc {existingCa.GioBatDau:HH\\:mm}-{existingCa.GioKetThuc:HH\\:mm} ngày {ngay:dd/MM/yyyy}.");
             }
         }
 
@@ -140,7 +140,7 @@ public sealed class SinhCaLamViecTuLichNoiTruHandler : IRequestHandler<SinhCaLam
                 lich.IdBacSi,
                 lich.IdPhong,
                 LoaiXungDotSinhCa.DonNghiPhepDaDuyet,
-                $"Bác sĩ {nghiPhep.HoTen} đang nghỉ phép từ {nghiPhep.NgayLamViec:dd/MM/yyyy} trong khung giờ {nghiPhep.GioBatDau:HH\:mm}-{nghiPhep.GioKetThuc:HH\:mm}.");
+                $"Bác sĩ {nghiPhep.HoTen} đang nghỉ phép từ {nghiPhep.NgayLamViec:dd/MM/yyyy} trong khung giờ {nghiPhep.GioBatDau:HH\\:mm}-{nghiPhep.GioKetThuc:HH\\:mm}.");
         }
 
         return null;

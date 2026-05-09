@@ -16,7 +16,7 @@ public sealed class KiemTraDoPhuBacSiHandler : IRequestHandler<KiemTraDoPhuBacSi
 
     public async Task<KiemTraDoPhuBacSiResponse> Handle(KiemTraDoPhuBacSiQuery request, CancellationToken cancellationToken)
     {
-        var ds = await _db.CaLamViec
+        var ds = _db.CaLamViec
             .AsNoTracking()
             .Where(x => x.IdChuyenKhoa == request.IdChuyenKhoa)
             .Where(x => x.NgayLamViec >= request.TuNgay && x.NgayLamViec <= request.DenNgay)
@@ -25,12 +25,14 @@ public sealed class KiemTraDoPhuBacSiHandler : IRequestHandler<KiemTraDoPhuBacSi
             {
                 Ngay = g.Key,
                 SoCaDaDuyet = g.Count(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet),
-                SoCaChoDuyet = g.Count(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet)
+                SoCaChoDuyet = g.Count(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet),
+                HoanToanTrong = g.All(x => x.TrangThaiDuyet != TrangThaiDuyetCa.DaDuyet && x.TrangThaiDuyet != TrangThaiDuyetCa.ChoDuyet)
             })
             .Where(x => x.SoCaDaDuyet == 0)
-            .Select(x => new NgayThieuBacSiDto(x.Ngay, x.SoCaChoDuyet, x.SoCaDaDuyet == 0 && x.SoCaChoDuyet == 0))
+            .AsEnumerable()
+            .Select(x => new NgayThieuBacSiDto(x.Ngay, x.SoCaChoDuyet, x.HoanToanTrong))
             .OrderBy(x => x.Ngay)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new KiemTraDoPhuBacSiResponse(ds);
     }

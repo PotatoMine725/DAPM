@@ -33,7 +33,7 @@ public class NghiPhepController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DuyetDonNghiPhep(int idDonNghiPhep, [FromQuery] int idNguoiDuyet, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new DuyetDonNghiPhepCommand(idDonNghiPhep, idNguoiDuyet), cancellationToken);
+        await _mediator.Send(new DuyetDonNghiPhepCommand(idDonNghiPhep, true, null, idNguoiDuyet), cancellationToken);
         return NoContent();
     }
 }

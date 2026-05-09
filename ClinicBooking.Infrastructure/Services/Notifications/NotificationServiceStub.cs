@@ -1,4 +1,5 @@
 using ClinicBooking.Application.Abstractions.Notifications;
+using ClinicBooking.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace ClinicBooking.Infrastructure.Services.Notifications;

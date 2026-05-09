@@ -121,7 +121,7 @@ public class DatLichModel : PageModel
 
         try
         {
-            var command = new TaoLichHenCommand(NgayChon, GioMongMuon, IdDichVu, null, null, GhiChu, TrieuChung);
+            var command = new TaoLichHenCommand(NgayChon, GioMongMuon, IdDichVu, null, null, TrieuChung, GhiChu);
             var result = await _mediator.Send(command);
             TempData["SuccessMessage"] = $"Đặt lịch thành công! Mã lịch hẹn: {result.MaLichHen}.";
             return RedirectToPage("/BenhNhan/DanhSachLichHen");
@@ -135,8 +135,8 @@ public class DatLichModel : PageModel
 
     private async Task TaiDuLieuAsync(DateOnly ngay)
     {
-        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(1, 100, true));
-        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(1, 50, null, IdChuyenKhoa, null, ngay, ngay, true));
+        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(SoTrang: 1, KichThuocTrang: 100, IdChuyenKhoa: null, HienThi: true, TuKhoa: null));
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(SoTrang: 1, KichThuocTrang: 50, IdBacSi: null, IdChuyenKhoa: IdChuyenKhoa, IdPhong: null, TuNgay: ngay, DenNgay: ngay, ConTrong: true));
         CanhBaoThieuBacSi = (await _mediator.Send(new KiemTraDoPhuBacSiQuery(IdChuyenKhoa, ngay, ngay))).NgayThieu;
         TenDichVu = DanhSachDichVu.FirstOrDefault(x => x.IdDichVu == IdDichVu)?.TenDichVu;
         TenChuyenKhoaDaChon = "Nội tổng quát";

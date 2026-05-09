@@ -3,7 +3,7 @@
 @using ClinicBooking.Domain.Enums
 @{
     ViewData["Title"] = "Hàng chờ của tôi";
-    var tenBacSi = Model.HoSo?.HoTen ?? "Bác sĩ";
+    var tenBacSi = "Bác sĩ";
 }
 
 <div class="page-header">
@@ -23,7 +23,7 @@
 </div>
 
 <div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" style="display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap;">
+    <form method="get" class="filter-bar" style="align-items:center;">
         <label class="form-label" style="margin:0; white-space:nowrap;">
             <i class="ph ph-calendar-check"></i> Ca của tôi:
         </label>
@@ -33,7 +33,7 @@
                 <option value="">— Chọn ca —</option>
                 @foreach (var ca in Model.DanhSachCa)
                 {
-                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\:mm}–{ca.GioKetThuc:HH\:mm} | {ca.TenChuyenKhoa}";
+                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\\:mm}–{ca.GioKetThuc:HH\\:mm} | {ca.TenChuyenKhoa}";
                     if (Model.IdCaLamViec == ca.IdCaLamViec)
                     {
                         <option value="@ca.IdCaLamViec" selected>@label</option>
