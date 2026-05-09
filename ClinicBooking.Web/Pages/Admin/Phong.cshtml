@@ -10,525 +10,258 @@
 <div class="section-title">Quản lý phòng khám</div>
 <div class="section-sub">Cấu hình thông tin, trang bị và trạng thái các phòng khám</div>
 
-<!-- View Tabs -->
+<!-- Tabs: Card view / Table view -->
 <div class="tabs" style="margin-bottom:22px">
-    <div class="tab-btn active" onclick="switchView('card',this)">
-        <i class="fa-solid fa-grip"></i> Dạng thẻ
-    </div>
-    <div class="tab-btn" onclick="switchView('table',this)">
-        <i class="fa-solid fa-table-list"></i> Dạng bảng
-    </div>
+  <div class="tab-btn active" onclick="switchView('card',this)"><i class="fa-solid fa-grip"></i> Dạng thẻ</div>
+  <div class="tab-btn" onclick="switchView('table',this)"><i class="fa-solid fa-table-list"></i> Dạng bảng</div>
 </div>
 
 <!-- Toolbar -->
 <div class="toolbar">
-    <div class="toolbar-left">
-        <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Tìm mã phòng, tên phòng..." id="search-rooms">
-        </div>
-        <select class="filter-select" id="filter-status">
-            <option value="">Tất cả trạng thái</option>
-            <option value="hoatdong">Đang hoạt động</option>
-            <option value="baotri">Bảo trì</option>
-        </select>
-    </div>
-    <div class="toolbar-right">
-        <button class="btn btn-primary" onclick="showModal('modal-add-room')">
-            <i class="fa-solid fa-plus"></i> Thêm phòng
-        </button>
-    </div>
+  <div class="toolbar-left">
+    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="search-rooms" placeholder="Tìm mã phòng, tên phòng..."></div>
+    <select class="filter-select" id="filter-status"><option value="">Tất cả trạng thái</option><option value="hoatdong">Đang hoạt động</option><option value="baotri">Bảo trì</option></select>
+  </div>
+  <div class="toolbar-right">
+    <button class="btn btn-primary" onclick="openModal('modal-add-phong')"><i class="fa-solid fa-plus"></i> Thêm phòng</button>
+  </div>
 </div>
 
 <!-- Card View -->
 <div id="view-card">
-    <div class="room-grid" id="room-grid">
-        <div class="room-card">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-success">Hoạt động</span>
-            </div>
-            <div class="rm-code">P101</div>
-            <div class="rm-name">Phòng Tim mạch 1</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>10 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                ECG, Siêu âm tim, Máy đo huyết áp điện tử
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(101)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="setMaintenance(101)">
-                        <i class="fa-solid fa-wrench"></i> Bảo trì
-                    </button>
-                </div>
-            </div>
+  <div class="room-grid">
+    <div class="room-card">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-success">Hoạt động</span></div>
+      <div class="rm-code">P101</div>
+      <div class="rm-name">Phòng Tim mạch 1</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> Sức chứa: <strong>10 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>ECG, Siêu âm tim, Máy đo huyết áp điện tử</div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Bảo trì</button>
         </div>
-
-        <div class="room-card">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-success">Hoạt động</span>
-            </div>
-            <div class="rm-code">P203</div>
-            <div class="rm-name">Phòng Nhi khoa</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>8 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                Cân trẻ em, Đèn sưởi, Máy nebulizer, Nhiệt kế điện tử
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(203)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="setMaintenance(203)">
-                        <i class="fa-solid fa-wrench"></i> Bảo trì
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="room-card">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-success">Hoạt động</span>
-            </div>
-            <div class="rm-code">P305</div>
-            <div class="rm-name">Phòng Tim mạch 2</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>12 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                ECG 12 dẫn, Máy siêu âm tim, Monitor huyết áp
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(305)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="setMaintenance(305)">
-                        <i class="fa-solid fa-wrench"></i> Bảo trì
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="room-card maintenance">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-warning">Bảo trì</span>
-            </div>
-            <div class="rm-code">P102</div>
-            <div class="rm-name">Phòng Sản</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>6 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                Máy siêu âm, Monitor thai, Máy đo huyết áp
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(102)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-success btn-sm" onclick="activateRoom(102)">
-                        <i class="fa-solid fa-play"></i> Kích hoạt
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="room-card">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-success">Hoạt động</span>
-            </div>
-            <div class="rm-code">P201</div>
-            <div class="rm-name">Phòng Nội tổng quát</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>15 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                Máy đo huyết áp, Nhiệt kế, Stethoscope điện tử
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(201)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="setMaintenance(201)">
-                        <i class="fa-solid fa-wrench"></i> Bảo trì
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="room-card">
-            <div style="position:absolute;top:16px;right:16px">
-                <span class="badge badge-success">Hoạt động</span>
-            </div>
-            <div class="rm-code">P401</div>
-            <div class="rm-name">Phòng X-quang</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
-                <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> 
-                Sức chứa: <strong>5 bệnh nhân</strong>
-            </div>
-            <div class="rm-equip">
-                <i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>
-                Máy X-quang kỹ thuật số, Bức tạ chụp
-            </div>
-            <div class="rm-footer">
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="editRoom(401)">
-                        <i class="fa-solid fa-pen"></i> Sửa
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="setMaintenance(401)">
-                        <i class="fa-solid fa-wrench"></i> Bảo trì
-                    </button>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="room-card">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-success">Hoạt động</span></div>
+      <div class="rm-code">P203</div>
+      <div class="rm-name">Phòng Nhi khoa</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> Sức chứa: <strong>8 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>Cân trẻ em, Đèn sưởi, Máy nebulizer, Nhiệt kế điện tử</div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Bảo trì</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-success">Hoạt động</span></div>
+      <div class="rm-code">P305</div>
+      <div class="rm-name">Phòng Tim mạch 2</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> Sức chứa: <strong>12 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>ECG 12 dẫn, Máy siêu âm tim, Monitor huyết áp</div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Bảo trì</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card maintenance">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-warning">Bảo trì</span></div>
+      <div class="rm-code" style="color:var(--text-disabled)">P102</div>
+      <div class="rm-name">Phòng Sản</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--text-disabled)"></i> Sức chứa: <strong>6 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>Máy siêu âm, Monitor thai, Máy đo huyết áp</div>
+      <div style="background:var(--warning-bg);border-radius:4px;padding:7px 10px;font-size:12px;color:var(--warning);margin-bottom:10px">
+        <i class="fa-solid fa-triangle-exclamation"></i> Đang bảo trì — dự kiến xong 15/03
+      </div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-outline btn-sm"><i class="fa-solid fa-check"></i> Mở lại</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-success">Hoạt động</span></div>
+      <div class="rm-code">P201</div>
+      <div class="rm-name">Phòng Nội tổng quát</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> Sức chứa: <strong>15 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>Máy đo huyết áp, Nhiệt kế, Stethoscope điện tử</div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Bảo trì</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-card">
+      <div style="position:absolute;top:16px;right:16px"><span class="badge badge-success">Hoạt động</span></div>
+      <div class="rm-code">P401</div>
+      <div class="rm-name">Phòng X-quang</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12.5px;color:var(--text-secondary)">
+        <i class="fa-solid fa-users" style="color:var(--primary-mid)"></i> Sức chứa: <strong>5 bệnh nhân</strong>
+      </div>
+      <div class="rm-equip"><i class="fa-solid fa-toolbox" style="color:var(--text-disabled);margin-right:4px"></i>Máy X-quang kỹ thuật số, Bức tạ chụp</div>
+      <div class="rm-footer">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i> Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Bảo trì</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add new room card -->
+    <div class="room-card" style="display:flex;align-items:center;justify-content:center;cursor:pointer;border-style:dashed;min-height:160px" onclick="openModal('modal-add-phong')">
+      <div style="text-align:center;color:var(--text-disabled)">
+        <i class="fa-solid fa-plus" style="font-size:28px;margin-bottom:8px;display:block"></i>
+        <div style="font-size:13px;font-weight:600">Thêm phòng mới</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Table View (Hidden by default) -->
-<div id="view-table" style="display: none;">
-    <div class="card">
-        <table>
-            <thead>
-                <tr>
-                    <th>Mã phòng</th>
-                    <th>Tên phòng</th>
-                    <th>Loại phòng</th>
-                    <th>Sức chứa</th>
-                    <th>Trang bị</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>P101</code></td>
-                    <td><strong>Phòng Tim mạch 1</strong></td>
-                    <td><span class="badge badge-primary">Tim mạch</span></td>
-                    <td>10 bệnh nhân</td>
-                    <td style="font-size:12px;color:var(--text-secondary);max-width:200px">ECG, Siêu âm tim, Máy đo huyết áp điện tử</td>
-                    <td><span class="badge badge-success">Hoạt động</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn btn-ghost btn-sm" onclick="editRoom(101)">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="setMaintenance(101)">
-                                <i class="fa-solid fa-wrench"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+<!-- Table View (hidden by default) -->
+<div id="view-table" style="display:none">
+  <div class="card">
+    <table>
+      <thead><tr><th>Mã phòng</th><th>Tên phòng</th><th>Sức chứa</th><th>Trang bị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+      <tbody>
+        <tr><td><strong>P101</strong></td><td>Phòng Tim mạch 1</td><td>10 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">ECG, Siêu âm tim, Máy đo HA</td><td><span class="badge badge-success">Hoạt động</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i></button></div></td></tr>
+        <tr><td><strong>P203</strong></td><td>Phòng Nhi khoa</td><td>8 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">Cân trẻ em, Đèn sưởi, Nebulizer</td><td><span class="badge badge-success">Hoạt động</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i></button></div></td></tr>
+        <tr><td><strong>P305</strong></td><td>Phòng Tim mạch 2</td><td>12 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">ECG 12 dẫn, Siêu âm tim, Monitor HA</td><td><span class="badge badge-success">Hoạt động</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i></button></div></td></tr>
+        <tr><td><strong>P102</strong></td><td>Phòng Sản</td><td>6 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">Máy siêu âm, Monitor thai, Máy đo HA</td><td><span class="badge badge-warning">Bảo trì</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-outline btn-sm"><i class="fa-solid fa-check"></i></button></div></td></tr>
+        <tr><td><strong>P201</strong></td><td>Phòng Nội tổng quát</td><td>15 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">Máy đo huyết áp, Nhiệt kế, Stethoscope</td><td><span class="badge badge-success">Hoạt động</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i></button></div></td></tr>
+        <tr><td><strong>P401</strong></td><td>Phòng X-quang</td><td>5 BN</td><td style="font-size:12px;color:var(--text-secondary);max-width:200px">Máy X-quang kỹ thuật số, Bức tạ chụp</td><td><span class="badge badge-success">Hoạt động</span></td><td><div class="action-btns"><button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-phong')"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="openModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i></button></div></td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<!-- Add Room Modal -->
-<div class="modal-overlay" id="modal-add-room">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">Thêm phòng mới</div>
-            <button class="modal-close" onclick="hideModal('modal-add-room')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="add-room-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Mã phòng *</label>
-                        <input type="text" class="form-control" name="maPhong" placeholder="Ví dụ: P101" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tên phòng *</label>
-                        <input type="text" class="form-control" name="tenPhong" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Loại phòng *</label>
-                        <select class="form-select" name="loaiPhong" required>
-                            <option value="">Chọn loại phòng</option>
-                            <option value="Tim mạch">Tim mạch</option>
-                            <option value="Nhi khoa">Nhi khoa</option>
-                            <option value="Sản">Sản</option>
-                            <option value="Nội tổng quát">Nội tổng quát</option>
-                            <option value="X-quang">X-quang</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Sức chứa (bệnh nhân) *</label>
-                        <input type="number" class="form-control" name="sucChua" min="1" max="50" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Trang bị</label>
-                    <textarea class="form-control" name="trangBi" rows="3" placeholder="Liệt kê các trang bị chính..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" name="trangThai" checked> 
-                        Phòng hoạt động
-                    </label>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-ghost" onclick="hideModal('modal-add-room')">
-                Hủy
-            </button>
-            <button type="button" class="btn btn-primary" onclick="addRoom()">
-                Thêm phòng
-            </button>
-        </div>
+<!-- Modal: Thêm phòng -->
+<div class="modal-overlay" id="modal-add-phong">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-door-open" style="color:var(--primary);margin-right:8px"></i>Thêm phòng khám</div>
+      <div class="modal-close" onclick="closeModal('modal-add-phong')"><i class="fa-solid fa-times"></i></div>
     </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-group"><label>Mã phòng <span class="req">*</span></label><input type="text" class="form-control" placeholder="VD: P101, P203..."><div class="form-hint">Hiển thị trên phiếu hẹn cho bệnh nhân</div></div>
+          <div class="form-group"><label>Tên phòng <span class="req">*</span></label><input type="text" class="form-control" placeholder="VD: Phòng Tim mạch 1"></div>
+        </div>
+        <div class="form-group"><label>Sức chứa tối đa (bệnh nhân)</label><input type="number" class="form-control" placeholder="VD: 10" min="1"></div>
+        <div class="form-group"><label>Trang bị / Thiết bị</label><textarea class="form-control" placeholder="Mô tả thiết bị trong phòng..."></textarea></div>
+        <div class="form-group">
+          <div style="display:flex;align-items:center;gap:12px">
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            <span style="font-size:13.5px;font-weight:500">Phòng đang hoạt động</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-phong')">Hủy</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm phòng</button>
+    </div>
+  </div>
 </div>
 
-<style>
-.section-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-}
+<!-- Modal: Sửa phòng -->
+<div class="modal-overlay" id="modal-edit-phong">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Chỉnh sửa — P101</div>
+      <div class="modal-close" onclick="closeModal('modal-edit-phong')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-group"><label>Mã phòng</label><input type="text" class="form-control" value="P101" disabled></div>
+          <div class="form-group"><label>Tên phòng <span class="req">*</span></label><input type="text" class="form-control" value="Phòng Tim mạch 1"></div>
+        </div>
+        <div class="form-group"><label>Sức chứa tối đa</label><input type="number" class="form-control" value="10"></div>
+        <div class="form-group"><label>Trang bị / Thiết bị</label><textarea class="form-control">ECG, Siêu âm tim, Máy đo huyết áp điện tử</textarea></div>
+        <div class="form-group">
+          <div style="display:flex;align-items:center;gap:12px">
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            <span style="font-size:13.5px;font-weight:500">Phòng đang hoạt động</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-phong')">Hủy</button>
+      <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
 
-.section-sub {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 24px;
-}
-
-.tabs {
-    display: flex;
-    gap: 8px;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 22px;
-}
-
-.tab-btn {
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: .2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.tab-btn:hover {
-    color: var(--text-primary);
-}
-
-.tab-btn.active {
-    color: var(--primary);
-    border-bottom: 2px solid var(--primary);
-    margin-bottom: -2px;
-}
-
-.toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 16px 20px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-}
-
-.toolbar-left {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.search-box {
-    position: relative;
-    width: 250px;
-}
-
-.search-box i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-disabled);
-    font-size: 13px;
-}
-
-.search-box input {
-    padding-left: 36px;
-    width: 100%;
-}
-
-.filter-select {
-    width: 180px;
-}
-
-.room-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 0;
-}
-
-.room-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    transition: .2s;
-    position: relative;
-}
-
-.room-card:hover {
-    box-shadow: var(--shadow-md);
-}
-
-.room-card.maintenance {
-    border-color: #f5c6c6;
-    background: #fffafa;
-}
-
-.room-card .rm-code {
-    font-family: 'Lexend', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 2px;
-}
-
-.room-card .rm-name {
-    font-size: 13.5px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.room-card .rm-equip {
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 12px;
-    border-top: 1px solid var(--subtle);
-    padding-top: 10px;
-}
-
-.room-card .rm-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.action-btns {
-    display: flex;
-    gap: 6px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-</style>
+<!-- Modal: Chuyển bảo trì -->
+<div class="modal-overlay" id="modal-maintenance">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-wrench" style="color:var(--warning);margin-right:8px"></i>Chuyển sang bảo trì</div>
+      <div class="modal-close" onclick="closeModal('modal-maintenance')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+        <strong>P101 — Phòng Tim mạch 1</strong><br>
+        <span style="font-size:12.5px;color:var(--text-secondary)">Đang hoạt động · 10 BN sức chứa</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Lý do bảo trì <span class="req">*</span></label><textarea class="form-control" placeholder="Mô tả lý do bảo trì..."></textarea></div>
+        <div class="form-group"><label>Ngày dự kiến hoàn tất</label><input type="date" class="form-control"></div>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-top:12px"><i class="fa-solid fa-circle-info" style="color:var(--warning)"></i> Phòng sẽ không thể nhận ca làm việc mới trong thời gian bảo trì.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-maintenance')">Hủy</button>
+      <button class="btn btn-danger" onclick="closeModal('modal-maintenance')"><i class="fa-solid fa-wrench"></i> Xác nhận bảo trì</button>
+    </div>
+  </div>
+</div>
 
 <script>
-function switchView(view, element) {
-    // Update tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    element.classList.add('active');
-    
-    // Switch views
-    const cardView = document.getElementById('view-card');
-    const tableView = document.getElementById('view-table');
-    
-    if (view === 'card') {
-        cardView.style.display = 'block';
-        tableView.style.display = 'none';
-    } else {
-        cardView.style.display = 'none';
-        tableView.style.display = 'block';
-    }
+function switchView(type, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-card').style.display = type === 'card' ? 'block' : 'none';
+    document.getElementById('view-table').style.display = type === 'table' ? 'block' : 'none';
 }
 
-function addRoom() {
-    const form = document.getElementById('add-room-form');
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    showToast('Phòng đã được thêm thành công!', 'success');
-    hideModal('modal-add-room');
-    form.reset();
-}
-
-function editRoom(id) {
-    showToast('Chức năng chỉnh sửa đang phát triển', 'info');
-}
-
-function setMaintenance(id) {
-    if (confirm('Bạn có chắc muốn đặt phòng này vào trạng thái bảo trì?')) {
-        showToast('Phòng đã được đặt vào trạng thái bảo trì!', 'warning');
-    }
-}
-
-function activateRoom(id) {
-    if (confirm('Bạn có chắc muốn kích hoạt phòng này?')) {
-        showToast('Phòng đã được kích hoạt!', 'success');
-    }
-}
-
-// Search functionality
 document.getElementById('search-rooms')?.addEventListener('input', function() {
     const query = this.value.toLowerCase();
-    const cards = document.querySelectorAll('.room-card');
-    
-    cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? '' : 'none';
+    document.querySelectorAll('.room-card').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(query) ? '' : 'none';
     });
 });
 
-// Filter functionality
 document.getElementById('filter-status')?.addEventListener('change', function() {
     const status = this.value;
-    const cards = document.querySelectorAll('.room-card');
-    
-    cards.forEach(card => {
+    document.querySelectorAll('.room-card').forEach(card => {
         let show = true;
-        
-        if (status === 'hoatdong' && card.classList.contains('maintenance')) {
-            show = false;
-        } else if (status === 'baotri' && !card.classList.contains('maintenance')) {
-            show = false;
-        }
-        
+        if (status === 'hoatdong' && card.classList.contains('maintenance')) show = false;
+        else if (status === 'baotri' && !card.classList.contains('maintenance')) show = false;
         card.style.display = show ? '' : 'none';
     });
 });

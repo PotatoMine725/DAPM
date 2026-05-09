@@ -58,6 +58,11 @@ public class DashboardModel : PageModel
             if (other == null) return 1;
             return Value.CompareTo(other.Value);
         }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     public class MockDashboardResponse

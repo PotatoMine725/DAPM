@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/admin-shared.css">
+    <link rel="stylesheet" href="/css/_shared.css">
 </head>
 <body data-page="@ViewData["PageName"]">
     <div id="sidebar-slot"></div>
@@ -17,7 +18,106 @@
         </div>
     </div>
 
-    <script src="/js/admin-shared.js"></script>
+    <!-- Settings Overlay -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="sp-header">
+            <div class="sp-title"><i class="fa-solid fa-gear" style="color:var(--primary);margin-right:8px"></i>Cài đặt hệ thống</div>
+            <div class="sp-close" onclick="closeSettings()"><i class="fa-solid fa-times"></i></div>
+        </div>
+        <div class="sp-body">
+            <div class="sp-section">Giao diện</div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Chủ đề màu sắc</div>
+                    <div class="sp-item-sub">Chọn chủ đề cho giao diện quản trị</div>
+                </div>
+                <div class="sp-theme-btns">
+                    <div class="sp-theme active" style="background:#1a5fa8" title="Xanh dương" onclick="setTheme('blue',this)"></div>
+                    <div class="sp-theme" style="background:#0f766e" title="Xanh ngọc" onclick="setTheme('teal',this)"></div>
+                    <div class="sp-theme" style="background:#7c3aed" title="Tím" onclick="setTheme('violet',this)"></div>
+                    <div class="sp-theme" style="background:#dc2626" title="Đỏ" onclick="setTheme('red',this)"></div>
+                    <div class="sp-theme" style="background:#ea580c" title="Cam" onclick="setTheme('orange',this)"></div>
+                </div>
+            </div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Cỡ chữ giao diện</div>
+                    <div class="sp-item-sub">Điều chỉnh kích thước hiển thị</div>
+                </div>
+                <select class="sp-select" id="fontSizeSel" onchange="setFontSize(this.value)">
+                    <option value="14">Nhỏ (14px)</option>
+                    <option value="15" selected>Mặc định (15px)</option>
+                    <option value="16">Lớn (16px)</option>
+                </select>
+            </div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Thu gọn sidebar</div>
+                    <div class="sp-item-sub">Hiện icon, ẩn nhãn điều hướng</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="sidebarCollapse" onchange="toggleSidebarCollapse(this)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="sp-section">Thông báo</div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Thông báo âm thanh</div>
+                    <div class="sp-item-sub">Phát tiếng khi có thông báo mới</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Thông báo ca chờ duyệt</div>
+                    <div class="sp-item-sub">Nhắc khi có ca hợp đồng mới</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="sp-section">Tài khoản</div>
+            <div class="sp-item">
+                <div>
+                    <div class="sp-item-label">Phiên đăng nhập</div>
+                    <div class="sp-item-sub">Tự động đăng xuất sau bao lâu</div>
+                </div>
+                <select class="sp-select">
+                    <option>30 phút</option>
+                    <option selected>1 giờ</option>
+                    <option>4 giờ</option>
+                    <option>Không giới hạn</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Xác nhận đăng xuất</div>
+                <div class="modal-close" onclick="closeModal('logoutModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('logoutModal')">
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="performLogout()">
+                    Đăng xuất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
     <script>
         // Render shell exactly like Admin_Van design
         function renderShell(pageTitle, pageCrumb) {
@@ -116,25 +216,185 @@
         // Initialize shell
         renderShell('@ViewData["PageTitle"]', '');
 
-        // Basic modal functions
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-        function confirmLogout() { 
-            if (confirm('Bạn có chắc muốn đăng xuất?')) {
-                window.location.href = '/Auth/DangXuat';
-            }
-        }
-        function toggleSettings(e) { e.stopPropagation(); }
+        // Avatar dropdown functionality
         function toggleAvatarMenu(e) {
             e.stopPropagation();
-            const dd = document.getElementById('avatarDropdown');
-            if (dd) dd.classList.toggle('open');
+            const dropdown = document.getElementById('avatarDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('open');
+            }
         }
+
         function closeAvatarMenu() {
-            const dd = document.getElementById('avatarDropdown');
-            if (dd) dd.classList.remove('open');
+            const dropdown = document.getElementById('avatarDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('open');
+            }
         }
-        document.addEventListener('click', closeAvatarMenu);
+
+        // ===== SETTINGS PANEL =====
+        function toggleSettings(e) {
+            if (e) e.stopPropagation();
+            const panel = document.getElementById('settingsPanel');
+            const overlay = document.getElementById('settingsOverlay');
+            const isOpen = panel.classList.contains('open');
+            closeAllDropdowns();
+            if (!isOpen) {
+                panel.classList.add('open');
+                overlay.classList.add('open');
+            }
+        }
+        function closeSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const overlay = document.getElementById('settingsOverlay');
+            if (panel) panel.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+        }
+
+        function setTheme(name, el) {
+            const themes = {
+                blue:   { primary: '#1a5fa8', dark: '#155190', mid: '#378add', light: '#e6f1fb' },
+                teal:   { primary: '#0f766e', dark: '#0d6460', mid: '#14b8a6', light: '#e0f7f5' },
+                violet: { primary: '#7c3aed', dark: '#6d28d9', mid: '#a78bfa', light: '#f3e8ff' },
+                red:    { primary: '#dc2626', dark: '#b91c1c', mid: '#f87171', light: '#fee2e2' },
+                orange: { primary: '#ea580c', dark: '#c2410c', mid: '#fb923c', light: '#fff3e0' },
+            };
+            const t = themes[name];
+            if (!t) return;
+            document.documentElement.style.setProperty('--primary', t.primary);
+            document.documentElement.style.setProperty('--primary-dark', t.dark);
+            document.documentElement.style.setProperty('--primary-mid', t.mid);
+            document.documentElement.style.setProperty('--primary-light', t.light);
+            document.querySelectorAll('.sp-theme').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            localStorage.setItem('medadmin_theme', name);
+        }
+
+        function setFontSize(val) {
+            document.documentElement.style.fontSize = val + 'px';
+            localStorage.setItem('medadmin_fontsize', val);
+        }
+
+        function toggleSidebarCollapse(cb) {
+            document.querySelector('.sidebar').classList.toggle('collapsed', cb.checked);
+            document.querySelector('.main').classList.toggle('sidebar-collapsed', cb.checked);
+            localStorage.setItem('medadmin_sidebar_collapsed', cb.checked ? '1' : '0');
+        }
+
+        // Modal functions
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function confirmLogout() {
+            openModal('logoutModal');
+        }
+
+        function performLogout() {
+            closeModal('logoutModal');
+            window.location.href = '/Auth/DangXuat';
+        }
+
+        // ===== CLOSE ALL =====
+        function closeAllDropdowns() {
+            closeAvatarMenu();
+            closeSettings();
+        }
+        document.addEventListener('click', () => closeAllDropdowns());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.open').forEach(o => o.classList.remove('open'));
+                document.body.style.overflow = '';
+                closeSettings();
+            }
+        });
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // ===== RESTORE SETTINGS =====
+        (function restoreSettings() {
+            const theme = localStorage.getItem('medadmin_theme');
+            if (theme) {
+                document.querySelectorAll('.sp-theme').forEach(el => {
+                    const map = { blue:'Xanh dương', teal:'Xanh ngọc', violet:'Tím', red:'Đỏ', orange:'Cam' };
+                    if (el.title === map[theme]) setTheme(theme, el);
+                });
+            }
+            const fs = localStorage.getItem('medadmin_fontsize');
+            if (fs) {
+                document.documentElement.style.fontSize = fs + 'px';
+                const sel = document.getElementById('fontSizeSel');
+                if (sel) sel.value = fs;
+            }
+            const sc = localStorage.getItem('medadmin_sidebar_collapsed');
+            if (sc === '1') {
+                const cb = document.getElementById('sidebarCollapse');
+                if (cb) { cb.checked = true; toggleSidebarCollapse(cb); }
+            }
+        })();
+
+        // Toast notification system
+        window.showToast = function(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-xmark',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+            const container = document.getElementById('toast-container');
+            if (container) {
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+        };
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            const avatarWrap = document.getElementById('avatarWrap');
+            const dropdown = document.getElementById('avatarDropdown');
+            const settingsPanel = document.getElementById('settingsPanel');
+            if (avatarWrap && !avatarWrap.contains(e.target) && dropdown) {
+                dropdown.classList.remove('open');
+            }
+            if (settingsPanel && !settingsPanel.contains(e.target) && !e.target.closest('#settingsBtn')) {
+                settingsPanel.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const query = this.value.trim();
+                        if (query) console.log('Global search for:', query);
+                    }
+                });
+            }
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>

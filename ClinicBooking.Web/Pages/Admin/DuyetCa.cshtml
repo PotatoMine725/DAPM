@@ -7,599 +7,296 @@
     ViewData["PageTitle"] = "Duyệt ca làm việc";
 }
 
-<!-- Pending Shifts Alert -->
-<div class="card" style="border-left: 4px solid var(--warning); background: var(--warning-bg);">
-    <div class="card-header-flex">
+<div class="section-title">Duyệt ca bác sĩ hợp đồng</div>
+<div class="section-sub">Xem xét và phê duyệt yêu cầu đăng ký ca làm việc từ bác sĩ hợp đồng</div>
+
+<!-- Summary bar -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+  <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(230,81,0,.15);display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-clock"></i></div>
+    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--warning)" id="pending-count">5</div><div style="font-size:12px;color:var(--text-secondary)">Chờ duyệt</div></div>
+  </div>
+  <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(46,125,50,.15);display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-check"></i></div>
+    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--success)">28</div><div style="font-size:12px;color:var(--text-secondary)">Đã duyệt tháng này</div></div>
+  </div>
+  <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(198,40,40,.15);display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-times"></i></div>
+    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--danger)">3</div><div style="font-size:12px;color:var(--text-secondary)">Đã từ chối tháng này</div></div>
+  </div>
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary)"><i class="fa-solid fa-file-contract"></i></div>
+    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700">8</div><div style="font-size:12px;color:var(--text-secondary)">Bác sĩ hợp đồng</div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:18px">
+  <!-- Pending list -->
+  <div>
+    <div class="card">
+      <div class="card-header">
         <div>
-            <div class="card-title" style="color: var(--warning);">
-                <i class="fa-solid fa-clock"></i> Ca chờ duyệt
-            </div>
-            <div class="card-sub">Có <span id="pending-count">5</span> ca làm việc đang chờ duyệt</div>
+          <div class="card-title">Danh sách chờ duyệt</div>
+          <div class="card-sub">Sắp xếp theo thứ tự gửi yêu cầu</div>
         </div>
-        <button class="btn btn-primary" onclick="approveAllPending()">
-            <i class="fa-solid fa-check-double"></i> Duyệt tất cả
-        </button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="approveAll()"><i class="fa-solid fa-check-double"></i> Duyệt tất cả</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Bác sĩ</th><th>Chuyên khoa</th><th>Ngày làm</th><th>Ca</th><th>Giờ</th><th>Phòng</th><th>Gửi lúc</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="pending-table">
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#0891b2">L</div><strong>BS. Lê Thanh Tâm</strong></div></td>
+            <td><span class="badge badge-primary">Tim mạch</span></td>
+            <td>12/03/2025</td>
+            <td><span class="badge badge-primary">Sáng</span></td>
+            <td style="font-size:12.5px">07:00–11:00</td>
+            <td>P101</td>
+            <td style="font-size:12px;color:var(--text-secondary)">08/03 08:30</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Lê Thanh Tâm','Tim mạch','12/03','Sáng','07:00–11:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#dc2626">H</div><strong>BS. Hồ Văn Minh</strong></div></td>
+            <td><span class="badge" style="background:#f3e8ff;color:#7c3aed">Thần kinh</span></td>
+            <td>13/03/2025</td>
+            <td><span class="badge badge-success">Chiều</span></td>
+            <td style="font-size:12.5px">13:00–17:00</td>
+            <td>P305</td>
+            <td style="font-size:12px;color:var(--text-secondary)">08/03 09:15</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Hồ Văn Minh','Thần kinh','13/03','Chiều','13:00–17:00','P305','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#059669">N</div><strong>BS. Nguyễn Hải Long</strong></div></td>
+            <td><span class="badge badge-primary">Tim mạch</span></td>
+            <td>14/03/2025</td>
+            <td><span class="badge badge-warning">Tối</span></td>
+            <td style="font-size:12.5px">18:00–22:00</td>
+            <td>P101</td>
+            <td style="font-size:12px;color:var(--text-secondary)">08/03 10:00</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Nguyễn Hải Long','Tim mạch','14/03','Tối','18:00–22:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#7c3aed">P</div><strong>BS. Phùng Minh Đức</strong></div></td>
+            <td><span class="badge badge-primary">Tim mạch</span></td>
+            <td>15/03/2025</td>
+            <td><span class="badge badge-primary">Sáng</span></td>
+            <td style="font-size:12.5px">07:00–11:00</td>
+            <td>P101</td>
+            <td style="font-size:12px;color:var(--text-secondary)">08/03 11:00</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Phùng Minh Đức','Tim mạch','15/03','Sáng','07:00–11:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#0891b2">T</div><strong>BS. Trương Anh Khoa</strong></div></td>
+            <td><span class="badge" style="background:#e8f5e9;color:#2e7d32">Nhi khoa</span></td>
+            <td>16/03/2025</td>
+            <td><span class="badge badge-success">Chiều</span></td>
+            <td style="font-size:12.5px">13:00–17:00</td>
+            <td>P203</td>
+            <td style="font-size:12px;color:var(--text-secondary)">08/03 13:45</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Trương Anh Khoa','Nhi khoa','16/03','Chiều','13:00–17:00','P203','12 slot (20 phút)')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
+
+  <!-- Right: History & Notes -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Quyết định gần đây</div></div>
+      <div class="card-body-pad">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đã duyệt — BS. Vũ Đức Thắng</div>
+              <div class="tl-desc">Ca sáng · T5 · P102 · 8 slot</div>
+              <div class="tl-time">08/03/2025 lúc 08:05</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-icon red"><i class="fa-solid fa-times"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Từ chối — BS. Trương Anh Khoa</div>
+              <div class="tl-desc">Ca chiều · T6 · P305 — Phòng đang bảo trì</div>
+              <div class="tl-time">07/03/2025 lúc 15:30</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đã duyệt — BS. Phùng Minh Đức</div>
+              <div class="tl-desc">Ca sáng · T2 · P101 · 8 slot</div>
+              <div class="tl-time">07/03/2025 lúc 11:20</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
+            <div class="tl-body">
+              <div class="tl-title">Đã duyệt — BS. Hồ Văn Minh</div>
+              <div class="tl-desc">Ca chiều · T3 · P305 · 8 slot</div>
+              <div class="tl-time">06/03/2025 lúc 09:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick note -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Lưu ý duyệt ca</div></div>
+      <div class="card-body-pad" style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);flex-shrink:0;margin-top:2px"></i><span>P305 đang bảo trì — <strong>không duyệt ca</strong> vào phòng này</span></div>
+        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-circle-info" style="color:var(--primary);flex-shrink:0;margin-top:2px"></i><span>BS. Nguyễn Hoàng Nam đang tạm nghỉ — kiểm tra trước khi duyệt</span></div>
+        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-check-circle" style="color:var(--success);flex-shrink:0;margin-top:2px"></i><span>Phòng P101, P203, P102 đang hoạt động bình thường</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Filters -->
-<div class="card">
-    <div class="card-header-flex">
-        <div class="card-title">Danh sách ca chờ duyệt</div>
-        <div class="header-actions">
-            <select class="form-select" style="width: 200px;" id="filter-specialty">
-                <option value="">Tất cả chuyên khoa</option>
-                <option value="Nội tổng quát">Nội tổng quát</option>
-                <option value="Nhi">Nhi</option>
-                <option value="Sản">Sản</option>
-                <option value="Tim mạch">Tim mạch</option>
-            </select>
-            <select class="form-select" style="width: 200px;" id="filter-date">
-                <option value="">Tất cả thời gian</option>
-                <option value="today">Hôm nay</option>
-                <option value="tomorrow">Ngày mai</option>
-                <option value="week">Tuần này</option>
-            </select>
-        </div>
+<!-- Modal: Xác nhận duyệt -->
+<div class="modal-overlay" id="modal-duyet">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-circle-check" style="color:var(--success);margin-right:8px"></i>Xác nhận duyệt ca</div>
+      <div class="modal-close" onclick="closeModal('modal-duyet')"><i class="fa-solid fa-times"></i></div>
     </div>
+    <div class="modal-body">
+      <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:16px;margin-bottom:18px">
+        <div class="info-grid" id="duyet-info">
+          <div class="info-item"><div class="il">Bác sĩ</div><div class="iv" id="d-bs">—</div></div>
+          <div class="info-item"><div class="il">Chuyên khoa</div><div class="iv" id="d-ck">—</div></div>
+          <div class="info-item"><div class="il">Ngày làm</div><div class="iv" id="d-ngay">—</div></div>
+          <div class="info-item"><div class="il">Ca trực</div><div class="iv" id="d-ca">—</div></div>
+          <div class="info-item"><div class="il">Giờ</div><div class="iv" id="d-gio">—</div></div>
+          <div class="info-item"><div class="il">Phòng</div><div class="iv" id="d-phong">—</div></div>
+          <div class="info-item"><div class="il">Số slot</div><div class="iv" id="d-slot">—</div></div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--text-secondary)">Bạn có chắc muốn <strong style="color:var(--success)">phê duyệt</strong> ca này? Hệ thống sẽ gửi thông báo tới bác sĩ ngay lập tức.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-duyet')">Hủy</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-duyet');showToast('Đã duyệt ca thành công!')"><i class="fa-solid fa-check"></i> Xác nhận duyệt</button>
+    </div>
+  </div>
 </div>
 
-<!-- Pending Shifts Grid -->
-<div class="shifts-grid" id="pending-shifts">
-    <div class="shift-card">
-        <div class="shift-header">
-            <div class="shift-info">
-                <div class="shift-title">BS. Nguyen Van A</div>
-                <div class="shift-subtitle">Nội tổng quat • P201</div>
-            </div>
-            <span class="badge badge-warning">Chờ duyệt</span>
-        </div>
-        <div class="shift-time">
-            <i class="fa-solid fa-calendar"></i>
-            <div>
-                <div style="font-weight:600;">Thứ 3, 08/05/2026</div>
-                <div style="font-size:12px;color:var(--text-secondary);">08:00 - 11:00 (3 giờ)</div>
-            </div>
-        </div>
-        <div class="shift-details">
-            <div class="detail-item">
-                <i class="fa-solid fa-user-clock"></i>
-                <span>15 slot trống</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>20 phút/slot</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-robot"></i>
-                <span>Tự động tạo</span>
-            </div>
-        </div>
-        <div class="shift-actions">
-            <button class="btn btn-success btn-sm" onclick="approveShift(3001)">
-                <i class="fa-solid fa-check"></i> Duyệt
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDetails(3001)">
-                <i class="fa-solid fa-eye"></i> Chi tiết
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="rejectShift(3001)">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
+<!-- Modal: Xem chi tiết ca -->
+<div class="modal-overlay" id="modal-detail-ca">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-calendar-day" style="color:var(--primary);margin-right:8px"></i>Chi tiết yêu cầu ca</div>
+      <div class="modal-close" onclick="closeModal('modal-detail-ca')"><i class="fa-solid fa-times"></i></div>
     </div>
-
-    <div class="shift-card">
-        <div class="shift-header">
-            <div class="shift-info">
-                <div class="shift-title">BS. Tran Minh Khoa</div>
-                <div class="shift-subtitle">Tim mạch • P305</div>
-            </div>
-            <span class="badge badge-warning">Chờ duyệt</span>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--primary-light);border-radius:var(--radius-sm);margin-bottom:18px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#0891b2;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700">L</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">BS. Lê Thanh Tâm</div>
+          <div style="font-size:12.5px;color:var(--text-secondary)">Tim mạch · Bác sĩ · 3 năm kinh nghiệm · Hợp đồng</div>
         </div>
-        <div class="shift-time">
-            <i class="fa-solid fa-calendar"></i>
-            <div>
-                <div style="font-weight:600;">Thứ 4, 09/05/2026</div>
-                <div style="font-size:12px;color:var(--text-secondary);">14:00 - 17:00 (3 giờ)</div>
-            </div>
-        </div>
-        <div class="shift-details">
-            <div class="detail-item">
-                <i class="fa-solid fa-user-clock"></i>
-                <span>12 slot trống</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>20 phút/slot</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-robot"></i>
-                <span>Tự động tạo</span>
-            </div>
-        </div>
-        <div class="shift-actions">
-            <button class="btn btn-success btn-sm" onclick="approveShift(3002)">
-                <i class="fa-solid fa-check"></i> Duyệt
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDetails(3002)">
-                <i class="fa-solid fa-eye"></i> Chi tiết
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="rejectShift(3002)">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
+      </div>
+      <div class="info-grid" style="margin-bottom:16px">
+        <div class="info-item"><div class="il">Ngày làm việc</div><div class="iv">12/03/2025 (Thứ 4)</div></div>
+        <div class="info-item"><div class="il">Ca trực</div><div class="iv"><span class="badge badge-primary">Sáng</span></div></div>
+        <div class="info-item"><div class="il">Giờ làm</div><div class="iv">07:00 – 11:00 (4 tiếng)</div></div>
+        <div class="info-item"><div class="il">Phòng yêu cầu</div><div class="iv">P101 — Tim mạch 1</div></div>
+        <div class="info-item"><div class="il">Slot ước tính</div><div class="iv">8 slot (30 phút/slot)</div></div>
+        <div class="info-item"><div class="il">Nguồn tạo</div><div class="iv">Bác sĩ tự đăng ký</div></div>
+        <div class="info-item"><div class="il">Gửi yêu cầu</div><div class="iv">08/03/2025 lúc 08:30</div></div>
+        <div class="info-item"><div class="il">Trạng thái phòng</div><div class="iv"><span class="badge badge-success">Đang hoạt động</span></div></div>
+      </div>
     </div>
-
-    <div class="shift-card">
-        <div class="shift-header">
-            <div class="shift-info">
-                <div class="shift-title">BS. Pham Thu Ha</div>
-                <div class="shift-subtitle">Sản • P102</div>
-            </div>
-            <span class="badge badge-warning">Chờ duyệt</span>
-        </div>
-        <div class="shift-time">
-            <i class="fa-solid fa-calendar"></i>
-            <div>
-                <div style="font-weight:600;">Thứ 5, 10/05/2026</div>
-                <div style="font-size:12px;color:var(--text-secondary);">08:00 - 11:00 (3 giờ)</div>
-            </div>
-        </div>
-        <div class="shift-details">
-            <div class="detail-item">
-                <i class="fa-solid fa-user-clock"></i>
-                <span>15 slot trống</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>20 phút/slot</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Bác sĩ yêu cầu</span>
-            </div>
-        </div>
-        <div class="shift-actions">
-            <button class="btn btn-success btn-sm" onclick="approveShift(3003)">
-                <i class="fa-solid fa-check"></i> Duyệt
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDetails(3003)">
-                <i class="fa-solid fa-eye"></i> Chi tiết
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="rejectShift(3003)">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail-ca')">Đóng</button>
+      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-detail-ca');openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i> Từ chối</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-detail-ca');showToast('Đã duyệt ca thành công!')"><i class="fa-solid fa-check"></i> Duyệt</button>
     </div>
-
-    <div class="shift-card">
-        <div class="shift-header">
-            <div class="shift-info">
-                <div class="shift-title">BS. Le Thanh Tam</div>
-                <div class="shift-subtitle">Nhi • P203</div>
-            </div>
-            <span class="badge badge-warning">Chờ duyệt</span>
-        </div>
-        <div class="shift-time">
-            <i class="fa-solid fa-calendar"></i>
-            <div>
-                <div style="font-weight:600;">Thứ 6, 11/05/2026</div>
-                <div style="font-size:12px;color:var(--text-secondary);">08:00 - 12:00 (4 giờ)</div>
-            </div>
-        </div>
-        <div class="shift-details">
-            <div class="detail-item">
-                <i class="fa-solid fa-user-clock"></i>
-                <span>20 slot trống</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>15 phút/slot</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-robot"></i>
-                <span>Tự động tạo</span>
-            </div>
-        </div>
-        <div class="shift-actions">
-            <button class="btn btn-success btn-sm" onclick="approveShift(3004)">
-                <i class="fa-solid fa-check"></i> Duyệt
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDetails(3004)">
-                <i class="fa-solid fa-eye"></i> Chi tiết
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="rejectShift(3004)">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
-    </div>
-
-    <div class="shift-card">
-        <div class="shift-header">
-            <div class="shift-info">
-                <div class="shift-title">BS. Nguyen Hai Long</div>
-                <div class="shift-subtitle">Nội tổng quát • P201</div>
-            </div>
-            <span class="badge badge-warning">Chờ duyệt</span>
-        </div>
-        <div class="shift-time">
-            <i class="fa-solid fa-calendar"></i>
-            <div>
-                <div style="font-weight:600;">Thứ 7, 12/05/2026</div>
-                <div style="font-size:12px;color:var(--text-secondary);">14:00 - 17:00 (3 giờ)</div>
-            </div>
-        </div>
-        <div class="shift-details">
-            <div class="detail-item">
-                <i class="fa-solid fa-user-clock"></i>
-                <span>12 slot trống</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>20 phút/slot</span>
-            </div>
-            <div class="detail-item">
-                <i class="fa-solid fa-robot"></i>
-                <span>Tự động tạo</span>
-            </div>
-        </div>
-        <div class="shift-actions">
-            <button class="btn btn-success btn-sm" onclick="approveShift(3005)">
-                <i class="fa-solid fa-check"></i> Duyệt
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDetails(3005)">
-                <i class="fa-solid fa-eye"></i> Chi tiết
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="rejectShift(3005)">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
-    </div>
+  </div>
 </div>
 
-<!-- Shift Details Modal -->
-<div class="modal-overlay" id="modal-shift-details">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <div class="modal-title">Chi tiết ca làm việc</div>
-            <button class="modal-close" onclick="hideModal('modal-shift-details')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="shift-detail-view">
-                <div class="detail-section">
-                    <h4>Thông tin ca làm việc</h4>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <label>Mã ca:</label>
-                            <span id="detail-id">#3001</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Bác sĩ:</label>
-                            <span id="detail-doctor">BS. Nguyen Van A</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Chuyên khoa:</label>
-                            <span id="detail-specialty">Nội tổng quát</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Phòng khám:</label>
-                            <span id="detail-room">P201</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Ngày làm việc:</label>
-                            <span id="detail-date">08/05/2026</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Thời gian:</label>
-                            <span id="detail-time">08:00 - 11:00</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Số slot:</label>
-                            <span id="detail-slots">15 slot (20 phút/slot)</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Nguồn tạo:</label>
-                            <span id="detail-source">Tự động</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>Ngày tạo:</label>
-                            <span id="detail-created">07/05/2026 23:00</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h4>Lịch sử thay đổi</h4>
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div style="font-weight:600;">Tạo ca</div>
-                                <div style="font-size:12px;color:var(--text-secondary);">07/05/2026 23:00 - Hệ thống tự động tạo</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-ghost" onclick="hideModal('modal-shift-details')">
-                Đóng
-            </button>
-            <button type="button" class="btn btn-success" onclick="approveShiftFromModal()">
-                <i class="fa-solid fa-check"></i> Duyệt ca
-            </button>
-            <button type="button" class="btn btn-danger" onclick="rejectShiftFromModal()">
-                <i class="fa-solid fa-xmark"></i> Từ chối
-            </button>
-        </div>
+<!-- Modal: Từ chối ca -->
+<div class="modal-overlay" id="modal-tuchoi">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-circle-xmark" style="color:var(--danger);margin-right:8px"></i>Từ chối ca làm việc</div>
+      <div class="modal-close" onclick="closeModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></div>
     </div>
+    <div class="modal-body">
+      <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13px">
+        <strong>BS. Lê Thanh Tâm</strong> · T4 · Ca sáng 07:00–11:00 · P101
+      </div>
+      <div class="form-group">
+        <label>Lý do từ chối <span class="req">*</span></label>
+        <textarea class="form-control" placeholder="Nhập lý do để thông báo cho bác sĩ..." style="min-height:110px"></textarea>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          <span style="font-size:13px">Gửi thông báo SMS cho bác sĩ</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-tuchoi')">Hủy</button>
+      <button class="btn btn-danger" onclick="closeModal('modal-tuchoi');showToast('Đã từ chối ca.')"><i class="fa-solid fa-times"></i> Xác nhận từ chối</button>
+    </div>
+  </div>
 </div>
-
-<style>
-.shifts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-.shift-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow-sm);
-    transition: .2s;
-}
-
-.shift-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-.shift-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-}
-
-.shift-info .shift-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.shift-info .shift-subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 2px;
-}
-
-.shift-time {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--page-bg);
-    border-radius: var(--radius-sm);
-}
-
-.shift-time i {
-    color: var(--primary);
-    font-size: 16px;
-}
-
-.shift-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.detail-item i {
-    width: 16px;
-    text-align: center;
-    color: var(--text-disabled);
-}
-
-.shift-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background: #2e6930;
-}
-
-.shift-detail-view .detail-section {
-    margin-bottom: 24px;
-}
-
-.shift-detail-view .detail-section h4 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--subtle);
-}
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.detail-grid .detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.detail-grid .detail-item label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.detail-grid .detail-item span {
-    font-size: 14px;
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.timeline {
-    position: relative;
-    padding-left: 20px;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--border);
-}
-
-.timeline-item {
-    position: relative;
-    padding-bottom: 20px;
-}
-
-.timeline-dot {
-    position: absolute;
-    left: -14px;
-    top: 4px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--primary);
-    border: 2px solid var(--white);
-}
-
-.timeline-content {
-    background: var(--page-bg);
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-}
-</style>
 
 <script>
-let currentShiftId = null;
-
-function approveShift(shiftId) {
-    if (confirm('Bạn có chắc muốn duyệt ca làm việc này?')) {
-        // Approve shift logic here
-        showToast('Ca làm việc đã được duyệt!', 'success');
-        removeShiftCard(shiftId);
-        updatePendingCount();
+// Override openModal to fill dynamic info for modal-duyet
+const _openModalBase = openModal;
+function openModal(id, bs, ck, ngay, ca, gio, phong, slot) {
+    _openModalBase(id);
+    if (id === 'modal-duyet' && bs) {
+        document.getElementById('d-bs').textContent = bs;
+        document.getElementById('d-ck').textContent = ck || '—';
+        document.getElementById('d-ngay').textContent = ngay ? ngay + '/2025' : '—';
+        document.getElementById('d-ca').textContent = ca || '—';
+        document.getElementById('d-gio').textContent = gio || '—';
+        document.getElementById('d-phong').textContent = phong || '—';
+        document.getElementById('d-slot').textContent = slot || '—';
     }
 }
 
-function rejectShift(shiftId) {
-    const reason = prompt('Lý do từ chối:');
-    if (reason) {
-        // Reject shift logic here
-        showToast('Ca làm việc đã bị từ chối!', 'warning');
-        removeShiftCard(shiftId);
-        updatePendingCount();
-    }
-}
-
-function approveAllPending() {
+function approveAll() {
     if (confirm('Bạn có chắc muốn duyệt tất cả các ca đang chờ?')) {
-        // Approve all shifts logic here
         showToast('Tất cả ca đã được duyệt!', 'success');
-        document.querySelectorAll('.shift-card').forEach(card => card.remove());
-        updatePendingCount();
     }
-}
-
-function viewDetails(shiftId) {
-    currentShiftId = shiftId;
-    // Load shift details
-    showModal('modal-shift-details');
-}
-
-function approveShiftFromModal() {
-    if (currentShiftId) {
-        approveShift(currentShiftId);
-        hideModal('modal-shift-details');
-    }
-}
-
-function rejectShiftFromModal() {
-    if (currentShiftId) {
-        rejectShift(currentShiftId);
-        hideModal('modal-shift-details');
-    }
-}
-
-function removeShiftCard(shiftId) {
-    // Find and remove the shift card
-    const cards = document.querySelectorAll('.shift-card');
-    cards.forEach(card => {
-        if (card.innerHTML.includes(`#${shiftId}`)) {
-            card.remove();
-        }
-    });
-}
-
-function updatePendingCount() {
-    const count = document.querySelectorAll('.shift-card').length;
-    document.getElementById('pending-count').textContent = count;
-    
-    // Update sidebar badge
-    const badge = document.querySelector('.nav-item[data-page="duyetca"] .badge');
-    if (badge) {
-        badge.textContent = count;
-        badge.style.display = count > 0 ? '' : 'none';
-    }
-}
-
-// Filter functionality
-document.getElementById('filter-specialty')?.addEventListener('change', filterShifts);
-document.getElementById('filter-date')?.addEventListener('change', filterShifts);
-
-function filterShifts() {
-    const specialty = document.getElementById('filter-specialty').value;
-    const date = document.getElementById('filter-date').value;
-    const cards = document.querySelectorAll('.shift-card');
-    
-    cards.forEach(card => {
-        let show = true;
-        
-        if (specialty && !card.textContent.includes(specialty)) {
-            show = false;
-        }
-        
-        if (date && !card.textContent.includes(date)) {
-            show = false;
-        }
-        
-        card.style.display = show ? '' : 'none';
-    });
 }
 </script>
