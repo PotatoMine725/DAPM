@@ -1,0 +1,77 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.DanhSachModel
+@{
+    ViewData["Title"] = "Danh sách bác sĩ";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Danh sách bác sĩ</h1>
+        <div class="page-subtitle">Tra cứu bác sĩ theo chuyên khoa, đồng bộ với thiết kế portal y tế.</div>
+    </div>
+</div>
+
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:240px;">
+            <label class="form-label" for="idChuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="idChuyenKhoa" name="idChuyenKhoa">
+                <option value="">-- Tất cả --</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoa == ck.IdChuyenKhoa ? "selected" : null)">@ck.TenChuyenKhoa</option>
+                }
+            </select>
+        </div>
+        <div class="form-group" style="margin:0; min-width:260px;">
+            <label class="form-label" for="tuKhoa">Từ khóa</label>
+            <input class="form-input" id="tuKhoa" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tên bác sĩ..." />
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary"><i class="ph ph-magnifying-glass"></i> Tìm kiếm</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.DanhSachBacSi.Any())
+{
+    <div class="card empty-state" style="padding: var(--space-8);">
+        <div class="empty-state-icon"><i class="ph ph-stethoscope"></i></div>
+        <p>Không tìm thấy bác sĩ phù hợp.</p>
+    </div>
+}
+else
+{
+    <div class="panel-grid-2">
+        @foreach (var bacSi in Model.DanhSachBacSi)
+        {
+            <article class="card doctor-card">
+                <div class="doctor-card__top">
+                    <div class="doctor-avatar">@bacSi.HoTen.Split(' ').LastOrDefault()?[0]</div>
+                    <div class="doctor-card__meta">
+                        <div class="doctor-name">@bacSi.HoTen</div>
+                        <div class="doctor-specialty">@bacSi.TenChuyenKhoa</div>
+                    </div>
+                    <span class="badge badge-success">Đang làm việc</span>
+                </div>
+
+                <div class="doctor-card__body">
+                    <div class="summary-item">
+                        <span class="summary-label">Bằng cấp</span>
+                        <span>@(string.IsNullOrWhiteSpace(bacSi.BangCap) ? "Đang cập nhật" : bacSi.BangCap)</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Kinh nghiệm</span>
+                        <span>@(bacSi.NamKinhNghiem.HasValue ? $"{bacSi.NamKinhNghiem} năm" : "Đang cập nhật")</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Hành động</span>
+                        <span>
+                            <a class="btn btn-secondary btn-sm" href="/BacSi/HoSo?idBacSi=@bacSi.IdBacSi">Xem hồ sơ</a>
+                        </span>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+}

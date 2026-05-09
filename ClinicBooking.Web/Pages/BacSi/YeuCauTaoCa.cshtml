@@ -1,0 +1,87 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.YeuCauTaoCaModel
+@{
+    ViewData["Title"] = "Yêu cầu tạo ca";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Yêu cầu tạo ca</h1>
+        <div class="page-subtitle">Gửi đề xuất ca làm việc mới theo chuyên khoa, phòng và định nghĩa ca.</div>
+    </div>
+</div>
+
+<div class="card" style="max-width: 920px;">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-calendar-plus"></i> Thông tin ca đề xuất</span>
+    </div>
+
+    <form method="post" class="summary-stack">
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" asp-for="IdChuyenKhoa">Chuyên khoa</label>
+                <select class="form-select" asp-for="IdChuyenKhoa">
+                    <option value="">-- Chọn chuyên khoa --</option>
+                    @foreach (var item in Model.DanhSachChuyenKhoa)
+                    {
+                        <option value="@item.IdChuyenKhoa">@item.TenChuyenKhoa</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="IdPhong">Phòng</label>
+                <select class="form-select" asp-for="IdPhong">
+                    <option value="">-- Chọn phòng --</option>
+                    @foreach (var item in Model.DanhSachPhong)
+                    {
+                        <option value="@item.IdPhong">@item.MaPhong - @item.TenPhong</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" asp-for="IdDinhNghiaCa">Định nghĩa ca</label>
+                <select class="form-select" asp-for="IdDinhNghiaCa">
+                    <option value="">-- Chọn ca --</option>
+                    @foreach (var item in Model.DanhSachDinhNghiaCa)
+                    {
+                        <option value="@item.IdDinhNghiaCa">@item.TenCa (@item.GioBatDauMacDinh:HH\:mm - @item.GioKetThucMacDinh:HH\:mm)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="NgayLamViec">Ngày làm việc</label>
+                <input class="form-input" asp-for="NgayLamViec" type="date" />
+            </div>
+        </div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" asp-for="GioBatDau">Giờ bắt đầu</label>
+                <input class="form-input" asp-for="GioBatDau" type="time" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="GioKetThuc">Giờ kết thúc</label>
+                <input class="form-input" asp-for="GioKetThuc" type="time" />
+            </div>
+        </div>
+
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" asp-for="ThoiGianSlot">Thời gian slot</label>
+                <input class="form-input" asp-for="ThoiGianSlot" type="number" min="5" step="5" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="SoSlotToiDa">Số slot tối đa</label>
+                <input class="form-input" asp-for="SoSlotToiDa" type="number" min="1" />
+            </div>
+        </div>
+
+        <div class="action-bar" style="justify-content:flex-end; padding-top: var(--space-2);">
+            <a class="btn btn-secondary" href="/BacSi/DanhSach">Hủy</a>
+            <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+        </div>
+    </form>
+</div>

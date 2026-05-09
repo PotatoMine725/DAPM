@@ -43,9 +43,33 @@
                     </a>
                 </li>
                 <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyCaLamViec") || currentPath.StartsWith("/LeTan/QuanLyCaLamViec") ? "active" : "")"
+                       href="/Admin/QuanLyCaLamViec">
+                        <i class="ph ph-calendar-dots"></i> Quản lý ca làm việc
+                    </a>
+                </li>
+                <li>
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HangCho") ? "active" : "")"
                        href="/LeTan/HangCho">
                         <i class="ph ph-users-three"></i> Hàng chờ khám
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyNghiPhep") || currentPath.StartsWith("/LeTan/NghiPhep") ? "active" : "")"
+                       href="/Admin/QuanLyNghiPhep">
+                        <i class="ph ph-calendar-x"></i> Nghỉ phép
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyBacSi") || currentPath.StartsWith("/LeTan/BacSi") ? "active" : "")"
+                       href="/Admin/QuanLyBacSi">
+                        <i class="ph ph-stethoscope"></i> Quản lý bác sĩ
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyDanhMuc") ? "active" : "")"
+                       href="/Admin/QuanLyDanhMuc">
+                        <i class="ph ph-grid-four"></i> Quản lý danh mục
                     </a>
                 </li>
             }
@@ -53,6 +77,30 @@
             @if (vaiTro == "bac_si")
             {
                 <li class="sidebar-section-label">Bác sĩ</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSach") ? "active" : "")"
+                       href="/BacSi/DanhSach">
+                        <i class="ph ph-stethoscope"></i> Danh sách bác sĩ
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/LichLamViec") ? "active" : "")"
+                       href="/BacSi/LichLamViec">
+                        <i class="ph ph-calendar-dots"></i> Lịch làm việc
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/YeuCauTaoCa") ? "active" : "")"
+                       href="/BacSi/YeuCauTaoCa">
+                        <i class="ph ph-calendar-plus"></i> Yêu cầu tạo ca
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/NghiPhep") ? "active" : "")"
+                       href="/BacSi/NghiPhep">
+                        <i class="ph ph-calendar-x"></i> Nghỉ phép
+                    </a>
+                </li>
                 <li>
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/HangCho") ? "active" : "")"
                        href="/BacSi/HangCho">

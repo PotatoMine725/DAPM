@@ -1,0 +1,55 @@
+@page "{idBacSi:int}"
+@model ClinicBooking.Web.Pages.BacSi.HoSoModel
+@{
+    ViewData["Title"] = "Hồ sơ bác sĩ";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Hồ sơ bác sĩ</h1>
+        <div class="page-subtitle">Xem thông tin hành nghề và chuyên khoa phụ trách.</div>
+    </div>
+</div>
+
+@if (Model.HoSo is null)
+{
+    <div class="card empty-state" style="padding: var(--space-8);">
+        <div class="empty-state-icon"><i class="ph ph-user-circle"></i></div>
+        <p>Không tìm thấy hồ sơ bác sĩ.</p>
+    </div>
+}
+else
+{
+    <div class="page-grid page-grid--2col">
+        <section class="card section-stack">
+            <div class="card-header">
+                <span class="card-title"><i class="ph ph-user-circle"></i> Thông tin cơ bản</span>
+                <span class="badge badge-success">@Model.HoSo.TrangThai</span>
+            </div>
+
+            <div class="summary-stack">
+                <div class="summary-item"><span class="summary-label">Họ tên</span><span>@Model.HoSo.HoTen</span></div>
+                <div class="summary-item"><span class="summary-label">Chuyên khoa</span><span>@Model.HoSo.TenChuyenKhoa</span></div>
+                <div class="summary-item"><span class="summary-label">Loại hợp đồng</span><span>@Model.HoSo.LoaiHopDong</span></div>
+                <div class="summary-item"><span class="summary-label">Bằng cấp</span><span>@(string.IsNullOrWhiteSpace(Model.HoSo.BangCap) ? "Đang cập nhật" : Model.HoSo.BangCap)</span></div>
+                <div class="summary-item"><span class="summary-label">Kinh nghiệm</span><span>@(Model.HoSo.NamKinhNghiem.HasValue ? $"{Model.HoSo.NamKinhNghiem} năm" : "Đang cập nhật")</span></div>
+            </div>
+        </section>
+
+        <section class="card section-stack">
+            <div class="card-header">
+                <span class="card-title"><i class="ph ph-file-text"></i> Tiểu sử</span>
+            </div>
+            <div class="summary-stack">
+                <div class="detail-item detail-span-2">
+                    <div class="detail-label">Ảnh đại diện</div>
+                    <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.HoSo.AnhDaiDien) ? "Chưa cập nhật" : Model.HoSo.AnhDaiDien)</div>
+                </div>
+                <div class="detail-item detail-span-2">
+                    <div class="detail-label">Tiểu sử</div>
+                    <div class="detail-value">@(string.IsNullOrWhiteSpace(Model.HoSo.TieuSu) ? "Chưa cập nhật" : Model.HoSo.TieuSu)</div>
+                </div>
+            </div>
+        </section>
+    </div>
+}

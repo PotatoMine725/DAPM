@@ -1,0 +1,129 @@
+@page "/Admin/QuanLyNghiPhep"
+@model ClinicBooking.Web.Pages.LeTan.NghiPhepModel
+@using ClinicBooking.Domain.Enums
+@using ClinicBooking.Web.Helpers
+@{
+    ViewData["Title"] = "Duyệt nghỉ phép";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Duyệt nghỉ phép</h1>
+        <div class="page-subtitle">Quản lý các đơn nghỉ phép đang chờ xử lý.</div>
+    </div>
+</div>
+
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:240px;">
+            <label class="form-label" for="trangThai">Trạng thái</label>
+            <select class="form-select" id="trangThai" name="trangThai">
+                <option value="">-- Tất cả --</option>
+                @foreach (var st in Enum.GetValues<TrangThaiDuyetDon>())
+                {
+                    <option value="@st" selected="@(Model.TrangThaiLoc == st ? "selected" : null)">@st</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary"><i class="ph ph-funnel"></i> Lọc</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-calendar-x"></i> Danh sách đơn nghỉ phép</span>
+    </div>
+
+    @if (!Model.DanhSach.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-file-text"></i></div>
+            <p>Không có đơn nghỉ phép nào.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Bác sĩ</th>
+                <th>Ca làm</th>
+                <th>Lý do</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Ngày gửi</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var don in Model.DanhSach)
+            {
+                <tr>
+                    <td>
+                        <strong>@don.HoTenBacSi</strong>
+                        <div class="text-muted" style="font-size:12px;">@don.TenChuyenKhoa</div>
+                    </td>
+                    <td>
+                        @don.NgayLamViec.ToString("dd/MM/yyyy")<br />
+                        @don.GioBatDau.ToString("HH:mm") - @don.GioKetThuc.ToString("HH:mm")
+                    </td>
+                    <td>@don.LyDo</td>
+                    <td>@Html.Raw(NghiPhepBadgeHelper.Loai(don.LoaiNghiPhep))</td>
+                    <td>@Html.Raw(NghiPhepBadgeHelper.TrangThai(don.TrangThaiDuyet))</td>
+                    <td>@don.NgayGuiDon.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="table-actions">
+                        @if (don.TrangThaiDuyet == TrangThaiDuyetDon.ChoDuyet)
+                        {
+                            <form method="post" asp-page-handler="Duyet" class="inline-form">
+                                <input type="hidden" name="idDonNghiPhep" value="@don.IdDonNghiPhep" />
+                                <input type="hidden" name="trangThai" value="@Model.TrangThaiLoc" />
+                                <button class="btn btn-sm btn-primary" type="submit">Duyệt</button>
+                            </form>
+                            <button class="btn btn-sm btn-danger" type="button" onclick="openRejectModal(@don.IdDonNghiPhep)">Từ chối</button>
+                        }
+                        else
+                        {
+                            <span class="badge badge-neutral">Đã xử lý</span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="modal-overlay" id="reject-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Từ chối đơn nghỉ phép</span>
+            <button class="modal-close" type="button" onclick="closeModal('reject-modal')">✕</button>
+        </div>
+        <form method="post" asp-page-handler="TuChoi">
+            <div class="modal-body">
+                <input type="hidden" name="idDonNghiPhep" id="reject-id" />
+                <input type="hidden" name="trangThai" value="@Model.TrangThaiLoc" />
+                <div class="form-group">
+                    <label class="form-label" for="LyDoTuChoi">Lý do từ chối</label>
+                    <textarea class="form-input" asp-for="LyDoTuChoi" id="reject-reason" rows="4" placeholder="Nhập lý do từ chối..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('reject-modal')">Hủy</button>
+                <button type="submit" class="btn btn-danger">Từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openRejectModal(id) {
+        document.getElementById('reject-id').value = id;
+        document.getElementById('reject-reason').value = '';
+        openModal('reject-modal');
+    }
+</script>
+}
