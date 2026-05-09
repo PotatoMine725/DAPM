@@ -57,14 +57,10 @@ public class QuanLyLichHenModel : PageModel
         TrangThaiLoc = trangThai;
         TrangHienTai = trang;
 
-        var lichHenTask = _mediator.Send(
+        KetQua = await _mediator.Send(
             new DanhSachTatCaLichHenQuery(ngay, trangThai, trang, SoTrenMoiTrang));
-        var dichVuTask = _mediator.Send(
+        DanhSachDichVu = await _mediator.Send(
             new DanhSachDichVuQuery(1, 100, null, true, null));
-
-        await Task.WhenAll(lichHenTask, dichVuTask);
-        KetQua = lichHenTask.Result;
-        DanhSachDichVu = dichVuTask.Result;
     }
 
     public async Task<IActionResult> OnPostDatLichVangLaiAsync()
