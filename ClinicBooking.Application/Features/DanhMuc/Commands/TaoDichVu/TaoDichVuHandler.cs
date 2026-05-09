@@ -1,6 +1,6 @@
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Common.Exceptions;
-using ClinicBooking.Domain.Entities;
+using DichVuEntity = ClinicBooking.Domain.Entities.DichVu;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +31,7 @@ public sealed class TaoDichVuHandler : IRequestHandler<TaoDichVuCommand, int>
             throw new ConflictException("Ten dich vu da ton tai trong chuyen khoa nay.");
         }
 
-        var entity = new DichVu
+        var entity = new DichVuEntity
         {
             IdChuyenKhoa = request.IdChuyenKhoa,
             TenDichVu = request.TenDichVu,

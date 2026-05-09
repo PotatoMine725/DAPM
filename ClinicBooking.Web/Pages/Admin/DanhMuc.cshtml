@@ -1,0 +1,125 @@
+@page "/Admin/QuanLyDanhMuc"
+@model ClinicBooking.Web.Pages.Admin.DanhMucModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý danh mục</h1>
+        <div class="page-subtitle">Chuyên khoa, dịch vụ, phòng và định nghĩa ca.</div>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid--responsive" style="margin-bottom: var(--space-5);">
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);"><i class="ph ph-stethoscope"></i></div><div><div class="stat-value">@Model.ChuyenKhoa.Count</div><div class="stat-label">Chuyên khoa</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);"><i class="ph ph-briefcase-medical"></i></div><div><div class="stat-value">@Model.DichVu.Count</div><div class="stat-label">Dịch vụ</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);"><i class="ph ph-warehouse"></i></div><div><div class="stat-value">@Model.Phong.Count</div><div class="stat-label">Phòng</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);"><i class="ph ph-clock"></i></div><div><div class="stat-value">@Model.DinhNghiaCa.Count</div><div class="stat-label">Định nghĩa ca</div></div></div>
+</div>
+
+<div class="page-grid page-grid--2col">
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title"><i class="ph ph-stethoscope"></i> Chuyên khoa</span><button class="btn btn-primary btn-sm" type="button" onclick="openChuyenKhoaCreate()">+ Thêm mới</button></div>
+        <table class="data-table">
+            <thead><tr><th>Tên</th><th>Slot</th><th>Hiển thị</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.ChuyenKhoa)
+            {
+                <tr>
+                    <td><strong>@item.TenChuyenKhoa</strong><div class="text-muted" style="font-size:12px;">@item.MoTa</div></td>
+                    <td>@item.ThoiGianSlotMacDinh phút</td>
+                    <td>@(item.HienThi ? "Có" : "Không")</td>
+                    <td class="table-actions">
+                        <button class="btn btn-sm btn-secondary" type="button" onclick='openChuyenKhoaEdit(@item.IdChuyenKhoa, @Html.Raw(JsonSerializer.Serialize(item.TenChuyenKhoa)), @Html.Raw(JsonSerializer.Serialize(item.MoTa ?? string.Empty)), @item.ThoiGianSlotMacDinh, @Html.Raw(JsonSerializer.Serialize(item.HienThi.ToString().ToLowerInvariant())))'>Sửa</button>
+                        <form method="post" asp-page-handler="XoaChuyenKhoa" class="inline-form" onsubmit="return confirm(&quot;Xóa chuyên khoa này?&quot;);"><input type="hidden" name="idChuyenKhoa" value="@item.IdChuyenKhoa" /><button class="btn btn-sm btn-danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title"><i class="ph ph-briefcase-medical"></i> Dịch vụ</span><button class="btn btn-primary btn-sm" type="button" onclick="openDichVuCreate()">+ Thêm mới</button></div>
+        <table class="data-table">
+            <thead><tr><th>Tên</th><th>Chuyên khoa</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.DichVu)
+            {
+                <tr>
+                    <td><strong>@item.TenDichVu</strong><div class="text-muted" style="font-size:12px;">@item.MoTa</div></td>
+                    <td>@item.TenChuyenKhoa</td>
+                    <td>@(item.ThoiGianUocTinh.HasValue ? $"{item.ThoiGianUocTinh} phút" : "—")</td>
+                    <td class="table-actions">
+                        <button class="btn btn-sm btn-secondary" type="button" onclick='openDichVuEdit(@item.IdDichVu, @item.IdChuyenKhoa, @Html.Raw(JsonSerializer.Serialize(item.TenDichVu)), @Html.Raw(JsonSerializer.Serialize(item.MoTa ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(item.ThoiGianUocTinh?.ToString() ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(item.HienThi.ToString().ToLowerInvariant())))'>Sửa</button>
+                        <form method="post" asp-page-handler="XoaDichVu" class="inline-form" onsubmit="return confirm(&quot;Xóa dịch vụ này?&quot;);"><input type="hidden" name="idDichVu" value="@item.IdDichVu" /><button class="btn btn-sm btn-danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title"><i class="ph ph-warehouse"></i> Phòng</span><button class="btn btn-primary btn-sm" type="button" onclick="openPhongCreate()">+ Thêm mới</button></div>
+        <table class="data-table">
+            <thead><tr><th>Mã</th><th>Tên phòng</th><th>Sức chứa</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.Phong)
+            {
+                <tr>
+                    <td><strong>@item.MaPhong</strong></td>
+                    <td>@item.TenPhong</td>
+                    <td>@(item.SucChua?.ToString() ?? "—")</td>
+                    <td>@(item.TrangThai ? "Hoạt động" : "Ngưng")</td>
+                    <td class="table-actions">
+                        <button class="btn btn-sm btn-secondary" type="button" onclick='openPhongEdit(@item.IdPhong, @Html.Raw(JsonSerializer.Serialize(item.MaPhong)), @Html.Raw(JsonSerializer.Serialize(item.TenPhong)), @Html.Raw(JsonSerializer.Serialize(item.SucChua?.ToString() ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(item.TrangBi ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(item.TrangThai.ToString().ToLowerInvariant())))'>Sửa</button>
+                        <form method="post" asp-page-handler="XoaPhong" class="inline-form" onsubmit="return confirm(&quot;Xóa phòng này?&quot;);"><input type="hidden" name="idPhong" value="@item.IdPhong" /><button class="btn btn-sm btn-danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title"><i class="ph ph-clock"></i> Định nghĩa ca</span><button class="btn btn-primary btn-sm" type="button" onclick="openCaCreate()">+ Thêm mới</button></div>
+        <table class="data-table">
+            <thead><tr><th>Tên ca</th><th>Giờ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.DinhNghiaCa)
+            {
+                <tr>
+                    <td><strong>@item.TenCa</strong><div class="text-muted" style="font-size:12px;">@item.MoTa</div></td>
+                    <td>@item.GioBatDauMacDinh.ToString("HH:mm") - @item.GioKetThucMacDinh.ToString("HH:mm")</td>
+                    <td>@(item.TrangThai ? "Hiển thị" : "Ẩn")</td>
+                    <td class="table-actions">
+                        <button class="btn btn-sm btn-secondary" type="button" onclick='openCaEdit(@item.IdDinhNghiaCa, @Html.Raw(JsonSerializer.Serialize(item.TenCa)), @Html.Raw(JsonSerializer.Serialize(item.MoTa ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(item.GioBatDauMacDinh.ToString("HH\\:mm"))), @Html.Raw(JsonSerializer.Serialize(item.GioKetThucMacDinh.ToString("HH\\:mm"))), @Html.Raw(JsonSerializer.Serialize(item.TrangThai.ToString().ToLowerInvariant())))'>Sửa</button>
+                        <form method="post" asp-page-handler="XoaDinhNghiaCa" class="inline-form" onsubmit="return confirm(&quot;Xóa định nghĩa ca này?&quot;);"><input type="hidden" name="idDinhNghiaCa" value="@item.IdDinhNghiaCa" /><button class="btn btn-sm btn-danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<div class="modal-overlay" id="modal-chuyenkhoa"><div class="modal-box modal-box--lg"><div class="modal-header"><span class="modal-title">Chuyên khoa</span><button class="modal-close" type="button" onclick="closeModal('modal-chuyenkhoa')">✕</button></div><form method="post"><input type="hidden" asp-for="IdChuyenKhoa" id="ck-id" /><div class="modal-body"><div class="form-group"><label class="form-label">Tên chuyên khoa</label><input class="form-input" asp-for="TenChuyenKhoa" id="ck-ten" /></div><div class="form-group"><label class="form-label">Mô tả</label><textarea class="form-input" asp-for="MoTaChuyenKhoa" id="ck-mota" rows="3"></textarea></div><div class="form-grid-2"><div class="form-group"><label class="form-label">Slot mặc định</label><input class="form-input" asp-for="ThoiGianSlotMacDinh" id="ck-slot" type="number" /></div><div class="form-group"><label class="form-label">Hiển thị</label><select class="form-select" asp-for="HienThiChuyenKhoa" id="ck-hienthi"><option value="true">Có</option><option value="false">Không</option></select></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeModal('modal-chuyenkhoa')">Đóng</button><button class="btn btn-primary" type="submit" asp-page-handler="TaoChuyenKhoa">Lưu mới</button><button class="btn btn-outline" type="submit" asp-page-handler="CapNhatChuyenKhoa">Cập nhật</button></div></form></div></div>
+<div class="modal-overlay" id="modal-dichvu"><div class="modal-box modal-box--lg"><div class="modal-header"><span class="modal-title">Dịch vụ</span><button class="modal-close" type="button" onclick="closeModal('modal-dichvu')">✕</button></div><form method="post"><input type="hidden" asp-for="IdDichVu" id="dv-id" /><div class="modal-body"><div class="form-group"><label class="form-label">Chuyên khoa</label><select class="form-select" asp-for="IdChuyenKhoaDichVu" id="dv-ck"><option value="">-- Chọn --</option>@foreach (var item in Model.ChuyenKhoa){<option value="@item.IdChuyenKhoa">@item.TenChuyenKhoa</option>}</select></div><div class="form-group"><label class="form-label">Tên dịch vụ</label><input class="form-input" asp-for="TenDichVu" id="dv-ten" /></div><div class="form-group"><label class="form-label">Mô tả</label><textarea class="form-input" asp-for="MoTaDichVu" id="dv-mota" rows="3"></textarea></div><div class="form-grid-2"><div class="form-group"><label class="form-label">Thời gian ước tính</label><input class="form-input" asp-for="ThoiGianUocTinh" id="dv-time" type="number" /></div><div class="form-group"><label class="form-label">Hiển thị</label><select class="form-select" asp-for="HienThiDichVu" id="dv-hienthi"><option value="true">Có</option><option value="false">Không</option></select></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeModal('modal-dichvu')">Đóng</button><button class="btn btn-primary" type="submit" asp-page-handler="TaoDichVu">Lưu mới</button><button class="btn btn-outline" type="submit" asp-page-handler="CapNhatDichVu">Cập nhật</button></div></form></div></div>
+<div class="modal-overlay" id="modal-phong"><div class="modal-box modal-box--lg"><div class="modal-header"><span class="modal-title">Phòng</span><button class="modal-close" type="button" onclick="closeModal('modal-phong')">✕</button></div><form method="post"><input type="hidden" asp-for="IdPhong" id="p-id" /><div class="modal-body"><div class="form-grid-2"><div class="form-group"><label class="form-label">Mã phòng</label><input class="form-input" asp-for="MaPhong" id="p-ma" /></div><div class="form-group"><label class="form-label">Tên phòng</label><input class="form-input" asp-for="TenPhong" id="p-ten" /></div></div><div class="form-grid-2"><div class="form-group"><label class="form-label">Sức chứa</label><input class="form-input" asp-for="SucChua" id="p-succhua" type="number" /></div><div class="form-group"><label class="form-label">Trạng thái</label><select class="form-select" asp-for="TrangThaiPhong" id="p-trangthai"><option value="true">Hoạt động</option><option value="false">Ngưng</option></select></div></div><div class="form-group"><label class="form-label">Trang bị</label><textarea class="form-input" asp-for="TrangBi" id="p-trangbi" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeModal('modal-phong')">Đóng</button><button class="btn btn-primary" type="submit" asp-page-handler="TaoPhong">Lưu mới</button><button class="btn btn-outline" type="submit" asp-page-handler="CapNhatPhong">Cập nhật</button></div></form></div></div>
+<div class="modal-overlay" id="modal-ca"><div class="modal-box modal-box--lg"><div class="modal-header"><span class="modal-title">Định nghĩa ca</span><button class="modal-close" type="button" onclick="closeModal('modal-ca')">✕</button></div><form method="post"><input type="hidden" asp-for="IdDinhNghiaCa" id="ca-id" /><div class="modal-body"><div class="form-group"><label class="form-label">Tên ca</label><input class="form-input" asp-for="TenCa" id="ca-ten" /></div><div class="form-grid-2"><div class="form-group"><label class="form-label">Giờ bắt đầu</label><input class="form-input" asp-for="GioBatDauMacDinh" id="ca-batdau" type="time" /></div><div class="form-group"><label class="form-label">Giờ kết thúc</label><input class="form-input" asp-for="GioKetThucMacDinh" id="ca-ketthuc" type="time" /></div></div><div class="form-group"><label class="form-label">Mô tả</label><textarea class="form-input" asp-for="MoTaCa" id="ca-mota" rows="3"></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select class="form-select" asp-for="TrangThaiCa" id="ca-trangthai"><option value="true">Hiển thị</option><option value="false">Ẩn</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeModal('modal-ca')">Đóng</button><button class="btn btn-primary" type="submit" asp-page-handler="TaoDinhNghiaCa">Lưu mới</button><button class="btn btn-outline" type="submit" asp-page-handler="CapNhatDinhNghiaCa">Cập nhật</button></div></form></div></div>
+
+@section Scripts {
+<script>
+function openChuyenKhoaCreate(){document.getElementById('ck-id').value='';openModal('modal-chuyenkhoa');}
+function openChuyenKhoaEdit(id,ten,mota,slot,h){document.getElementById('ck-id').value=id;document.getElementById('ck-ten').value=ten;document.getElementById('ck-mota').value=mota;document.getElementById('ck-slot').value=slot;document.getElementById('ck-hienthi').value=h;openModal('modal-chuyenkhoa');}
+function openDichVuCreate(){document.getElementById('dv-id').value='';openModal('modal-dichvu');}
+function openDichVuEdit(id,idCK,ten,mota,time,h){document.getElementById('dv-id').value=id;document.getElementById('dv-ck').value=idCK;document.getElementById('dv-ten').value=ten;document.getElementById('dv-mota').value=mota;document.getElementById('dv-time').value=time;document.getElementById('dv-hienthi').value=h;openModal('modal-dichvu');}
+function openPhongCreate(){document.getElementById('p-id').value='';openModal('modal-phong');}
+function openPhongEdit(id,ma,ten,suc,bi,h){document.getElementById('p-id').value=id;document.getElementById('p-ma').value=ma;document.getElementById('p-ten').value=ten;document.getElementById('p-succhua').value=suc;document.getElementById('p-trangbi').value=bi;document.getElementById('p-trangthai').value=h;openModal('modal-phong');}
+function openCaCreate(){document.getElementById('ca-id').value='';openModal('modal-ca');}
+function openCaEdit(id,ten,mota,bd,kt,h){document.getElementById('ca-id').value=id;document.getElementById('ca-ten').value=ten;document.getElementById('ca-mota').value=mota;document.getElementById('ca-batdau').value=bd;document.getElementById('ca-ketthuc').value=kt;document.getElementById('ca-trangthai').value=h;openModal('modal-ca');}
+</script>
+}

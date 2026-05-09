@@ -1,0 +1,177 @@
+@page "/Admin/QuanLyBacSi"
+@model ClinicBooking.Web.Pages.LeTan.BacSiModel
+@using ClinicBooking.Domain.Enums
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Quản lý bác sĩ";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý bác sĩ</h1>
+        <div class="page-subtitle">Tạo, cập nhật và xóa hồ sơ bác sĩ nội bộ.</div>
+    </div>
+</div>
+
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:240px;">
+            <label class="form-label" for="idChuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="idChuyenKhoa" name="idChuyenKhoa">
+                <option value="">-- Tất cả --</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoaLoc == ck.IdChuyenKhoa ? "selected" : null)">@ck.TenChuyenKhoa</option>
+                }
+            </select>
+        </div>
+        <div class="form-group" style="margin:0; min-width:260px;">
+            <label class="form-label" for="tuKhoa">Từ khóa</label>
+            <input class="form-input" id="tuKhoa" name="tuKhoa" value="@Model.TuKhoaLoc" placeholder="Tên bác sĩ..." />
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary"><i class="ph ph-magnifying-glass"></i> Tìm kiếm</button>
+            <button type="button" class="btn btn-secondary" onclick="openModal('doctor-modal'); fillDoctorCreate();">+ Thêm mới</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-stethoscope"></i> Danh sách bác sĩ</span>
+    </div>
+
+    @if (!Model.DanhSach.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-user-circle"></i></div>
+            <p>Chưa có bác sĩ nào.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>Chuyên khoa</th>
+                <th>Hợp đồng</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var bs in Model.DanhSach)
+            {
+                <tr>
+                    <td>
+                        <strong>@bs.HoTen</strong>
+                        <div class="text-muted" style="font-size:12px;">@bs.BangCap</div>
+                    </td>
+                    <td>@bs.TenChuyenKhoa</td>
+                    <td>@bs.LoaiHopDong</td>
+                    <td>@bs.TrangThai</td>
+                    <td class="table-actions">
+                        <button class="btn btn-sm btn-secondary" type="button"
+                                onclick="fillDoctorEdit(@bs.IdBacSi, @bs.IdTaiKhoan, @bs.IdChuyenKhoa, @Html.Raw(JsonSerializer.Serialize(bs.HoTen)), @Html.Raw(JsonSerializer.Serialize(bs.AnhDaiDien ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(bs.BangCap ?? string.Empty)), @(bs.NamKinhNghiem?.ToString() ?? ""), @Html.Raw(JsonSerializer.Serialize(bs.TieuSu ?? string.Empty)), @Html.Raw(JsonSerializer.Serialize(bs.LoaiHopDong)), @Html.Raw(JsonSerializer.Serialize(bs.TrangThai))); openModal('doctor-modal');">Sửa</button>
+                        <form method="post" asp-page-handler="Xoa" class="inline-form" onsubmit="return confirm('Xóa bác sĩ này?');">
+                            <input type="hidden" name="idBacSi" value="@bs.IdBacSi" />
+                            <button class="btn btn-sm btn-danger" type="submit">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="modal-overlay" id="doctor-modal">
+    <div class="modal-box modal-box--lg">
+        <div class="modal-header">
+            <span class="modal-title">Hồ sơ bác sĩ</span>
+            <button class="modal-close" type="button" onclick="closeModal('doctor-modal')">✕</button>
+        </div>
+        <form method="post">
+            <div class="modal-body">
+                <input type="hidden" name="IdBacSi" id="doctor-idbs" />
+                <input type="hidden" name="IdTaiKhoan" id="doctor-idtk" />
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Chuyên khoa</label>
+                        <select class="form-select" name="IdChuyenKhoa" id="doctor-idck">
+                            @foreach (var ck in Model.DanhSachChuyenKhoa)
+                            {
+                                <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Họ tên</label>
+                        <input class="form-input" name="HoTen" id="doctor-hoten" />
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group"><label class="form-label">Ảnh đại diện</label><input class="form-input" name="AnhDaiDien" id="doctor-anh" /></div>
+                    <div class="form-group"><label class="form-label">Bằng cấp</label><input class="form-input" name="BangCap" id="doctor-bangcap" /></div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group"><label class="form-label">Năm kinh nghiệm</label><input class="form-input" name="NamKinhNghiem" id="doctor-namkn" type="number" /></div>
+                    <div class="form-group">
+                        <label class="form-label">Hợp đồng</label>
+                        <select class="form-select" name="LoaiHopDong" id="doctor-loaihd">
+                            <option value="NoiTru">Nội trú</option>
+                            <option value="HopDong">Hợp đồng</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        <select class="form-select" name="TrangThai" id="doctor-trangthai">
+                            <option value="DangLam">Đang làm</option>
+                            <option value="TamNghi">Tạm nghỉ</option>
+                            <option value="NghiViec">Nghỉ việc</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Tiểu sử</label><textarea class="form-input" name="TieuSu" id="doctor-tieusu" rows="3"></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('doctor-modal')">Đóng</button>
+                <button class="btn btn-primary" asp-page-handler="Tao">Lưu mới</button>
+                <button class="btn btn-primary" asp-page-handler="CapNhat">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function Js(v) { return JSON.stringify(v ?? ''); }
+    function fillDoctorCreate() {
+        document.getElementById('doctor-idbs').value = '';
+        document.getElementById('doctor-idtk').value = '';
+        document.getElementById('doctor-idck').value = '';
+        document.getElementById('doctor-hoten').value = '';
+        document.getElementById('doctor-anh').value = '';
+        document.getElementById('doctor-bangcap').value = '';
+        document.getElementById('doctor-namkn').value = '';
+        document.getElementById('doctor-loaihd').value = 'NoiTru';
+        document.getElementById('doctor-trangthai').value = 'DangLam';
+        document.getElementById('doctor-tieusu').value = '';
+    }
+    function fillDoctorEdit(idbs, idtk, idck, hoten, anh, bangcap, namkn, tieusu, loaihd, trangthai) {
+        document.getElementById('doctor-idbs').value = idbs;
+        document.getElementById('doctor-idtk').value = idtk;
+        document.getElementById('doctor-idck').value = idck;
+        document.getElementById('doctor-hoten').value = hoten;
+        document.getElementById('doctor-anh').value = anh;
+        document.getElementById('doctor-bangcap').value = bangcap;
+        document.getElementById('doctor-namkn').value = namkn;
+        document.getElementById('doctor-loaihd').value = loaihd;
+        document.getElementById('doctor-trangthai').value = trangthai;
+        document.getElementById('doctor-tieusu').value = tieusu;
+    }
+</script>
+}

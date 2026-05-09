@@ -1,11 +1,12 @@
 using ClinicBooking.Application.Abstractions.Persistence;
+using ClinicBooking.Application.Features.NghiPhep.Dtos;
 using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicBooking.Application.Features.NghiPhep.Queries.DanhSachDonNghiPhep;
 
-public sealed class DanhSachDonNghiPhepHandler : IRequestHandler<DanhSachDonNghiPhepQuery, IReadOnlyList<object>>
+public sealed class DanhSachDonNghiPhepHandler : IRequestHandler<DanhSachDonNghiPhepQuery, IReadOnlyList<DonNghiPhepResponse>>
 {
     private readonly IAppDbContext _db;
 
@@ -14,14 +15,23 @@ public sealed class DanhSachDonNghiPhepHandler : IRequestHandler<DanhSachDonNghi
         _db = db;
     }
 
-    public async Task<IReadOnlyList<object>> Handle(DanhSachDonNghiPhepQuery request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<DonNghiPhepResponse>> Handle(DanhSachDonNghiPhepQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.DonNghiPhep.AsNoTracking().AsQueryable();
+        var query = _db.DonNghiPhep
+            .AsNoTracking()
+            .Include(x => x.BacSi)
+                .ThenInclude(x => x.ChuyenKhoa)
+            .Include(x => x.CaLamViec)
+            .AsQueryable();
+
         if (request.TrangThaiDuyet.HasValue)
         {
             query = query.Where(x => x.TrangThaiDuyet == request.TrangThaiDuyet.Value);
         }
 
-        return await query.Select(x => new { x.IdDonNghiPhep }).ToListAsync(cancellationToken).ContinueWith(t => (IReadOnlyList<object>)t.Result, cancellationToken);
+        return await query
+            .OrderByDescending(x => x.NgayGuiDon)
+            .Select(x => DonNghiPhepResponse.TuEntity(x))
+            .ToListAsync(cancellationToken);
     }
 }

@@ -1,0 +1,94 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.NghiPhepModel
+@{
+    ViewData["Title"] = "Nghỉ phép";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Nghỉ phép</h1>
+        <div class="page-subtitle">Gửi đơn nghỉ phép từ ca làm việc sẵn có.</div>
+    </div>
+</div>
+
+<div class="page-grid page-grid--2col">
+    <section class="card section-stack">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-calendar-x"></i> Tạo đơn nghỉ phép</span>
+        </div>
+
+        <form method="post" class="summary-stack">
+            <div class="form-group">
+                <label class="form-label" asp-for="TuNgay">Từ ngày</label>
+                <input class="form-input" asp-for="TuNgay" type="date" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="IdCaLamViec">Ca làm việc</label>
+                <select class="form-select" asp-for="IdCaLamViec">
+                    <option value="">-- Chọn ca --</option>
+                    @foreach (var ca in Model.DanhSachCa)
+                    {
+                        <option value="@ca.IdCaLamViec">@ca.NgayLamViec.ToString("dd/MM/yyyy") - @ca.GioBatDau.ToString("HH:mm") đến @ca.GioKetThuc.ToString("HH:mm") (@ca.HoTenBacSi)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="LoaiNghiPhep">Loại nghỉ phép</label>
+                <select class="form-select" asp-for="LoaiNghiPhep">
+                    <option value="TamNghi">Tạm nghỉ</option>
+                    <option value="NghiPhep">Nghỉ phép</option>
+                    <option value="DoiCa">Đổi ca</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="LyDo">Lý do</label>
+                <textarea class="form-input" asp-for="LyDo" rows="4"></textarea>
+            </div>
+
+            <div class="action-bar" style="justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary">Gửi đơn</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card section-stack">
+        <div class="card-header">
+            <span class="card-title"><i class="ph ph-list-bullets"></i> Danh sách ca có thể xin nghỉ</span>
+        </div>
+
+        @if (!Model.DanhSachCa.Any())
+        {
+            <div class="empty-state" style="padding: var(--space-8);">
+                <div class="empty-state-icon"><i class="ph ph-calendar"></i></div>
+                <p>Không có ca làm việc phù hợp.</p>
+            </div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th>Giờ</th>
+                    <th>Bác sĩ</th>
+                    <th>Phòng</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var ca in Model.DanhSachCa)
+                {
+                    <tr>
+                        <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                        <td>@ca.GioBatDau.ToString("HH:mm") - @ca.GioKetThuc.ToString("HH:mm")</td>
+                        <td>@ca.HoTenBacSi</td>
+                        <td>@ca.MaPhong</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+</div>

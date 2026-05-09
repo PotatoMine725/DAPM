@@ -231,6 +231,39 @@ public sealed class CaLamViecQueryServiceTests
     }
 
     [Fact]
+    public async Task ChayReconSlotAsync_DongBoLaiSoSlotDaDat_TheoLichHenVaGiuCho()
+    {
+        using var factory = new TestDbContextFactory();
+        var service = CreateService(factory, out var db);
+        var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
+        var benhNhan = TestDataSeeder.SeedBenhNhan(db);
+
+        db.GiuCho.Add(new GiuCho
+        {
+            IdCaLamViec = ca.IdCaLamViec,
+            IdBenhNhan = benhNhan.IdBenhNhan,
+            SoSlot = 1,
+            GioHetHan = FixedNow.AddMinutes(15),
+            DaGiaiPhong = false,
+            NgayTao = FixedNow
+        });
+        db.LichHen.Add(new LichHen
+        {
+            IdCaLamViec = ca.IdCaLamViec,
+            IdBenhNhan = benhNhan.IdBenhNhan,
+            TrangThai = TrangThaiLichHen.DangKham,
+            NgayTao = FixedNow,
+            MaLichHen = "LH-UT-1"
+        });
+        await db.SaveChangesAsync();
+
+        var updated = await service.ChayReconSlotAsync(CancellationToken.None);
+
+        updated.Should().Be(1);
+        (await db.CaLamViec.AsNoTracking().SingleAsync(x => x.IdCaLamViec == ca.IdCaLamViec)).SoSlotDaDat.Should().Be(2);
+    }
+
+    [Fact]
     public async Task IncrementSoSlotDaDatAsync_HaiRequestDongThoi_ChiMotRequestThanhCong()
     {
         using var factory = new TestDbContextFactory();

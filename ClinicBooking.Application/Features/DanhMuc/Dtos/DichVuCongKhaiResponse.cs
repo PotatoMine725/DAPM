@@ -1,4 +1,4 @@
-using ClinicBooking.Domain.Entities;
+using DichVuEntity = ClinicBooking.Domain.Entities.DichVu;
 
 namespace ClinicBooking.Application.Features.DanhMuc.Dtos;
 
@@ -10,7 +10,7 @@ public sealed record DichVuCongKhaiResponse(
     int? ThoiGianUocTinh,
     string TenChuyenKhoa)
 {
-    public static DichVuCongKhaiResponse TuEntity(DichVu entity) => new(
+    public static DichVuCongKhaiResponse TuEntity(DichVuEntity entity) => new(
         entity.IdDichVu,
         entity.IdChuyenKhoa,
         entity.TenDichVu,
