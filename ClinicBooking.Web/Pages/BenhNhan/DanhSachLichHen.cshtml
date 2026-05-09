@@ -18,29 +18,14 @@
 </div>
 
 <div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
-    <form method="get" class="filter-bar">
-        <div class="form-group" style="margin:0; min-width:220px;">
-            <label class="form-label" for="trangThai">Trạng thái</label>
-            <select class="form-select" name="trangThai" id="trangThai">
-                <option value="">— Tất cả —</option>
-                @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
-                {
-                    <option value="@((int)tt)" selected="@(Model.TrangThaiFilter == tt ? "selected" : null)">
-                        @BadgeHelper.TrangThaiText(tt)
-                    </option>
-                }
-            </select>
-        </div>
-        <div class="filter-actions">
-            <button type="submit" class="btn btn-secondary">
-                <i class="ph ph-funnel"></i> Lọc
-            </button>
-            @if (Model.TrangThaiFilter.HasValue)
-            {
-                <a href="/BenhNhan/DanhSachLichHen" class="btn btn-ghost">Xoá lọc</a>
-            }
-        </div>
-    </form>
+    <div class="filter-tabs" role="tablist" aria-label="Lọc trạng thái lịch hẹn">
+        <a class="filter-tab @(Model.TrangThaiFilter == null ? "active" : "")" href="/BenhNhan/DanhSachLichHen">Tất cả</a>
+        @foreach (TrangThaiLichHen tt in Enum.GetValues(typeof(TrangThaiLichHen)))
+        {
+            <a class="filter-tab @(Model.TrangThaiFilter == tt ? "active" : "")"
+               href="/BenhNhan/DanhSachLichHen?trangThai=@((int)tt)">@BadgeHelper.TrangThaiText(tt)</a>
+        }
+    </div>
 </div>
 
 <div class="card">
@@ -81,6 +66,13 @@
                         <div class="summary-item">
                             <span class="summary-label">Ngày đặt</span>
                             <span>@lh.NgayTao.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="summary-item summary-item--text">
+                            <span class="summary-label">Dự kiến khám</span>
+                            <span>
+                                @{ var gioDuKienBatDau = lh.GioBatDau; var gioDuKienKetThuc = lh.GioBatDau.AddMinutes(30); }
+                                @gioDuKienBatDau.ToString("HH:mm") - @gioDuKienKetThuc.ToString("HH:mm")
+                            </span>
                         </div>
                     </div>
 

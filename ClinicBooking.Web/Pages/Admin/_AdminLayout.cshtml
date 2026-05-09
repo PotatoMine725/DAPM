@@ -282,7 +282,7 @@
         }
 
         // Modal functions
-        function openModal(id) { 
+        function openModal(id) {
             const modal = document.getElementById(id);
             if (modal) {
                 modal.classList.add('open');
@@ -290,7 +290,7 @@
             }
         }
 
-        function closeModal(id) { 
+        function closeModal(id) {
             const modal = document.getElementById(id);
             if (modal) {
                 modal.classList.remove('open');
@@ -353,27 +353,17 @@
         window.showToast = function(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            
             const icons = {
                 success: 'fa-circle-check',
                 error: 'fa-circle-xmark',
                 warning: 'fa-triangle-exclamation',
                 info: 'fa-circle-info'
             };
-            
-            toast.innerHTML = `
-                <i class="fa-solid ${icons[type] || icons.info}"></i>
-                <span>${message}</span>
-            `;
-
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
             const container = document.getElementById('toast-container');
             if (container) {
                 container.appendChild(toast);
-
-                // Animate in
                 setTimeout(() => toast.classList.add('show'), 10);
-
-                // Remove after 4 seconds
                 setTimeout(() => {
                     toast.classList.remove('show');
                     setTimeout(() => toast.remove(), 300);
@@ -386,29 +376,21 @@
             const avatarWrap = document.getElementById('avatarWrap');
             const dropdown = document.getElementById('avatarDropdown');
             const settingsPanel = document.getElementById('settingsPanel');
-            
-            // Close avatar dropdown
             if (avatarWrap && !avatarWrap.contains(e.target) && dropdown) {
                 dropdown.classList.remove('open');
             }
-            
-            // Close settings panel
             if (settingsPanel && !settingsPanel.contains(e.target) && !e.target.closest('#settingsBtn')) {
                 settingsPanel.classList.remove('open');
             }
         });
 
-        // Global search functionality
         document.addEventListener('DOMContentLoaded', function() {
             const globalSearch = document.getElementById('globalSearch');
             if (globalSearch) {
                 globalSearch.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         const query = this.value.trim();
-                        if (query) {
-                            console.log('Global search for:', query);
-                            // Implement global search functionality
-                        }
+                        if (query) console.log('Global search for:', query);
                     }
                 });
             }
