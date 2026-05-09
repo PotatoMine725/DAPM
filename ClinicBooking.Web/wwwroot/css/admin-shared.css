@@ -391,3 +391,18 @@ tr:last-child td{border-bottom:none}
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== AVATAR DROPDOWN ===== */
+.avatar-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:200;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .15s,transform .15s,visibility .15s}
+.avatar-dropdown.open{opacity:1;visibility:visible;transform:translateY(0)}
+.avatar-dropdown-header{display:flex;align-items:center;gap:10px;padding:14px 16px}
+.avd-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0}
+.avd-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.avd-email{font-size:11px;color:var(--text-secondary)}
+.avd-divider{height:1px;background:var(--border);margin:4px 0}
+.avd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:var(--text-primary);cursor:pointer;transition:.15s;text-decoration:none}
+.avd-item:hover{background:var(--page-bg)}
+.avd-item i{width:16px;text-align:center;color:var(--text-secondary)}
+.avd-item-danger{color:var(--danger)}
+.avd-item-danger i{color:var(--danger)}
+.avd-badge{background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:auto}

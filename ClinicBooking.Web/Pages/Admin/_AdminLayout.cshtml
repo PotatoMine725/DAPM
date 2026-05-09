@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+    <script src="/js/admin-shared.js"></script>
     <script>
         // Render shell exactly like Admin_Van design
         function renderShell(pageTitle, pageCrumb) {
@@ -125,8 +125,16 @@
             }
         }
         function toggleSettings(e) { e.stopPropagation(); }
-        function toggleAvatarMenu(e) { e.stopPropagation(); }
-        function closeAvatarMenu() { }
+        function toggleAvatarMenu(e) {
+            e.stopPropagation();
+            const dd = document.getElementById('avatarDropdown');
+            if (dd) dd.classList.toggle('open');
+        }
+        function closeAvatarMenu() {
+            const dd = document.getElementById('avatarDropdown');
+            if (dd) dd.classList.remove('open');
+        }
+        document.addEventListener('click', closeAvatarMenu);
     </script>
     @RenderSection("Scripts", required: false)
 </body>
