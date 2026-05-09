@@ -1,8 +1,45 @@
 # Yêu cầu Module 2 / 3 / 4 — Hoàn thiện hệ thống ClinicBooking
 
 > Ngày lập: 2026-05-05  
+> **Cập nhật: 2026-05-09 — Thêm deadline, yêu cầu BE+FE, và yêu cầu mới từ feature Walk-in**  
 > Tác giả: Module 1 (User + Claude)  
 > Mục đích: Liệt kê rõ từng việc mỗi module còn nợ, interface đã định nghĩa sẵn, và điểm phối hợp cụ thể giữa các module
+
+---
+
+## ⏰ DEADLINE CHUNG: **2026-05-16** (1 tuần kể từ hôm nay)
+
+Mỗi module phải hoàn thành **cả backend lẫn frontend (Web UI)** cho các use case lõi của mình trước ngày này. Xem chi tiết từng module bên dưới.
+
+Tiêu chí "hoàn thành":
+- Handler/Command/Query tương ứng đã implement (không phải stub)
+- Razor Page hoặc API endpoint đã nối data thật (không phải hardcode/mock)
+- Build không lỗi, không break test hiện có
+- Đã tạo PR vào `develop` và tag Module 1 để review DI changes
+
+---
+
+## 🆕 Yêu cầu khẩn từ Module 1 — Feature Walk-in (cần trước 2026-05-12)
+
+Module 1 đang phát triển tính năng **Đặt lịch hộ khách vãng lai tại quầy lễ tân** (xem `docs/Plans/ke-hoach-dat-lich-khach-vang-lai-le-tan.md`). Feature này cần một artifact từ Module 2 chưa tồn tại:
+
+### Cần từ Module 2 — `DanhSachDichVuQuery`
+
+**Vị trí:** `ClinicBooking.Application/Features/DichVu/Queries/DanhSachDichVu/`
+
+**Yêu cầu tối thiểu (Module 1 cần để load dropdown dịch vụ trong modal đặt lịch vãng lai):**
+
+```csharp
+// Query
+public record DanhSachDichVuQuery() : IRequest<List<DichVuResponse>>;
+
+// DTO — chỉ cần 3 trường này
+public record DichVuResponse(int IdDichVu, string TenDichVu, int IdChuyenKhoa);
+
+// Handler — query bảng dich_vu, filter hien_thi = true, sort TenDichVu
+```
+
+**Nếu Module 2 chưa làm kịp trước 2026-05-12:** Module 1 sẽ tự tạo query tạm trong folder `Features/DichVu/` để unblock. Module 2 sau đó merge vào, sửa/mở rộng theo nhu cầu của mình — **không xóa, không đổi tên DTO đã có**.
 
 ---
 
@@ -51,7 +88,9 @@ public interface ICaLamViecQueryService
 
 **Điểm phối hợp quan trọng:** `IncrementSoSlotDaDatAsync` phải dùng atomic SQL UPDATE, không phải Read-Modify-Write, để tránh race condition khi nhiều bệnh nhân đặt cùng ca.
 
-### 2.2 Việc Module 2 cần làm
+### 2.2 Việc Module 2 cần làm — deadline 2026-05-16
+
+> **Yêu cầu:** Mỗi mục phải có cả backend (Handler/Query) lẫn frontend (Razor Page/Admin UI) hoàn chỉnh.
 
 #### A. Verify và nhận quyền sở hữu CaLamViecQueryService
 
@@ -59,32 +98,37 @@ public interface ICaLamViecQueryService
 - [ ] Nếu cần refactor, làm trên branch Module 2 và PR vào develop
 - [ ] Đảm bảo `ChayReconSlotAsync` implement đúng (hiện chưa đầy đủ)
 
-#### B. CRUD CaLamViec qua API
+#### B. `DanhSachDichVuQuery` — **Khẩn, cần trước 2026-05-12**
 
-- [ ] `POST /api/lich-lam-viec` — admin/bác sĩ tạo ca (`TaoCaLamViec`)
-- [ ] `PUT /api/lich-lam-viec/{id}/duyet` — admin duyệt ca (`DuyetCaLamViec`)
-- [ ] `DELETE /api/lich-lam-viec/{id}` — xóa ca (chỉ khi `SoSlotDaDat = 0`)
-- [ ] `GET /api/lich-lam-viec` — danh sách ca (lọc theo ngày, bác sĩ, chuyên khoa)
+- [ ] Tạo `Features/DichVu/Queries/DanhSachDichVu/` với DTO `DichVuResponse(IdDichVu, TenDichVu, IdChuyenKhoa)` (xem yêu cầu chi tiết ở phần "Yêu cầu khẩn" bên trên)
+
+#### C. CRUD CaLamViec — BE + Admin UI
+
+- [ ] **BE:** `POST /api/lich-lam-viec` — admin/bác sĩ tạo ca (`TaoCaLamViec`)
+- [ ] **BE:** `PUT /api/lich-lam-viec/{id}/duyet` — admin duyệt ca (`DuyetCaLamViec`)
+- [ ] **BE:** `DELETE /api/lich-lam-viec/{id}` — xóa ca (chỉ khi `SoSlotDaDat = 0`)
+- [ ] **BE:** `GET /api/lich-lam-viec` — danh sách ca (lọc theo ngày, bác sĩ, chuyên khoa)
+- [ ] **FE (Admin):** Trang `/Admin/QuanLyCaLamViec` — hiển thị lịch theo tuần, tạo/duyệt/hủy ca trực tiếp
 
 > Các CaLamViec ID 3001–3003 đã được seed sẵn bởi Module 1 (dùng cho test/dev). Module 2 KHÔNG xóa các record này.
 
-#### C. CRUD Danh mục
+#### D. CRUD Danh mục — BE + Admin UI
 
-- [ ] `ChuyenKhoa`: CRUD (`Features/DanhMuc/Commands/...`)
-- [ ] `DichVu`: CRUD
-- [ ] `Phong`: CRUD
-- [ ] `DinhNghiaCa`: CRUD
+- [ ] **BE + FE (Admin):** `ChuyenKhoa` — trang `/Admin/QuanLyChuyenKhoa`
+- [ ] **BE + FE (Admin):** `DichVu` — trang `/Admin/QuanLyDichVu`
+- [ ] **BE + FE (Admin):** `Phong` — trang `/Admin/QuanLyPhong`
+- [ ] **BE + FE (Admin):** `DinhNghiaCa` — trang `/Admin/QuanLyDinhNghiaCa`
 
-#### D. Quản lý Bác sĩ
+#### E. Quản lý Bác sĩ — BE + FE
 
-- [ ] CRUD bác sĩ (liên kết `TaiKhoan` vai trò `bac_si`)
-- [ ] Bác sĩ xem ca làm của mình (theo tuần/tháng)
-- [ ] Bác sĩ yêu cầu tạo ca (`YeuCauTaoCa`)
+- [ ] **BE + FE (Admin):** CRUD bác sĩ — trang `/Admin/QuanLyBacSi` (liên kết `TaiKhoan` vai trò `bac_si`)
+- [ ] **BE + FE (BacSi portal):** Bác sĩ xem ca làm của mình — trang `/BacSi/LichLamViec` (theo tuần/tháng)
+- [ ] **BE:** Bác sĩ yêu cầu tạo ca (`YeuCauTaoCa`)
 
-#### E. Nghỉ phép
+#### F. Nghỉ phép — BE + FE
 
-- [ ] `TaoDonNghiPhep` — bác sĩ gửi
-- [ ] `DuyetDonNghiPhep` — admin duyệt/từ chối
+- [ ] **BE + FE (BacSi):** `TaoDonNghiPhep` — bác sĩ gửi đơn từ portal
+- [ ] **BE + FE (Admin):** `DuyetDonNghiPhep` — admin duyệt/từ chối tại `/Admin/QuanLyNghiPhep`
 
 ### 2.3 Ràng buộc không được vi phạm
 
@@ -115,30 +159,30 @@ if (benhNhan is not null)
 
 Module 3 cần **verify logic này còn đúng** với nghiệp vụ của mình (ngưỡng cấm đặt lịch, reset định kỳ, v.v.) và báo lại nếu cần điều chỉnh trước khi merge main.
 
-### 3.2 Việc Module 3 cần làm
+### 3.2 Việc Module 3 cần làm — deadline 2026-05-16
 
-#### A. Hồ sơ khám (`HoSoKham`)
+> **Yêu cầu:** Mỗi mục phải có cả backend (Handler/Query) lẫn frontend (Razor Page) hoàn chỉnh.
 
-- [ ] `POST /api/ho-so-kham` — bác sĩ tạo hồ sơ từ `LichHen` đã check-in (`TaoHoSoKham`)
-  - Input: `IdLichHen`, `ChanDoan`, `LoiDan`, v.v.
+#### A. Hồ sơ khám (`HoSoKham`) — BE + BacSi UI
+
+- [ ] **BE + FE (BacSi):** `TaoHoSoKham` từ lịch hẹn đã check-in
   - Constraint: chỉ tạo được khi `LichHen.TrangThai = DangKham`
-- [ ] `PUT /api/ho-so-kham/{id}` — bác sĩ cập nhật (`CapNhatHoSoKham`)
-- [ ] `GET /api/ho-so-kham/{id}` — xem chi tiết
-- [ ] `GET /api/benh-nhan/{idBenhNhan}/lich-su-kham` — lịch sử khám
+  - FE: Form tạo hồ sơ tích hợp trên trang `/BacSi/QuanLyKham` (đã có skeleton)
+- [ ] **BE + FE (BacSi):** `CapNhatHoSoKham` — bác sĩ cập nhật chẩn đoán, kết quả
+- [ ] **BE + FE (BenhNhan):** Bệnh nhân xem lịch sử khám — trang `/BenhNhan/LichSuKham`
 
-#### B. Kê đơn thuốc (`ToaThuoc`)
+#### B. Kê đơn thuốc (`ToaThuoc`) — BE + BacSi UI
 
-- [ ] `POST /api/ho-so-kham/{id}/toa-thuoc` — bác sĩ kê đơn (`KeToa`)
-- [ ] `GET /api/ho-so-kham/{id}/toa-thuoc` — xem đơn thuốc
-- [ ] `GET /api/benh-nhan/{idBenhNhan}/toa-thuoc` — tất cả đơn của bệnh nhân
+- [ ] **BE + FE (BacSi):** `KeToa` — form kê đơn ngay trong hồ sơ khám (đã có skeleton tại `/BacSi/QuanLyKham`)
+- [ ] **BE + FE (BenhNhan):** Bệnh nhân xem đơn thuốc của mình — trang `/BenhNhan/ToaThuoc`
 
-#### C. Danh mục Thuốc
+#### C. Danh mục Thuốc — BE + Admin UI
 
-- [ ] `GET/POST/PUT/DELETE /api/danh-muc/thuoc` — admin quản lý
+- [ ] **BE + FE (Admin):** CRUD Thuốc — trang `/Admin/QuanLyThuoc`
 
 #### D. Web UI đã có sẵn (cần nối backend)
 
-Trang `/BenhNhan/ThongBao` đã có Razor page. Module 3 (hoặc Module 4) cần nối data thật.
+- [ ] Trang `/BenhNhan/ThongBao` đã có Razor page — nối data thật từ bảng `ThongBao` (phối hợp với Module 4)
 
 ### 3.3 Ràng buộc
 
@@ -230,7 +274,32 @@ public interface IOtpService
 }
 ```
 
-### 4.2 Hạ tầng vận hành — Module 4 cần làm
+### 4.2 Use case lõi Admin — BE + Admin UI — deadline 2026-05-16
+
+> **Yêu cầu:** Mỗi use case phải có cả handler (BE) lẫn Razor Page trong `Pages/Admin/` (FE) hoàn chỉnh. Không chấp nhận hardcode data hay trang placeholder.
+
+#### A. Báo cáo & Thống kê — **Core**
+
+- [ ] **BE:** `BaoCaoLichHenQuery` — số lượt khám theo ngày, theo bác sĩ, theo chuyên khoa; tỷ lệ hủy
+- [ ] **FE (Admin):** Trang `/Admin/BaoCao` — biểu đồ hoặc bảng tổng hợp, lọc theo khoảng ngày
+- [ ] **BE:** `ThongKeTrangThaiLichHenQuery` — tỷ lệ ChoXacNhan / DaXacNhan / HoanThanh / Huy
+
+#### B. Quản lý tài khoản — **Core**
+
+- [ ] **BE:** `KhoaTaiKhoanCommand` — admin khóa/mở tài khoản bất kỳ vai trò
+- [ ] **BE:** `DanhSachTaiKhoanQuery` — lọc theo vai trò, trang thái, từ khóa tên
+- [ ] **FE (Admin):** Trang `/Admin/QuanLyTaiKhoan` — bảng danh sách, nút Khóa/Mở
+
+#### C. Quản lý mẫu thông báo — **Core**
+
+- [ ] **BE:** CRUD `MauThongBao`
+- [ ] **FE (Admin):** Trang `/Admin/QuanLyMauThongBao`
+
+#### D. Dashboard Admin — **Core**
+
+- [ ] **FE (Admin):** Trang `/Admin/Dashboard` (hiện là placeholder) — nối số liệu thật: lịch hẹn hôm nay, hàng chờ, tỷ lệ hoàn thành tuần này
+
+### 4.3 Hạ tầng vận hành — Module 4 cần làm
 
 #### A. Background Jobs — chuyển từ BackgroundService sang Hangfire
 
@@ -280,13 +349,7 @@ services:
     depends_on: [db]
 ```
 
-#### C. Admin features
-
-- [ ] Báo cáo: số lượt khám theo ngày/bác sĩ/chuyên khoa, tỷ lệ hủy (`Features/Admin/Reports/...`)
-- [ ] Danh sách tài khoản, khoá/mở (`Features/Admin/Commands/KhoaTaiKhoan`)
-- [ ] CRUD `MauThongBao`
-
-#### D. Auth bổ sung
+#### B. Auth bổ sung
 
 - [ ] `POST /api/auth/quen-mat-khau` → phát OTP email
 - [ ] `POST /api/auth/dat-lai-mat-khau` → dùng OTP
@@ -296,18 +359,22 @@ services:
 
 ## Tóm tắt — Ma trận ưu tiên
 
-| # | Module | Việc | Ưu tiên | Ảnh hưởng |
-|---|---|---|---|---|
-| 1 | **M4** | Implement `INotificationService` thật (ghi DB ThongBao + email) | 🔴 Cao | Unblock in-app notification toàn hệ thống |
-| 2 | **M4** | Implement `IOtpService` thật (gửi OTP qua email) | 🔴 Cao | Unblock flow đặt lịch thật sự |
-| 3 | **M2** | Verify & nhận quyền sở hữu `CaLamViecQueryService` | 🔴 Cao | Đảm bảo slot logic đúng |
-| 4 | **M2** | API tạo/duyệt CaLamViec | 🟠 Trung bình | Mới có thể test thêm ca ngoài seed |
-| 5 | **M3** | `TaoHoSoKham` từ LichHen đã check-in | 🟠 Trung bình | Hoàn thiện flow bác sĩ |
-| 6 | **M3** | Kê đơn thuốc | 🟠 Trung bình | Hoàn thiện Module 3 |
-| 7 | **M4** | Chuyển background jobs sang Hangfire | 🟡 Thấp | Hiện `BackgroundService` đã chạy đủ |
-| 8 | **M4** | Docker + CI/CD | 🟡 Thấp | Cần cho deployment thật |
-| 9 | **M4** | Admin reports | 🟡 Thấp | Nice-to-have |
-| 10 | **M3** | Confirm `SoLanHuyMuon` logic | 🟡 Cần xác nhận | Module 1 đang write, cần verify |
+| # | Module | Việc | Yêu cầu | Deadline | Ảnh hưởng |
+|---|---|---|---|---|---|
+| 1 | **M2** | `DanhSachDichVuQuery` (DTO tối thiểu) | BE | **2026-05-12** | Unblock feature Walk-in Module 1 |
+| 2 | **M4** | Implement `INotificationService` thật (ghi DB ThongBao + email) | BE | 2026-05-16 | Unblock in-app notification toàn hệ thống |
+| 3 | **M4** | Implement `IOtpService` thật (gửi OTP qua email) | BE | 2026-05-16 | Unblock flow đặt lịch thật sự |
+| 4 | **M2** | Verify & nhận quyền sở hữu `CaLamViecQueryService` | BE | 2026-05-16 | Đảm bảo slot logic đúng |
+| 5 | **M2** | CRUD CaLamViec + Admin UI `/Admin/QuanLyCaLamViec` | BE + FE | 2026-05-16 | Mới có thể test thêm ca ngoài seed |
+| 6 | **M2** | CRUD Danh mục (ChuyenKhoa, DichVu, Phong) + Admin UI | BE + FE | 2026-05-16 | Hoàn thiện danh mục hệ thống |
+| 7 | **M2** | CRUD BacSi (Admin) + BacSi xem lịch `/BacSi/LichLamViec` | BE + FE | 2026-05-16 | Hoàn thiện Module 2 |
+| 8 | **M3** | `TaoHoSoKham` + `KeToa` từ trang `/BacSi/QuanLyKham` | BE + FE | 2026-05-16 | Hoàn thiện flow bác sĩ |
+| 9 | **M3** | Bệnh nhân xem lịch sử khám + đơn thuốc | BE + FE | 2026-05-16 | Hoàn thiện Module 3 |
+| 10 | **M4** | Admin Dashboard thật + Báo cáo + Quản lý tài khoản | BE + FE | 2026-05-16 | Core admin use cases |
+| 11 | **M4** | CRUD MauThongBao | BE + FE | 2026-05-16 | Quản lý thông báo |
+| 12 | **M3** | Confirm `SoLanHuyMuon` logic | BE | 2026-05-16 | Module 1 đang write, cần verify |
+| 13 | **M4** | Chuyển background jobs sang Hangfire | BE | sau deadline | Hiện `BackgroundService` đã chạy đủ |
+| 14 | **M4** | Docker + CI/CD | Infra | sau deadline | Cần cho deployment thật |
 
 ---
 

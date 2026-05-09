@@ -5,9 +5,26 @@
     ViewData["Title"] = "Quản lý lịch hẹn";
 }
 
-<div class="page-header">
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
     <h1 class="page-title">Quản lý lịch hẹn</h1>
+    <button class="btn btn-primary" onclick="openModal('modal-dat-lich-vang-lai')">
+        <i class="ph ph-plus"></i> Đặt lịch mới
+    </button>
 </div>
+
+<!-- Thông báo -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" style="margin-bottom:var(--space-3);">
+        <i class="ph ph-check-circle"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" style="margin-bottom:var(--space-3);">
+        <i class="ph ph-warning"></i> @TempData["ErrorMessage"]
+    </div>
+}
 
 <!-- Filter bar -->
 <div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
@@ -85,6 +102,12 @@
                         <td>@lh.SoSlot</td>
                         <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
                         <td class="table-actions">
+                            <!-- Nút chi tiết -->
+                            <button class="btn btn-sm btn-ghost" title="Xem chi tiết"
+                                    onclick="xemChiTiet(@lh.IdLichHen)">
+                                <i class="ph ph-eye"></i>
+                            </button>
+
                             @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan)
                             {
                                 <form method="post" asp-page-handler="XacNhan" style="display:inline;">
@@ -92,13 +115,24 @@
                                     <button class="btn btn-sm btn-secondary">Xác nhận</button>
                                 </form>
                             }
+
                             @if (lh.TrangThai == TrangThaiLichHen.DaXacNhan)
                             {
-                                <form method="post" asp-page-handler="CheckIn" style="display:inline;">
-                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
-                                    <button class="btn btn-sm btn-primary">Check-in</button>
-                                </form>
+                                @if (!lh.DaCheckIn)
+                                {
+                                    <form method="post" asp-page-handler="CheckIn" style="display:inline;">
+                                        <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
+                                        <button class="btn btn-sm btn-primary">Check-in</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm" disabled style="opacity:.5;">
+                                        <i class="ph ph-check"></i> Đã check-in
+                                    </button>
+                                }
                             }
+
                             @if (lh.TrangThai is TrangThaiLichHen.ChoXacNhan or TrangThaiLichHen.DaXacNhan)
                             {
                                 <button class="btn btn-sm btn-danger"
@@ -122,7 +156,6 @@
                         <i class="ph ph-caret-left"></i> Trước
                     </a>
                 }
-
                 @for (int i = 1; i <= Model.KetQua.TongTrang; i++)
                 {
                     <a href="?ngay=@(Model.NgayLoc.HasValue ? Model.NgayLoc.Value.ToString("yyyy-MM-dd") : "")&trangThai=@Model.TrangThaiLoc&trang=@i"
@@ -130,7 +163,6 @@
                         @i
                     </a>
                 }
-
                 @if (Model.KetQua.CoTrangSau)
                 {
                     <a href="?ngay=@(Model.NgayLoc.HasValue ? Model.NgayLoc.Value.ToString("yyyy-MM-dd") : "")&trangThai=@Model.TrangThaiLoc&trang=@(Model.KetQua.Trang + 1)"
@@ -143,7 +175,7 @@
     }
 </div>
 
-<!-- Modal huỷ lịch -->
+<!-- ===== MODAL HUỶ LỊCH ===== -->
 <div class="modal-overlay" id="modal-huy">
     <div class="modal-box">
         <div class="modal-header">
@@ -167,10 +199,366 @@
     </div>
 </div>
 
+<!-- ===== MODAL ĐẶT LỊCH VÃNG LAI ===== -->
+<div class="modal-overlay" id="modal-dat-lich-vang-lai">
+    <div class="modal-box" style="max-width:560px;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="ph ph-calendar-plus"></i> Đặt lịch mới tại quầy</span>
+            <button class="modal-close" onclick="dongModalDatLich()">✕</button>
+        </div>
+        <form method="post" asp-page-handler="DatLichVangLai" id="form-dat-lich-vang-lai">
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+
+                <!-- BƯỚC 1: Tìm bệnh nhân -->
+                <div>
+                    <div class="form-section-label" style="font-weight:600;color:var(--primary);margin-bottom:var(--space-3);">
+                        Bước 1 — Thông tin bệnh nhân
+                    </div>
+
+                    <!-- Lookup SDT -->
+                    <div class="form-group" style="display:flex;gap:var(--space-2);align-items:flex-end;">
+                        <div style="flex:1;">
+                            <label class="form-label">Số điện thoại <span class="required-mark">*</span></label>
+                            <input type="tel" class="form-input" id="vl-sdt" placeholder="0912345678"
+                                   maxlength="10" oninput="resetTimKiem()" />
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="timBenhNhan()" id="btn-tim-bn">
+                            <i class="ph ph-magnifying-glass"></i> Tìm
+                        </button>
+                    </div>
+
+                    <!-- Kết quả tìm: bệnh nhân cũ -->
+                    <div id="vl-ket-qua-cu" style="display:none;border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);margin-top:var(--space-2);background:var(--bg-subtle);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:600;" id="vl-ten-bn-cu"></div>
+                                <div style="font-size:0.85em;color:var(--text-muted);" id="vl-ngaysinh-bn-cu"></div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-2);">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="dungHoSoCu()">
+                                    <i class="ph ph-check"></i> Dùng hồ sơ này
+                                </button>
+                                <button type="button" class="btn btn-sm btn-ghost" onclick="nhapMoi()">
+                                    Nhập mới
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lỗi tìm kiếm -->
+                    <div id="vl-loi-tim" style="display:none;color:var(--danger);font-size:0.875em;margin-top:var(--space-2);"></div>
+
+                    <!-- Form bệnh nhân mới -->
+                    <div id="vl-form-moi" style="display:none;margin-top:var(--space-3);display:none;flex-direction:column;gap:var(--space-3);">
+                        <div class="form-group">
+                            <label class="form-label">Họ tên <span class="required-mark">*</span></label>
+                            <input type="text" class="form-input" name="VangLai.HoTen" id="vl-hoten"
+                                   placeholder="Nguyễn Văn A" />
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                            <div class="form-group">
+                                <label class="form-label">Ngày sinh</label>
+                                <input type="date" class="form-input" name="VangLai.NgaySinh" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Giới tính</label>
+                                <select class="form-select" name="VangLai.GioiTinh">
+                                    <option value="">-- Chọn --</option>
+                                    <option value="0">Nam</option>
+                                    <option value="1">Nữ</option>
+                                    <option value="2">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CCCD <span style="font-weight:400;color:var(--text-muted);">(tùy chọn)</span></label>
+                            <input type="text" class="form-input" name="VangLai.Cccd" placeholder="012345678901" maxlength="12" />
+                        </div>
+                    </div>
+
+                    <!-- Xác nhận đã chọn hồ sơ cũ -->
+                    <div id="vl-xac-nhan-cu" style="display:none;color:var(--success);font-size:0.875em;margin-top:var(--space-2);">
+                        <i class="ph ph-check-circle"></i> <span id="vl-xac-nhan-ten"></span>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="resetTimKiem()" style="margin-left:var(--space-2);">Thay đổi</button>
+                    </div>
+
+                    <input type="hidden" name="VangLai.IdBenhNhanCu" id="vl-id-bn-cu" />
+                    <input type="hidden" name="VangLai.SoDienThoai" id="vl-sdt-hidden" />
+                </div>
+
+                <!-- BƯỚC 2: Thông tin lịch hẹn -->
+                <div>
+                    <div class="form-section-label" style="font-weight:600;color:var(--primary);margin-bottom:var(--space-3);">
+                        Bước 2 — Thông tin lịch hẹn
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                        <div class="form-group">
+                            <label class="form-label">Ngày khám <span class="required-mark">*</span></label>
+                            <input type="date" class="form-input" name="VangLai.NgayLamViec" required
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Giờ mong muốn <span class="required-mark">*</span></label>
+                            <select class="form-select" name="VangLai.GioMongMuon" required>
+                                <option value="">-- Chọn giờ --</option>
+                                @{
+                                    var gioList = new[] { "07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30" };
+                                    foreach (var g in gioList)
+                                    {
+                                        <option value="@g">@g</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dịch vụ <span class="required-mark">*</span></label>
+                        <select class="form-select" name="VangLai.IdDichVu" required>
+                            <option value="">-- Chọn dịch vụ --</option>
+                            @foreach (var dv in Model.DanhSachDichVu)
+                            {
+                                <option value="@dv.IdDichVu">@dv.TenDichVu</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Triệu chứng</label>
+                        <textarea class="form-input" name="VangLai.TrieuChung" rows="2"
+                                  placeholder="Mô tả triệu chứng..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="dongModalDatLich()">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="btn-xac-nhan-dat">
+                    <i class="ph ph-calendar-check"></i> Xác nhận đặt lịch
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MODAL CHI TIẾT LỊCH HẸN ===== -->
+<div class="modal-overlay" id="modal-chi-tiet">
+    <div class="modal-box" style="max-width:600px;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="ph ph-info"></i> Chi tiết lịch hẹn</span>
+            <button class="modal-close" onclick="closeModal('modal-chi-tiet')">✕</button>
+        </div>
+        <div class="modal-body" id="chi-tiet-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+            <div style="text-align:center;padding:var(--space-6);color:var(--text-muted);">
+                <i class="ph ph-spinner" style="font-size:2rem;"></i>
+                <p>Đang tải...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" onclick="closeModal('modal-chi-tiet')">Đóng</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
+// ===== HUỶ LỊCH =====
 function setHuyTarget(id) {
     document.getElementById('huy-id').value = id;
+}
+
+// ===== ĐẶT LỊCH VÃNG LAI =====
+let idBenhNhanDaChon = null;
+
+function dongModalDatLich() {
+    closeModal('modal-dat-lich-vang-lai');
+    resetTimKiem();
+}
+
+function resetTimKiem() {
+    idBenhNhanDaChon = null;
+    document.getElementById('vl-id-bn-cu').value = '';
+    document.getElementById('vl-ket-qua-cu').style.display = 'none';
+    document.getElementById('vl-form-moi').style.display = 'none';
+    document.getElementById('vl-xac-nhan-cu').style.display = 'none';
+    document.getElementById('vl-loi-tim').style.display = 'none';
+    document.getElementById('vl-hoten').required = false;
+}
+
+function dungHoSoCu() {
+    const tenEl = document.getElementById('vl-ten-bn-cu');
+    // idBenhNhan cần lấy từ response — lưu trong data attribute
+    const id = document.getElementById('vl-ket-qua-cu').dataset.idBenhNhan;
+    document.getElementById('vl-id-bn-cu').value = id || '';
+    document.getElementById('vl-xac-nhan-ten').textContent = `Sử dụng hồ sơ: ${tenEl.textContent}`;
+    document.getElementById('vl-xac-nhan-cu').style.display = 'block';
+    document.getElementById('vl-ket-qua-cu').style.display = 'none';
+    document.getElementById('vl-form-moi').style.display = 'none';
+    document.getElementById('vl-hoten').required = false;
+}
+
+function nhapMoi() {
+    idBenhNhanDaChon = null;
+    document.getElementById('vl-id-bn-cu').value = '';
+    document.getElementById('vl-ket-qua-cu').style.display = 'none';
+    document.getElementById('vl-xac-nhan-cu').style.display = 'none';
+    document.getElementById('vl-form-moi').style.display = 'flex';
+    document.getElementById('vl-hoten').required = true;
+    document.getElementById('vl-hoten').focus();
+}
+
+async function timBenhNhan() {
+    const sdt = document.getElementById('vl-sdt').value.trim();
+    if (!sdt) { alert('Vui lòng nhập số điện thoại.'); return; }
+
+    const btn = document.getElementById('btn-tim-bn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ph ph-spinner-gap"></i> Đang tìm...';
+
+    try {
+        const resp = await fetch(`?handler=TimBenhNhan&sdt=${encodeURIComponent(sdt)}`);
+        const json = await resp.json();
+
+        document.getElementById('vl-sdt-hidden').value = sdt;
+
+        if (json.error) {
+            document.getElementById('vl-loi-tim').textContent = json.error;
+            document.getElementById('vl-loi-tim').style.display = 'block';
+            document.getElementById('vl-ket-qua-cu').style.display = 'none';
+        } else if (json.found && json.data) {
+            const bn = json.data;
+            document.getElementById('vl-ten-bn-cu').textContent = bn.hoTen;
+            document.getElementById('vl-ngaysinh-bn-cu').textContent =
+                bn.ngaySinh ? `Ngày sinh: ${formatDate(bn.ngaySinh)}` : '';
+            const kcEl = document.getElementById('vl-ket-qua-cu');
+            kcEl.dataset.idBenhNhan = bn.idBenhNhan;
+            kcEl.style.display = 'block';
+            document.getElementById('vl-form-moi').style.display = 'none';
+            document.getElementById('vl-loi-tim').style.display = 'none';
+        } else {
+            nhapMoi();
+        }
+    } catch (e) {
+        document.getElementById('vl-loi-tim').textContent = 'Lỗi kết nối, vui lòng thử lại.';
+        document.getElementById('vl-loi-tim').style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Tìm';
+    }
+}
+
+// ===== XEM CHI TIẾT LỊCH HẸN =====
+async function xemChiTiet(idLichHen) {
+    openModal('modal-chi-tiet');
+    const body = document.getElementById('chi-tiet-body');
+    body.innerHTML = '<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);"><p>Đang tải...</p></div>';
+
+    try {
+        const resp = await fetch(`?handler=ChiTietLichHen&id=${idLichHen}`);
+        const d = await resp.json();
+        if (d.error) { body.innerHTML = `<p class="text-danger">${d.error}</p>`; return; }
+
+        const coTheGanBacSi = (d.trangThai === 'ChoXacNhan' || d.trangThai === 0 ||
+                               d.trangThai === 'DaXacNhan' || d.trangThai === 1) && !d.daCheckIn;
+
+        body.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                <div><div class="info-label">Mã lịch hẹn</div><div class="info-val">${d.maLichHen}</div></div>
+                <div><div class="info-label">Trạng thái</div><div class="info-val">${d.trangThai}</div></div>
+                <div><div class="info-label">Bệnh nhân</div><div class="info-val">${d.tenBenhNhan}</div></div>
+                <div><div class="info-label">SĐT</div><div class="info-val">${d.soDienThoai}</div></div>
+                <div><div class="info-label">Dịch vụ</div><div class="info-val">${d.tenDichVu}</div></div>
+                <div><div class="info-label">Chuyên khoa</div><div class="info-val">${d.tenChuyenKhoa}</div></div>
+                <div><div class="info-label">Ngày khám</div><div class="info-val">${formatDate(d.ngayLamViec)}</div></div>
+                <div><div class="info-label">Giờ</div><div class="info-val">${d.gioBatDau?.substring(0,5)} – ${d.gioKetThuc?.substring(0,5)}</div></div>
+                ${d.trieuChung ? `<div class="col-span-2"><div class="info-label">Triệu chứng</div><div class="info-val">${d.trieuChung}</div></div>` : ''}
+                ${d.bacSiMongMuonNote ? `<div class="col-span-2"><div class="info-label">Ghi chú bác sĩ mong muốn</div><div class="info-val" style="color:var(--warning-dark,#92400e);">${d.bacSiMongMuonNote}</div></div>` : ''}
+                <div class="col-span-2"><div class="info-label">Bác sĩ được gán</div><div class="info-val" id="cd-bac-si-da-gan">${d.tenBacSiDuocGan ?? '<span style="color:var(--text-muted);">Chưa gán</span>'}</div></div>
+            </div>
+
+            ${coTheGanBacSi ? `
+            <hr style="margin:var(--space-2) 0;">
+            <div>
+                <div style="font-weight:600;color:var(--primary);margin-bottom:var(--space-2);">Tìm & gán bác sĩ chỉ định</div>
+                <div style="display:flex;gap:var(--space-2);align-items:flex-end;">
+                    <div style="flex:1;">
+                        <input type="text" class="form-input" id="cd-ten-bac-si" placeholder="Nhập tên bác sĩ..." oninput="timBacSiKhaDung(${idLichHen}, ${d.idChuyenKhoa})" />
+                    </div>
+                    <button class="btn btn-secondary" onclick="timBacSiKhaDung(${idLichHen}, ${d.idChuyenKhoa})">
+                        <i class="ph ph-magnifying-glass"></i> Tìm
+                    </button>
+                </div>
+                <div id="cd-ds-bac-si" style="margin-top:var(--space-2);max-height:200px;overflow-y:auto;"></div>
+                <div id="cd-loi-gan" style="display:none;color:var(--danger);font-size:0.875em;margin-top:var(--space-2);"></div>
+                <input type="hidden" id="cd-id-lich-hen" value="${idLichHen}" />
+            </div>` : ''}
+        `;
+    } catch (e) {
+        body.innerHTML = '<p style="color:var(--danger);">Lỗi kết nối.</p>';
+    }
+}
+
+async function timBacSiKhaDung(idLichHen) {
+    const ten = (document.getElementById('cd-ten-bac-si')?.value || '').trim();
+    const dsEl = document.getElementById('cd-ds-bac-si');
+    if (!dsEl) return;
+
+    dsEl.innerHTML = '<span style="color:var(--text-muted);font-size:.875em;">Đang tìm...</span>';
+    try {
+        const resp = await fetch(`?handler=TimBacSiKhaDung&idLichHen=${idLichHen}&tenBacSi=${encodeURIComponent(ten)}`);
+        const ds = await resp.json();
+        if (!ds.length) {
+            dsEl.innerHTML = '<span style="color:var(--text-muted);font-size:.875em;">Không tìm thấy bác sĩ phù hợp.</span>';
+            return;
+        }
+        dsEl.innerHTML = ds.map(bs => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:var(--space-1);background:var(--bg-default);">
+                <div>
+                    <span style="font-weight:500;">${bs.hoTen}</span>
+                    <span style="color:var(--text-muted);font-size:.8em;margin-left:var(--space-2);">${bs.soSlotConLai} slot còn</span>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="ganBacSi(${idLichHen}, ${bs.idCaLamViec}, '${bs.hoTen}')">
+                    Gán
+                </button>
+            </div>
+        `).join('');
+    } catch (e) {
+        dsEl.innerHTML = '<span style="color:var(--danger);font-size:.875em;">Lỗi kết nối.</span>';
+    }
+}
+
+async function ganBacSi(idLichHen, idCaLamViecMoi, tenBacSi) {
+    const loiEl = document.getElementById('cd-loi-gan');
+    if (loiEl) { loiEl.style.display = 'none'; loiEl.textContent = ''; }
+
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    try {
+        const resp = await fetch(`?handler=GanBacSi&idLichHen=${idLichHen}&idCaLamViecMoi=${idCaLamViecMoi}`, {
+            method: 'POST',
+            headers: { 'RequestVerificationToken': token }
+        });
+        const ketQua = await resp.json();
+        if (ketQua.thanhCong) {
+            const ganEl = document.getElementById('cd-bac-si-da-gan');
+            if (ganEl) ganEl.textContent = tenBacSi;
+            document.getElementById('cd-ds-bac-si').innerHTML =
+                `<div style="color:var(--success);"><i class="ph ph-check-circle"></i> Đã gán: ${tenBacSi}</div>`;
+            if (loiEl) loiEl.style.display = 'none';
+        } else {
+            if (loiEl) {
+                loiEl.textContent = ketQua.lyDoThatBai || 'Gán thất bại.';
+                loiEl.style.display = 'block';
+            }
+        }
+    } catch (e) {
+        if (loiEl) { loiEl.textContent = 'Lỗi kết nối.'; loiEl.style.display = 'block'; }
+    }
+}
+
+// ===== HELPERS =====
+function formatDate(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 </script>
 }

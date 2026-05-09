@@ -16,4 +16,5 @@ public record LichHenTomTatResponse(
     int SoSlot,
     string TenDichVu,
     TrangThaiLichHen TrangThai,
-    DateTime NgayTao);
+    DateTime NgayTao,
+    bool DaCheckIn = false);
