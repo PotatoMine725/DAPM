@@ -1,14 +1,14 @@
 @page
 @model ClinicBooking.Web.Pages.BacSi.QuanLyKhamModel
 @{
-    ViewData["Title"] = "Quan ly kham";
+    ViewData["Title"] = "Quản lý khám";
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Quan ly kham</h1>
+        <h1 class="page-title">Quản lý khám</h1>
         <div class="page-subtitle" style="margin-top:var(--space-1); color:var(--color-text-secondary); font-size:13px;">
-            Tao ho so kham, cap nhat chan doan va ke toa theo ho so.
+            Tạo hồ sơ khám, cập nhật chẩn đoán và kê toa theo hồ sơ.
         </div>
     </div>
 </div>
@@ -16,83 +16,83 @@
 <div class="card" style="margin-bottom:var(--space-4); padding:var(--space-4);">
     <form method="get" class="filter-bar" style="align-items:end;">
         <div style="width:220px;">
-            <label class="form-label">ID ho so kham</label>
-            <input class="form-input" type="number" name="idHoSoKham" value="@Model.IdHoSoKham" min="1" placeholder="Nhap ID ho so" />
+            <label class="form-label">ID hồ sơ khám</label>
+            <input class="form-input" type="number" name="idHoSoKham" value="@Model.IdHoSoKham" min="1" placeholder="Nhập ID hồ sơ" />
         </div>
         <button class="btn btn-secondary" type="submit">
-            <i class="ph ph-magnifying-glass"></i> Xem ho so
+            <i class="ph ph-magnifying-glass"></i> Xem hồ sơ
         </button>
         <a class="btn btn-secondary" href="/BacSi/HangCho">
-            <i class="ph ph-users-three"></i> Hang cho
+            <i class="ph ph-users-three"></i> Hàng chờ
         </a>
     </form>
     @if (Model.IdLichHenMoi.HasValue && Model.HoSoHienTai is null)
     {
         <div style="margin-top:var(--space-3); padding:var(--space-3) var(--space-4); background:var(--color-active-bg); border:1px solid var(--color-active-text); border-radius:8px; color:var(--color-active-text); font-size:14px;">
-            <i class="ph ph-info"></i> Benh nhan tu hang cho — lich hen ID <strong>@Model.IdLichHenMoi</strong>. Dien thong tin va bam "Tao ho so".
+            <i class="ph ph-info"></i> Bệnh nhân từ hàng chờ — lịch hẹn ID <strong>@Model.IdLichHenMoi</strong>. Điền thông tin và bấm "Tạo hồ sơ".
         </div>
     }
 </div>
 
 <div class="module3-two-col">
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Tao ho so kham</h2>
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Tạo hồ sơ khám</h2>
         <form method="post" asp-page-handler="TaoHoSo" class="module3-form">
             <div>
-                <label class="form-label">ID lich hen</label>
+                <label class="form-label">ID lịch hẹn</label>
                 <input class="form-input" asp-for="HoSo.IdLichHen" type="number" min="1" required />
             </div>
             <div>
-                <label class="form-label">Chan doan</label>
+                <label class="form-label">Chẩn đoán</label>
                 <textarea class="form-input" asp-for="HoSo.ChanDoan" rows="3" maxlength="1000"></textarea>
             </div>
             <div>
-                <label class="form-label">Ket qua kham</label>
+                <label class="form-label">Kết quả khám</label>
                 <textarea class="form-input" asp-for="HoSo.KetQuaKham" rows="3" maxlength="1000"></textarea>
             </div>
             <div>
-                <label class="form-label">Ghi chu</label>
+                <label class="form-label">Ghi chú</label>
                 <textarea class="form-input" asp-for="HoSo.GhiChu" rows="2" maxlength="1000"></textarea>
             </div>
             <button class="btn btn-primary" type="submit">
-                <i class="ph ph-floppy-disk"></i> Tao ho so
+                <i class="ph ph-floppy-disk"></i> Tạo hồ sơ
             </button>
         </form>
     </div>
 
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Ho so hien tai</h2>
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Hồ sơ hiện tại</h2>
         @if (Model.HoSoHienTai is null)
         {
             <div class="empty-state" style="padding:var(--space-6);">
                 <div class="empty-state-icon"><i class="ph ph-file-magnifying-glass"></i></div>
-                <p>Nhap ID ho so de xem va cap nhat.</p>
+                <p>Nhập ID hồ sơ để xem và cập nhật.</p>
             </div>
         }
         else
         {
             <div class="module3-summary">
-                <div><span>Ma lich hen</span><strong>@Model.HoSoHienTai.MaLichHen</strong></div>
-                <div><span>Ngay kham</span><strong>@Model.HoSoHienTai.NgayKham.ToString("dd/MM/yyyy HH:mm")</strong></div>
-                <div><span>Bac si</span><strong>@Model.HoSoHienTai.HoTenBacSi</strong></div>
+                <div><span>Mã lịch hẹn</span><strong>@Model.HoSoHienTai.MaLichHen</strong></div>
+                <div><span>Ngày khám</span><strong>@Model.HoSoHienTai.NgayKham.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                <div><span>Bác sĩ</span><strong>@Model.HoSoHienTai.HoTenBacSi</strong></div>
             </div>
 
             <form method="post" asp-page-handler="CapNhatHoSo" class="module3-form" style="margin-top:var(--space-4);">
                 <input type="hidden" name="HoSo.IdHoSoKham" value="@Model.HoSoHienTai.IdHoSoKham" />
                 <div>
-                    <label class="form-label">Chan doan</label>
+                    <label class="form-label">Chẩn đoán</label>
                     <textarea class="form-input" name="HoSo.ChanDoan" rows="3">@Model.HoSoHienTai.ChanDoan</textarea>
                 </div>
                 <div>
-                    <label class="form-label">Ket qua kham</label>
+                    <label class="form-label">Kết quả khám</label>
                     <textarea class="form-input" name="HoSo.KetQuaKham" rows="3">@Model.HoSoHienTai.KetQuaKham</textarea>
                 </div>
                 <div>
-                    <label class="form-label">Ghi chu</label>
+                    <label class="form-label">Ghi chú</label>
                     <textarea class="form-input" name="HoSo.GhiChu" rows="2">@Model.HoSoHienTai.GhiChu</textarea>
                 </div>
                 <button class="btn btn-primary" type="submit">
-                    <i class="ph ph-pencil-simple"></i> Cap nhat ho so
+                    <i class="ph ph-pencil-simple"></i> Cập nhật hồ sơ
                 </button>
             </form>
         }
@@ -102,17 +102,17 @@
 @if (Model.HoSoHienTai is not null)
 {
     <div class="card" style="margin-top:var(--space-4); padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Ke toa thuoc</h2>
+        <h2 class="card-title" style="margin-bottom:var(--space-3);">Kê toa thuốc</h2>
         @if (Model.ToaHienTai.Any())
         {
             <table class="data-table" style="margin-bottom:var(--space-4);">
                 <thead>
                     <tr>
-                        <th>Thuoc</th>
-                        <th>Lieu luong</th>
-                        <th>Cach dung</th>
-                        <th>So ngay</th>
-                        <th>Ghi chu</th>
+                        <th>Thuốc</th>
+                        <th>Liều lượng</th>
+                        <th>Cách dùng</th>
+                        <th>Số ngày</th>
+                        <th>Ghi chú</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,21 +138,21 @@
                 {
                     <div class="module3-prescription-row">
                         <select class="form-input" name="ToaThuoc.DanhSachThuoc[@i].IdThuoc">
-                            <option value="0">Chon thuoc</option>
+                            <option value="0">Chọn thuốc</option>
                             @foreach (var thuoc in Model.DanhSachThuoc)
                             {
                                 <option value="@thuoc.IdThuoc">@thuoc.TenThuoc (@thuoc.DonVi)</option>
                             }
                         </select>
-                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].LieuLuong" placeholder="Lieu luong" />
-                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].CachDung" placeholder="Cach dung" />
-                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].SoNgayDung" type="number" min="1" placeholder="So ngay" />
-                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].GhiChu" placeholder="Ghi chu" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].LieuLuong" placeholder="Liều lượng" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].CachDung" placeholder="Cách dùng" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].SoNgayDung" type="number" min="1" placeholder="Số ngày" />
+                        <input class="form-input" name="ToaThuoc.DanhSachThuoc[@i].GhiChu" placeholder="Ghi chú" />
                     </div>
                 }
             </div>
             <button class="btn btn-primary" type="submit" style="margin-top:var(--space-3);">
-                <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cap nhat toa" : "Ke toa")
+                <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cập nhật toa" : "Kê toa")
             </button>
         </form>
     </div>
@@ -175,7 +175,7 @@
         gap: var(--space-3);
     }
     .module3-summary div {
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--color-border-light);
         padding: var(--space-3);
         border-radius: 8px;
     }
