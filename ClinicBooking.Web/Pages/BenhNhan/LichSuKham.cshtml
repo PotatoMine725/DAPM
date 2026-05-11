@@ -1,0 +1,222 @@
+@page
+@model ClinicBooking.Web.Pages.BenhNhan.LichSuKhamModel
+@{
+    ViewData["Title"] = "Lịch sử khám bệnh";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Lịch sử khám bệnh</h1>
+        <div class="page-subtitle" style="margin-top:var(--space-1); color:var(--color-text-secondary); font-size:13px;">
+            Xem lại các lần khám bệnh và chẩn đoán của bạn.
+        </div>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" style="margin-bottom:var(--space-4);">
+        <i class="ph ph-warning-circle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="card">
+    @if (!Model.DanhSachHoSo.Any())
+    {
+        <div class="empty-state" style="padding:var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-folder-simple-dashed"></i></div>
+            <p>Bạn chưa có lịch sử khám bệnh.</p>
+            <a href="/BenhNhan/DatLich" class="btn btn-primary btn-sm" style="margin-top:var(--space-3);">
+                <i class="ph ph-calendar-plus"></i> Đặt lịch khám
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card-header">
+            <span class="card-title">
+                <i class="ph ph-stethoscope"></i> 
+                @Model.DanhSachHoSo.Count lần khám (Trang @Model.SoTrang)
+            </span>
+        </div>
+
+        <div class="lich-su-kham-list">
+            @foreach (var hoSo in Model.DanhSachHoSo)
+            {
+                <div class="lich-su-kham-item">
+                    <div class="lich-su-kham-header">
+                        <div>
+                            <div class="lich-su-kham-date">
+                                <i class="ph ph-calendar-blank"></i>
+                                @hoSo.NgayKham.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            <div class="lich-su-kham-code">
+                                Mã lịch hẹn: <span class="table-code">@hoSo.MaLichHen</span>
+                            </div>
+                        </div>
+                        <div class="lich-su-kham-doctor">
+                            <i class="ph ph-user-circle"></i>
+                            BS. @hoSo.HoTenBacSi
+                        </div>
+                    </div>
+
+                    <div class="lich-su-kham-content">
+                        <div class="lich-su-kham-field">
+                            <label>Chẩn đoán:</label>
+                            <div>
+                                @if (string.IsNullOrWhiteSpace(hoSo.ChanDoan))
+                                {
+                                    <span style="color:var(--color-text-secondary); font-style:italic;">Chưa cập nhật</span>
+                                }
+                                else
+                                {
+                                    @hoSo.ChanDoan
+                                }
+                            </div>
+                        </div>
+
+                        <div class="lich-su-kham-field">
+                            <label>Kết quả khám:</label>
+                            <div>
+                                @if (string.IsNullOrWhiteSpace(hoSo.KetQuaKham))
+                                {
+                                    <span style="color:var(--color-text-secondary); font-style:italic;">Chưa cập nhật</span>
+                                }
+                                else
+                                {
+                                    @hoSo.KetQuaKham
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lich-su-kham-footer">
+                        <span style="font-size:12px; color:var(--color-text-muted);">
+                            <i class="ph ph-clock"></i> Tạo lúc @hoSo.NgayTao.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.DanhSachHoSo.Count >= 10)
+        {
+            <div style="display:flex; justify-content:center; gap:var(--space-2); padding:var(--space-4); border-top:1px solid var(--color-border);">
+                @if (Model.SoTrang > 1)
+                {
+                    <a href="/BenhNhan/LichSuKham?soTrang=@(Model.SoTrang - 1)" class="btn btn-sm btn-secondary">
+                        <i class="ph ph-caret-left"></i> Trang trước
+                    </a>
+                }
+                <span class="btn btn-sm btn-primary" style="pointer-events:none;">
+                    Trang @Model.SoTrang
+                </span>
+                <a href="/BenhNhan/LichSuKham?soTrang=@(Model.SoTrang + 1)" class="btn btn-sm btn-secondary">
+                    Trang sau <i class="ph ph-caret-right"></i>
+                </a>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+<style>
+    .lich-su-kham-list {
+        display: grid;
+        gap: 0;
+    }
+
+    .lich-su-kham-item {
+        padding: var(--space-4);
+        border-bottom: 1px solid var(--color-border);
+        transition: background 0.1s;
+    }
+
+    .lich-su-kham-item:last-child {
+        border-bottom: none;
+    }
+
+    .lich-su-kham-item:hover {
+        background: var(--color-neutral-bg, #f9fafb);
+    }
+
+    .lich-su-kham-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--space-3);
+        margin-bottom: var(--space-3);
+        flex-wrap: wrap;
+    }
+
+    .lich-su-kham-date {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .lich-su-kham-date i {
+        font-size: 18px;
+        color: var(--color-primary);
+    }
+
+    .lich-su-kham-code {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        margin-top: 4px;
+    }
+
+    .lich-su-kham-doctor {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--color-text-secondary);
+        padding: 6px 12px;
+        background: var(--color-neutral-bg, #f3f4f6);
+        border-radius: 6px;
+    }
+
+    .lich-su-kham-doctor i {
+        font-size: 18px;
+    }
+
+    .lich-su-kham-content {
+        display: grid;
+        gap: var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+
+    .lich-su-kham-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        margin-bottom: 6px;
+    }
+
+    .lich-su-kham-field div {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--color-text-primary);
+    }
+
+    .lich-su-kham-footer {
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--color-border);
+    }
+
+    @@media (max-width: 640px) {
+        .lich-su-kham-header {
+            flex-direction: column;
+        }
+        
+        .lich-su-kham-doctor {
+            align-self: flex-start;
+        }
+    }
+</style>
+}
