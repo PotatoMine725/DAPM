@@ -47,6 +47,8 @@ Desktop.ini
 .claude/
 .remember/
 .code-review-graph/
+.kiro/
+.tmp-build/
 
 # User secrets and local config
 secrets.json
