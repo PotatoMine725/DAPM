@@ -78,7 +78,19 @@
             {
                 <li class="sidebar-section-label">Bác sĩ</li>
                 <li>
-                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSach") ? "active" : "")"
+                    <a class="sidebar-nav-item @(currentPath == "/BacSi/Dashboard" ? "active" : "")"
+                       href="/BacSi/Dashboard">
+                        <i class="ph ph-squares-four"></i> Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSachLichHen") ? "active" : "")"
+                       href="/BacSi/DanhSachLichHen">
+                        <i class="ph ph-calendar-check"></i> Lịch hẹn của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSach") && !currentPath.StartsWith("/BacSi/DanhSachLichHen") ? "active" : "")"
                        href="/BacSi/DanhSach">
                         <i class="ph ph-stethoscope"></i> Danh sách bác sĩ
                     </a>

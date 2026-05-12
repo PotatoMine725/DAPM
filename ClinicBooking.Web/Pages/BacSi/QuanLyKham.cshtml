@@ -151,9 +151,16 @@
                     </div>
                 }
             </div>
-            <button class="btn btn-primary" type="submit" style="margin-top:var(--space-3);">
-                <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cập nhật toa" : "Kê toa")
-            </button>
+            <div style="display:flex; gap:var(--space-2); margin-top:var(--space-3); align-items:center;">
+                <button class="btn btn-primary" type="submit">
+                    <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cập nhật toa" : "Kê toa")
+                </button>
+                <span title="Chức năng kê đơn chi tiết sẽ có ở Module 3">
+                    <button type="button" class="btn btn-secondary" disabled style="opacity:.5; cursor:not-allowed;">
+                        <i class="ph ph-note-pencil"></i> Kê đơn chi tiết (Module 3)
+                    </button>
+                </span>
+            </div>
         </form>
     </div>
 }
