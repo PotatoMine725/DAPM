@@ -3,6 +3,7 @@ using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
+using EntityLichHen = ClinicBooking.Domain.Entities.LichHen;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Services.Scheduling;
 using FluentAssertions;
@@ -248,7 +249,7 @@ public sealed class CaLamViecQueryServiceTests
             DaGiaiPhong = false,
             NgayTao = FixedNow
         });
-        db.LichHen.Add(new ClinicBooking.Domain.Entities.LichHen
+        db.LichHen.Add(new EntityLichHen
         {
             IdCaLamViec = ca.IdCaLamViec,
             IdBenhNhan = benhNhan.IdBenhNhan,
