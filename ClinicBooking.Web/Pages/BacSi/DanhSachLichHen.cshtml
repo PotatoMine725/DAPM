@@ -1,0 +1,117 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.DanhSachLichHenModel
+@using ClinicBooking.Domain.Enums
+@using ClinicBooking.Web.Helpers
+@{
+    ViewData["Title"] = "Lịch hẹn của tôi";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Lịch hẹn của tôi</h1>
+        <div class="page-subtitle">Tổng quan lịch hẹn theo ngày — tất cả trạng thái.</div>
+    </div>
+</div>
+
+<!-- Filter bar -->
+<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
+    <form method="get" class="filter-bar" style="align-items:center;">
+        <div class="form-group" style="margin:0;">
+            <label class="form-label" style="margin:0; white-space:nowrap;">
+                <i class="ph ph-calendar"></i> Ngày:
+            </label>
+            <input class="form-input" type="date" name="ngay"
+                   value="@Model.Ngay.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="form-group" style="margin:0;">
+            <label class="form-label" style="margin:0;">Trạng thái:</label>
+            <select class="form-select" name="trangThai">
+                <option value="">— Tất cả —</option>
+                @foreach (TrangThaiLichHen val in Enum.GetValues(typeof(TrangThaiLichHen)))
+                {
+                    if (Model.TrangThai == val)
+                    {
+                        <option value="@val" selected>@BadgeHelper.TrangThaiText(val)</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@BadgeHelper.TrangThaiText(val)</option>
+                    }
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">
+            <i class="ph ph-magnifying-glass"></i> Lọc
+        </button>
+        <a class="btn btn-ghost" href="/BacSi/DanhSachLichHen">Đặt lại</a>
+    </form>
+</div>
+
+<!-- Summary badges -->
+@{
+    var all = Model.DanhSach;
+    var loc = Model.DanhSachLoc;
+}
+<div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-3);">
+    <span class="badge badge-neutral">Tổng: @all.Count</span>
+    <span class="badge badge-warning">Chờ xác nhận: @all.Count(x => x.TrangThai == TrangThaiLichHen.ChoXacNhan)</span>
+    <span class="badge badge-success">Đã xác nhận: @all.Count(x => x.TrangThai == TrangThaiLichHen.DaXacNhan)</span>
+    <span class="badge badge-active">Đang khám: @all.Count(x => x.TrangThai == TrangThaiLichHen.DangKham)</span>
+    <span class="badge badge-info">Hoàn thành: @all.Count(x => x.TrangThai == TrangThaiLichHen.HoanThanh)</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">
+            <i class="ph ph-calendar-check"></i>
+            @Model.Ngay.ToString("dd/MM/yyyy") — @loc.Count lịch hẹn
+        </span>
+    </div>
+
+    @if (!loc.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-calendar-blank"></i></div>
+            <p>Không có lịch hẹn nào trong ngày này.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã LH</th>
+                    <th>Bệnh nhân</th>
+                    <th>Giờ bắt đầu</th>
+                    <th>Slot</th>
+                    <th>Dịch vụ</th>
+                    <th>Trạng thái</th>
+                    <th>Check-in</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lh in loc)
+                {
+                    <tr>
+                        <td><span class="table-code">@lh.MaLichHen</span></td>
+                        <td style="font-weight:500;">@lh.HoTenBenhNhan</td>
+                        <td>@lh.GioBatDau.ToString(@"HH\:mm")</td>
+                        <td>@lh.SoSlot</td>
+                        <td>@lh.TenDichVu</td>
+                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
+                        <td>
+                            @if (lh.DaCheckIn)
+                            {
+                                <span class="badge badge-success"><i class="ph ph-check"></i> Đã check-in</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-neutral">Chưa</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -89,6 +89,11 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title">Ca #@Model.IdCaLamViec — Danh sách bệnh nhân</span>
+            <span style="display:flex; gap:var(--space-2);">
+                <span class="badge badge-neutral"><i class="ph ph-clock"></i> Chờ: @Model.SoChoKham</span>
+                <span class="badge badge-active"><i class="ph ph-stethoscope"></i> Đang khám: @Model.SoDangKham</span>
+                <span class="badge badge-info"><i class="ph ph-check"></i> Xong: @Model.SoHoanThanh</span>
+            </span>
         </div>
 
         @if (!Model.HangCho.Any())
@@ -125,10 +130,16 @@
                             <td>@hc.NgayCheckIn.ToString("HH:mm")</td>
                             <td>@Html.Raw(BadgeHelper.TrangThaiHangCho(hc.TrangThai))</td>
                             <td class="table-actions">
-                                @if (hc.TrangThai == TrangThaiHangCho.DangKham)
+                                @if (hc.TrangThai == TrangThaiHangCho.ChoKham)
                                 {
                                     <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
-                                        <i class="ph ph-file-plus"></i> Tao ho so
+                                        <i class="ph ph-play"></i> Bắt đầu khám
+                                    </a>
+                                }
+                                else if (hc.TrangThai == TrangThaiHangCho.DangKham)
+                                {
+                                    <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
+                                        <i class="ph ph-file-plus"></i> Mở hồ sơ
                                     </a>
                                     <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
                                         <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
