@@ -1,0 +1,193 @@
+@page
+@model ClinicBooking.Web.Pages.LeTan.HoSoBenhNhanModel
+@using ClinicBooking.Domain.Enums
+@{
+    ViewData["Title"] = "Hồ sơ bệnh nhân";
+}
+
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+    <h1 class="page-title">Tra cứu hồ sơ bệnh nhân</h1>
+</div>
+
+<!-- Search -->
+<div class="card" style="margin-bottom:var(--space-4);padding:var(--space-4) var(--space-5);">
+    <form method="get" class="search-bar" style="margin-bottom:0;">
+        <input type="text" class="form-input" name="tuKhoa"
+               value="@Model.TuKhoa"
+               placeholder="Tìm theo tên, CCCD hoặc số điện thoại..."
+               style="flex:1;" />
+        <button type="submit" class="btn btn-secondary">
+            <i class="ph ph-magnifying-glass"></i> Tìm kiếm
+        </button>
+        @if (!string.IsNullOrEmpty(Model.TuKhoa))
+        {
+            <a href="/LeTan/HoSoBenhNhan" class="btn btn-secondary">
+                <i class="ph ph-x"></i> Xóa bộ lọc
+            </a>
+        }
+    </form>
+</div>
+
+<!-- Table -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">
+            Danh sách bệnh nhân
+            @if (!string.IsNullOrEmpty(Model.TuKhoa))
+            {
+                <text> — kết quả tìm kiếm "@Model.TuKhoa"</text>
+            }
+        </span>
+    </div>
+
+    @if (!Model.DanhSach.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="ph ph-address-book"></i></div>
+            <p>Không tìm thấy bệnh nhân nào.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã BN</th>
+                    <th>Họ và tên</th>
+                    <th>Số điện thoại</th>
+                    <th>CCCD</th>
+                    <th>Ngày sinh</th>
+                    <th>Giới tính</th>
+                    <th>Số lần hủy muộn</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bn in Model.DanhSach)
+                {
+                    <tr>
+                        <td><span class="table-code">BN-@bn.IdBenhNhan</span></td>
+                        <td><strong>@bn.HoTen</strong></td>
+                        <td>@bn.SoDienThoai</td>
+                        <td>@(bn.Cccd ?? "—")</td>
+                        <td>@(bn.NgaySinh.HasValue ? bn.NgaySinh.Value.ToString("dd/MM/yyyy") : "—")</td>
+                        <td>
+                            @(bn.GioiTinh switch {
+                                GioiTinh.Nam  => "Nam",
+                                GioiTinh.Nu   => "Nữ",
+                                GioiTinh.Khac => "Khác",
+                                _             => "—"
+                            })
+                        </td>
+                        <td>@bn.SoLanHuyMuon</td>
+                        <td>
+                            @if (bn.BiHanChe)
+                            {
+                                <span class="badge badge-danger">Bị hạn chế</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-success">Bình thường</span>
+                            }
+                        </td>
+                        <td class="table-actions">
+                            <button class="btn btn-sm btn-ghost" title="Chỉnh sửa hồ sơ"
+                                    onclick="moModalSua(@bn.IdBenhNhan, '@bn.HoTen.Replace("'", "\\'")', '@(bn.NgaySinh.HasValue ? bn.NgaySinh.Value.ToString("yyyy-MM-dd") : "")', @((int?)bn.GioiTinh ?? -1), '@(bn.Cccd ?? "")', '@((bn.DiaChi ?? "").Replace("'", "\\'"))')">
+                                <i class="ph ph-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div style="display:flex;justify-content:center;gap:var(--space-2);padding:var(--space-4);">
+            @if (Model.Trang > 1)
+            {
+                <a href="?tuKhoa=@Model.TuKhoa&trang=@(Model.Trang - 1)" class="btn btn-secondary btn-sm">
+                    <i class="ph ph-caret-left"></i> Trước
+                </a>
+            }
+            <span class="btn btn-sm btn-primary" style="cursor:default;">Trang @Model.Trang</span>
+            @if (Model.CoTrangSau)
+            {
+                <a href="?tuKhoa=@Model.TuKhoa&trang=@(Model.Trang + 1)" class="btn btn-secondary btn-sm">
+                    Sau <i class="ph ph-caret-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal chỉnh sửa -->
+<div class="modal-overlay" id="modal-sua-ho-so">
+    <div class="modal-box" style="max-width:480px;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="ph ph-pencil"></i> Chỉnh sửa hồ sơ bệnh nhân</span>
+            <button class="modal-close" onclick="closeModal('modal-sua-ho-so')">×</button>
+        </div>
+        <form method="post" asp-page-handler="CapNhat">
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+                <input type="hidden" name="idBenhNhan" id="sua-id" />
+
+                <div class="form-group">
+                    <label class="form-label">Họ và tên <span class="required-mark">*</span></label>
+                    <input type="text" class="form-input" name="hoTen" id="sua-hoten" required />
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                    <div class="form-group">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="date" class="form-input" name="ngaySinh" id="sua-ngaysinh" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giới tính</label>
+                        <select class="form-select" name="gioiTinh" id="sua-gioitinh">
+                            <option value="">-- Chọn --</option>
+                            <option value="0">Nam</option>
+                            <option value="1">Nữ</option>
+                            <option value="2">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">CCCD / CMND</label>
+                    <input type="text" class="form-input" name="cccd" id="sua-cccd"
+                           placeholder="12 chữ số" maxlength="12" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ</label>
+                    <input type="text" class="form-input" name="diaChi" id="sua-diachi"
+                           placeholder="Địa chỉ thường trú" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-sua-ho-so')">Hủy</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ph ph-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function moModalSua(id, hoTen, ngaySinh, gioiTinh, cccd, diaChi) {
+    document.getElementById('sua-id').value = id;
+    document.getElementById('sua-hoten').value = hoTen;
+    document.getElementById('sua-ngaysinh').value = ngaySinh;
+    document.getElementById('sua-cccd').value = cccd;
+    document.getElementById('sua-diachi').value = diaChi;
+
+    var sel = document.getElementById('sua-gioitinh');
+    sel.value = gioiTinh >= 0 ? String(gioiTinh) : '';
+
+    openModal('modal-sua-ho-so');
+}
+</script>
+}
