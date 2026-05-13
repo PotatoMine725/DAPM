@@ -24,10 +24,11 @@
         @{
             var vaiTro = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
             var currentPath = ViewContext.HttpContext.Request.Path.Value ?? "";
+            var loaiHopDong = User.FindFirst("loai_hop_dong")?.Value ?? "";
         }
 
         <ul class="sidebar-nav">
-            @if (vaiTro == "le_tan" || vaiTro == "admin")
+            @if (vaiTro == "le_tan")
             {
                 <li class="sidebar-section-label">Lễ tân</li>
                 <li>
@@ -43,9 +44,32 @@
                     </a>
                 </li>
                 <li>
-                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyCaLamViec") || currentPath.StartsWith("/LeTan/QuanLyCaLamViec") ? "active" : "")"
-                       href="/Admin/QuanLyCaLamViec">
-                        <i class="ph ph-calendar-dots"></i> Quản lý ca làm việc
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HangCho") ? "active" : "")"
+                       href="/LeTan/HangCho">
+                        <i class="ph ph-users-three"></i> Hàng chờ khám
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HoSoBenhNhan") ? "active" : "")"
+                       href="/LeTan/HoSoBenhNhan">
+                        <i class="ph ph-address-book"></i> Hồ sơ bệnh nhân
+                    </a>
+                </li>
+            }
+
+            @if (vaiTro == "admin")
+            {
+                <li class="sidebar-section-label">Lễ tân</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/Dashboard") ? "active" : "")"
+                       href="/LeTan/Dashboard">
+                        <i class="ph ph-squares-four"></i> Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/QuanLyLichHen") ? "active" : "")"
+                       href="/LeTan/QuanLyLichHen">
+                        <i class="ph ph-calendar-blank"></i> Quản lý lịch hẹn
                     </a>
                 </li>
                 <li>
@@ -55,21 +79,34 @@
                     </a>
                 </li>
                 <li>
-                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyNghiPhep") || currentPath.StartsWith("/LeTan/NghiPhep") ? "active" : "")"
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HoSoBenhNhan") ? "active" : "")"
+                       href="/LeTan/HoSoBenhNhan">
+                        <i class="ph ph-address-book"></i> Hồ sơ bệnh nhân
+                    </a>
+                </li>
+                <li class="sidebar-section-label">Quản trị</li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyCaLamViec") ? "active" : "")"
+                       href="/Admin/QuanLyCaLamViec">
+                        <i class="ph ph-calendar-dots"></i> Ca làm việc
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyNghiPhep") ? "active" : "")"
                        href="/Admin/QuanLyNghiPhep">
                         <i class="ph ph-calendar-x"></i> Nghỉ phép
                     </a>
                 </li>
                 <li>
-                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyBacSi") || currentPath.StartsWith("/LeTan/BacSi") ? "active" : "")"
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyBacSi") ? "active" : "")"
                        href="/Admin/QuanLyBacSi">
-                        <i class="ph ph-stethoscope"></i> Quản lý bác sĩ
+                        <i class="ph ph-stethoscope"></i> Bác sĩ
                     </a>
                 </li>
                 <li>
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/QuanLyDanhMuc") ? "active" : "")"
                        href="/Admin/QuanLyDanhMuc">
-                        <i class="ph ph-grid-four"></i> Quản lý danh mục
+                        <i class="ph ph-grid-four"></i> Danh mục
                     </a>
                 </li>
             }
@@ -78,9 +115,15 @@
             {
                 <li class="sidebar-section-label">Bác sĩ</li>
                 <li>
-                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSach") ? "active" : "")"
-                       href="/BacSi/DanhSach">
-                        <i class="ph ph-stethoscope"></i> Danh sách bác sĩ
+                    <a class="sidebar-nav-item @(currentPath == "/BacSi/Dashboard" ? "active" : "")"
+                       href="/BacSi/Dashboard">
+                        <i class="ph ph-squares-four"></i> Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/DanhSachLichHen") ? "active" : "")"
+                       href="/BacSi/DanhSachLichHen">
+                        <i class="ph ph-calendar-check"></i> Lịch hẹn của tôi
                     </a>
                 </li>
                 <li>
@@ -89,12 +132,15 @@
                         <i class="ph ph-calendar-dots"></i> Lịch làm việc
                     </a>
                 </li>
+                @if (loaiHopDong == "HopDong")
+                {
                 <li>
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/YeuCauTaoCa") ? "active" : "")"
                        href="/BacSi/YeuCauTaoCa">
                         <i class="ph ph-calendar-plus"></i> Yêu cầu tạo ca
                     </a>
                 </li>
+                }
                 <li>
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/BacSi/NghiPhep") ? "active" : "")"
                        href="/BacSi/NghiPhep">
