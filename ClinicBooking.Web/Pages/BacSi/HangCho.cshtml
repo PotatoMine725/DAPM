@@ -3,173 +3,373 @@
 @using ClinicBooking.Domain.Enums
 @{
     ViewData["Title"] = "Hàng chờ của tôi";
+    var tenBacSi = Model.HoSo?.HoTen ?? "Bác sĩ";
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Hàng chờ của tôi</h1>
-        <div class="page-subtitle">Theo dõi bệnh nhân chờ khám theo ca làm việc được phân công.</div>
+        <h1 class="page-title">Hàng chờ — @tenBacSi</h1>
+        <div class="page-subtitle">Bệnh nhân chờ khám theo ca hôm nay.</div>
     </div>
     @if (Model.IdCaLamViec.HasValue && Model.SoChoKham > 0)
     {
         <form method="post" asp-page-handler="GoiKeTiep">
             <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary hc-goi-btn">
                 <i class="ph ph-bell-ringing"></i> Gọi bệnh nhân tiếp theo
             </button>
         </form>
     }
 </div>
 
-<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-    <form method="get" class="filter-bar" style="align-items:center;">
-        <label class="form-label" style="margin:0; white-space:nowrap;">
-            <i class="ph ph-calendar-check"></i> Ca của tôi:
-        </label>
-        @if (Model.DanhSachCa.Any())
-        {
-            <select class="form-select" name="idCaLamViec" style="min-width:340px;"
-                    onchange="this.form.submit()">
-                <option value="">— Chọn ca —</option>
-                @foreach (var ca in Model.DanhSachCa)
-                {
-                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\\:mm}–{ca.GioKetThuc:HH\\:mm} | {ca.TenChuyenKhoa}";
-                    if (Model.IdCaLamViec == ca.IdCaLamViec)
-                    {
-                        <option value="@ca.IdCaLamViec" selected>@label</option>
-                    }
-                    else
-                    {
-                        <option value="@ca.IdCaLamViec">@label</option>
-                    }
-                }
-            </select>
-        }
-        else
-        {
-            <span style="color:var(--color-text-secondary); font-size:14px;">
-                Không có ca nào hôm nay và ngày mai.
-            </span>
-        }
-    </form>
-</div>
-
-@if (Model.IdCaLamViec.HasValue)
+@if (TempData["SuccessMessage"] is string succ)
 {
-    <!-- Thống kê nhanh -->
-    <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);">
-                <i class="ph ph-clock"></i>
-            </div>
-            <div>
-                <div class="stat-value">@Model.SoChoKham</div>
-                <div class="stat-label">Đang chờ khám</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
-                <i class="ph ph-stethoscope"></i>
-            </div>
-            <div>
-                <div class="stat-value">@Model.SoDangKham</div>
-                <div class="stat-label">Đang khám</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);">
-                <i class="ph ph-check-circle"></i>
-            </div>
-            <div>
-                <div class="stat-value">@Model.SoHoanThanh</div>
-                <div class="stat-label">Hoàn thành</div>
-            </div>
-        </div>
+    <div class="alert alert-success" style="margin-bottom:var(--space-3);">
+        <i class="ph ph-check-circle"></i> @succ
     </div>
+}
+@if (TempData["ErrorMessage"] is string err)
+{
+    <div class="alert alert-danger" style="margin-bottom:var(--space-3);">
+        <i class="ph ph-warning-circle"></i> @err
+    </div>
+}
 
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">Ca #@Model.IdCaLamViec — Danh sách bệnh nhân</span>
-            <span style="display:flex; gap:var(--space-2);">
-                <span class="badge badge-neutral"><i class="ph ph-clock"></i> Chờ: @Model.SoChoKham</span>
-                <span class="badge badge-active"><i class="ph ph-stethoscope"></i> Đang khám: @Model.SoDangKham</span>
-                <span class="badge badge-info"><i class="ph ph-check"></i> Xong: @Model.SoHoanThanh</span>
-            </span>
-        </div>
-
-        @if (!Model.HangCho.Any())
-        {
-            <div class="empty-state" style="padding: var(--space-8);">
-                <div class="empty-state-icon"><i class="ph ph-users"></i></div>
-                <p>Hàng chờ trống.</p>
-            </div>
-        }
-        else
-        {
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width:60px;">STT</th>
-                        <th>Mã LH</th>
-                        <th>Bệnh nhân</th>
-                        <th>Check-in lúc</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var hc in Model.HangCho)
-                    {
-                        <tr class="@(hc.TrangThai == TrangThaiHangCho.DangKham ? "row-highlight" : "")">
-                            <td>
-                                <strong style="font-size:20px; color:var(--color-primary);">@hc.SoThuTu</strong>
-                            </td>
-                            <td><span class="table-code">@hc.MaLichHen</span></td>
-                            <td>
-                                <span style="font-weight:500;">@hc.HoTenBenhNhan</span>
-                            </td>
-                            <td>@hc.NgayCheckIn.ToString("HH:mm")</td>
-                            <td>@Html.Raw(BadgeHelper.TrangThaiHangCho(hc.TrangThai))</td>
-                            <td class="table-actions">
-                                @if (hc.TrangThai == TrangThaiHangCho.ChoKham)
-                                {
-                                    <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
-                                        <i class="ph ph-play"></i> Bắt đầu khám
-                                    </a>
-                                }
-                                else if (hc.TrangThai == TrangThaiHangCho.DangKham)
-                                {
-                                    <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
-                                        <i class="ph ph-file-plus"></i> Mở hồ sơ
-                                    </a>
-                                    <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
-                                        <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
-                                        <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
-                                        <button class="btn btn-sm btn-primary">
-                                            <i class="ph ph-check"></i> Hoàn thành
-                                        </button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
+@if (!Model.DanhSachCa.Any())
+{
+    <div class="card hc-empty-shell">
+        <div class="hc-empty-icon"><i class="ph ph-calendar-x"></i></div>
+        <p class="hc-empty-title">Không có ca nào hôm nay</p>
+        <p class="hc-empty-sub">Lịch trực chưa được phân công. Liên hệ quản trị viên nếu có nhầm lẫn.</p>
+        <a class="btn btn-secondary" href="/BacSi/LichLamViec">
+            <i class="ph ph-calendar-dots"></i> Xem lịch làm việc
+        </a>
     </div>
 }
 else
 {
-    <div class="card">
-        <div class="empty-state" style="padding: var(--space-8);">
-            <div class="empty-state-icon"><i class="ph ph-clipboard-text"></i></div>
-            <p>Nhập mã ca làm việc để xem danh sách bệnh nhân chờ khám.</p>
-        </div>
+    <!-- Tab bar ca làm việc -->
+    <div class="hc-tab-bar">
+        @foreach (var ca in Model.DanhSachCa)
+        {
+            var isActive = Model.IdCaLamViec == ca.IdCaLamViec;
+            var choKham  = Model.SoChoKhamTheoCA(ca.IdCaLamViec);
+            var dangKham = Model.SoDangKhamTheoCA(ca.IdCaLamViec);
+            var hasBusy  = choKham > 0 || dangKham > 0;
+
+            <a class="hc-tab @(isActive ? "hc-tab--active" : "") @(hasBusy ? "hc-tab--busy" : "")"
+               href="?idCaLamViec=@ca.IdCaLamViec">
+                <span class="hc-tab-time">
+                    <i class="ph ph-clock"></i>
+                    @ca.GioBatDau.ToString(@"HH\:mm")–@ca.GioKetThuc.ToString(@"HH\:mm")
+                </span>
+                <span class="hc-tab-spec">@ca.TenChuyenKhoa</span>
+                <span class="hc-tab-badges">
+                    @if (choKham > 0)
+                    {
+                        <span class="hc-badge hc-badge--cho">@choKham chờ</span>
+                    }
+                    @if (dangKham > 0)
+                    {
+                        <span class="hc-badge hc-badge--dang">@dangKham đang khám</span>
+                    }
+                    @if (choKham == 0 && dangKham == 0)
+                    {
+                        <span class="hc-badge hc-badge--done">Xong</span>
+                    }
+                </span>
+                @if (isActive && Model.LaAutoChon)
+                {
+                    <span class="hc-auto-chip">Ca hiện tại</span>
+                }
+            </a>
+        }
     </div>
+
+    @if (Model.IdCaLamViec.HasValue)
+    {
+        <!-- Stat cards -->
+        <div class="hc-stats">
+            <div class="hc-stat hc-stat--cho">
+                <div class="hc-stat-icon"><i class="ph ph-clock"></i></div>
+                <div>
+                    <div class="hc-stat-value">@Model.SoChoKham</div>
+                    <div class="hc-stat-label">Đang chờ</div>
+                </div>
+            </div>
+            <div class="hc-stat hc-stat--dang">
+                <div class="hc-stat-icon"><i class="ph ph-stethoscope"></i></div>
+                <div>
+                    <div class="hc-stat-value">@Model.SoDangKham</div>
+                    <div class="hc-stat-label">Đang khám</div>
+                </div>
+            </div>
+            <div class="hc-stat hc-stat--done">
+                <div class="hc-stat-icon"><i class="ph ph-check-circle"></i></div>
+                <div>
+                    <div class="hc-stat-value">@Model.SoHoanThanh</div>
+                    <div class="hc-stat-label">Hoàn thành</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    <i class="ph ph-users-three"></i> Danh sách bệnh nhân
+                </span>
+                <span style="display:flex; gap:var(--space-2);">
+                    <span class="badge badge-warning"><i class="ph ph-clock"></i> Chờ: @Model.SoChoKham</span>
+                    <span class="badge badge-active"><i class="ph ph-stethoscope"></i> Đang khám: @Model.SoDangKham</span>
+                    <span class="badge badge-success"><i class="ph ph-check"></i> Xong: @Model.SoHoanThanh</span>
+                </span>
+            </div>
+
+            @if (!Model.HangCho.Any())
+            {
+                <div class="hc-empty-shell" style="padding: var(--space-8);">
+                    <div class="hc-empty-icon"><i class="ph ph-users"></i></div>
+                    <p class="hc-empty-title">Hàng chờ trống</p>
+                    <p class="hc-empty-sub">Bệnh nhân chưa check-in cho ca này.</p>
+                </div>
+            }
+            else
+            {
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">STT</th>
+                            <th>Mã LH</th>
+                            <th>Bệnh nhân</th>
+                            <th>Check-in lúc</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var hc in Model.HangCho)
+                        {
+                            var isDangKham = hc.TrangThai == TrangThaiHangCho.DangKham;
+                            <tr class="@(isDangKham ? "hc-row-dang" : "")">
+                                <td>
+                                    <strong class="hc-stt @(isDangKham ? "hc-stt--active" : "")">@hc.SoThuTu</strong>
+                                </td>
+                                <td><span class="table-code">@hc.MaLichHen</span></td>
+                                <td><span style="font-weight:500;">@hc.HoTenBenhNhan</span></td>
+                                <td>@hc.NgayCheckIn.ToString("HH:mm")</td>
+                                <td>@Html.Raw(BadgeHelper.TrangThaiHangCho(hc.TrangThai))</td>
+                                <td class="table-actions">
+                                    @if (hc.TrangThai == TrangThaiHangCho.ChoKham)
+                                    {
+                                        <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
+                                            <i class="ph ph-play"></i> Bắt đầu khám
+                                        </a>
+                                    }
+                                    else if (isDangKham)
+                                    {
+                                        <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
+                                            <i class="ph ph-file-plus"></i> Mở hồ sơ
+                                        </a>
+                                        <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
+                                            <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
+                                            <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
+                                            <button class="btn btn-sm btn-primary">
+                                                <i class="ph ph-check"></i> Hoàn thành
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    }
 }
 
 @section Scripts {
 <style>
-    .row-highlight td { background: var(--color-active-bg); }
+/* ── Tab bar ──────────────────────────────────────────── */
+.hc-tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+.hc-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: 2px solid var(--color-border-light);
+    background: #fff;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
+    position: relative;
+    min-width: 180px;
+}
+
+.hc-tab:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(26,95,168,0.10);
+    transform: translateY(-2px);
+}
+
+.hc-tab--active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light, #e8f0fb);
+    box-shadow: 0 4px 16px rgba(26,95,168,0.15);
+}
+
+.hc-tab--busy .hc-tab-time { color: var(--color-primary); font-weight: 700; }
+
+.hc-tab-time {
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hc-tab-spec {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.hc-tab-badges {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.hc-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.hc-badge--cho  { background: #fef3c7; color: #92400e; }
+.hc-badge--dang { background: #fee2e2; color: #991b1b; }
+.hc-badge--done { background: #dcfce7; color: #166534; }
+
+.hc-auto-chip {
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* ── Stat cards ───────────────────────────────────────── */
+.hc-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.hc-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-radius: 16px;
+    border: 1px solid transparent;
+}
+
+.hc-stat--cho  { background: #fffbeb; border-color: #fde68a; }
+.hc-stat--dang { background: #fff7ed; border-color: #fed7aa; }
+.hc-stat--done { background: #f0fdf4; border-color: #bbf7d0; }
+
+.hc-stat-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 22px; flex-shrink: 0;
+}
+
+.hc-stat--cho  .hc-stat-icon { background: #fef3c7; color: #d97706; }
+.hc-stat--dang .hc-stat-icon { background: #ffedd5; color: #ea580c; }
+.hc-stat--done .hc-stat-icon { background: #dcfce7; color: #16a34a; }
+
+.hc-stat-value { font-size: 28px; font-weight: 800; line-height: 1; }
+.hc-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 3px; }
+
+/* ── Table animations ─────────────────────────────────── */
+.hc-row-dang td {
+    background: #fff7ed;
+    border-left: 3px solid #f97316;
+}
+
+.hc-stt {
+    font-size: 20px;
+    color: var(--color-text-secondary);
+}
+
+.hc-stt--active {
+    color: #ea580c;
+    animation: hc-pulse 2s ease-in-out infinite;
+}
+
+@@keyframes hc-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+}
+
+/* ── Empty states ─────────────────────────────────────── */
+.hc-empty-shell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-10) var(--space-6);
+    text-align: center;
+}
+
+.hc-empty-icon {
+    font-size: 48px;
+    color: var(--color-text-secondary);
+    opacity: 0.4;
+}
+
+.hc-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.hc-empty-sub {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: 36ch;
+}
+
+/* ── Gọi button pulse ─────────────────────────────────── */
+.hc-goi-btn {
+    animation: hc-goi-glow 2.5s ease-in-out infinite;
+}
+
+@@keyframes hc-goi-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(26,95,168,0.35); }
+    50%       { box-shadow: 0 0 0 8px rgba(26,95,168,0); }
+}
+
+@@media (max-width: 768px) {
+    .hc-stats { grid-template-columns: 1fr; }
+    .hc-tab-bar { flex-direction: column; }
+    .hc-tab { min-width: unset; }
+}
 </style>
 }
