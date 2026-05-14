@@ -37,7 +37,7 @@
                 <i class="ph ph-calendar-dots"></i> Xem lịch làm việc
             </a>
         }
-        <a class="btn btn-secondary" href="/BacSi/HangCho">
+        <a class="btn btn-primary" href="/BacSi/HangCho">
             <i class="ph ph-clipboard-text"></i> Hàng chờ của tôi
         </a>
     </div>
@@ -56,7 +56,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);">
+        <div class="stat-icon" style="background:#fef3c7; color:#d97706;">
             <i class="ph ph-clock"></i>
         </div>
         <div>
@@ -119,7 +119,12 @@
             <tbody>
                 @foreach (var lh in Model.LichHenHomNay)
                 {
-                    <tr>
+                    var rowClass = lh.TrangThai switch {
+                        TrangThaiLichHen.DangKham  => "ds-row-dang",
+                        TrangThaiLichHen.HoanThanh => "ds-row-done",
+                        _ => ""
+                    };
+                    <tr class="@rowClass">
                         <td><span class="table-code">@lh.MaLichHen</span></td>
                         <td style="font-weight:500;">@lh.HoTenBenhNhan</td>
                         <td>@lh.GioBatDau.ToString(@"HH\:mm")</td>
@@ -141,3 +146,15 @@
         </table>
     }
 </div>
+
+@section Scripts {
+<style>
+.stat-card { transition: transform 0.15s, box-shadow 0.15s; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+
+.ds-row-dang td { background: #fff7ed; border-left: 3px solid #f97316; }
+.ds-row-done td { opacity: 0.7; }
+.data-table tbody tr { transition: background 0.12s; }
+.data-table tbody tr:hover td { background: var(--color-primary-light, #e8f0fb) !important; }
+</style>
+}

@@ -36,7 +36,9 @@
 
 <div class="module3-two-col">
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Tạo hồ sơ khám</h2>
+        <h2 class="card-title qk-section-header qk-section--create" style="margin-bottom:var(--space-3);">
+            <i class="ph ph-file-plus"></i> Tạo hồ sơ khám
+        </h2>
         <form method="post" asp-page-handler="TaoHoSo" class="module3-form">
             <div>
                 <label class="form-label">ID lịch hẹn</label>
@@ -61,7 +63,9 @@
     </div>
 
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Hồ sơ hiện tại</h2>
+        <h2 class="card-title qk-section-header qk-section--view" style="margin-bottom:var(--space-3);">
+            <i class="ph ph-clipboard-text"></i> Hồ sơ hiện tại
+        </h2>
         @if (Model.HoSoHienTai is null)
         {
             <div class="empty-state" style="padding:var(--space-6);">
@@ -102,7 +106,9 @@
 @if (Model.HoSoHienTai is not null)
 {
     <div class="card" style="margin-top:var(--space-4); padding:var(--space-4);">
-        <h2 class="card-title" style="margin-bottom:var(--space-3);">Kê toa thuốc</h2>
+        <h2 class="card-title qk-section-header qk-section--toa" style="margin-bottom:var(--space-3);">
+            <i class="ph ph-pill"></i> Kê toa thuốc
+        </h2>
         @if (Model.ToaHienTai.Any())
         {
             <table class="data-table" style="margin-bottom:var(--space-4);">
@@ -206,5 +212,17 @@
         .module3-summary { grid-template-columns: 1fr; }
         .module3-prescription-row { grid-template-columns: 1fr; }
     }
+
+    .qk-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 15px;
+    }
+    .qk-section--create { background: #e8f0fb; color: #1a5fa8; border-left: 4px solid #1a5fa8; }
+    .qk-section--view   { background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a; }
+    .qk-section--toa    { background: #fff7ed; color: #92400e; border-left: 4px solid #f97316; }
 </style>
 }
