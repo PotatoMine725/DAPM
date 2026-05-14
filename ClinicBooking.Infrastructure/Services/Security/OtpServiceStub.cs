@@ -26,7 +26,7 @@ public sealed class OtpServiceStub : IOtpService
         _logger = logger;
     }
 
-    public async Task<string> TaoVaGuiOtpDatLichAsync(int idTaiKhoan, string soDienThoai, CancellationToken cancellationToken = default)
+    public async Task<string> TaoVaGuiOtpDatLichAsync(int idTaiKhoan, string soDienThoai, string? emailGui = null, CancellationToken cancellationToken = default)
     {
         var otp = TaoMaOtp();
         var now = DateTime.UtcNow;

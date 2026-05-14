@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.Auth.Dtos;
 using ClinicBooking.Domain.Entities;
+using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -62,7 +64,17 @@ public class DangNhapHandler : IRequestHandler<DangNhapCommand, XacThucResponse>
         var now = _dateTimeProvider.UtcNow;
         taiKhoan.LanDangNhapCuoi = now;
 
-        var accessToken = _tokenService.TaoAccessToken(taiKhoan);
+        var claimsThem = new List<Claim>();
+        if (taiKhoan.VaiTro == VaiTro.BacSi)
+        {
+            var bacSi = await _db.BacSi
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan, cancellationToken);
+            if (bacSi is not null)
+                claimsThem.Add(new Claim("loai_hop_dong", bacSi.LoaiHopDong.ToString()));
+        }
+
+        var accessToken = _tokenService.TaoAccessToken(taiKhoan, claimsThem.Count > 0 ? claimsThem : null);
         var refreshToken = _tokenService.TaoRefreshToken();
 
         _db.RefreshToken.Add(new RefreshToken

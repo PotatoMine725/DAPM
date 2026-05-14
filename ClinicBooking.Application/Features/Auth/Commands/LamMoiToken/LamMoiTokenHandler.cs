@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.Auth.Dtos;
 using ClinicBooking.Domain.Entities;
+using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,7 +67,17 @@ public class LamMoiTokenHandler : IRequestHandler<LamMoiTokenCommand, XacThucRes
             throw new ForbiddenException("Tai khoan da bi khoa.");
         }
 
-        var accessToken = _tokenService.TaoAccessToken(taiKhoan);
+        var claimsThem = new List<Claim>();
+        if (taiKhoan.VaiTro == VaiTro.BacSi)
+        {
+            var bacSi = await _db.BacSi
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.IdTaiKhoan == taiKhoan.IdTaiKhoan, cancellationToken);
+            if (bacSi is not null)
+                claimsThem.Add(new Claim("loai_hop_dong", bacSi.LoaiHopDong.ToString()));
+        }
+
+        var accessToken = _tokenService.TaoAccessToken(taiKhoan, claimsThem.Count > 0 ? claimsThem : null);
         var refreshTokenMoi = _tokenService.TaoRefreshToken();
 
         tokenHienTai.DaThuHoi = true;
