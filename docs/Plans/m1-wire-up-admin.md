@@ -7,6 +7,60 @@
 
 ---
 
+## Tiến độ (cập nhật 2026-05-15)
+
+**Thứ tự ưu tiên đã chốt (cập nhật 2026-05-15):**
+
+1. 🔴 **Cao** — Quản lý ca làm việc bác sĩ: `BacSi`, `CaLamViec`, `LichNoiTru` (✅), `DuyetCa` (✅)
+2. 🟡 **Trung** — Danh mục: `Accounts`, `Phong`, `ChuyenKhoa`, `DichVu`
+3. 🟢 **Thấp** — Báo cáo & truyền thông: `Dashboard`, `ThongKe`, `ThongBao`
+
+> **Lưu ý:** Tạo BS hợp đồng (cần để test đầy đủ DuyetCa) sẽ thực hiện qua `Admin/BacSi` UI sau khi wire xong — không seed thủ công.
+
+| Phase | Trạng thái | Commit | Ưu tiên |
+|---|---|---|---|
+| 1.1 Admin/LichNoiTru | ✅ DONE | `02e2c57` | 🔴 |
+| 1.2 Admin/DuyetCa | ✅ DONE | `a98e448` | 🔴 |
+| 2.2 Admin/BacSi | ⬜ Tiếp theo | — | 🔴 |
+| 2.4 Admin/CaLamViec | ⬜ Sau BacSi | — | 🔴 |
+| 2.1 Admin/Accounts | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.3 Admin/Phong | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.3 Admin/ChuyenKhoa | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.3 Admin/DichVu | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.5 Admin/Dashboard | ⬜ Chưa bắt đầu | — | 🟢 |
+| 2.6 Admin/ThongKe | ⬜ Chưa bắt đầu | — | 🟢 |
+| 2.7 Admin/ThongBao | ⬜ Chưa bắt đầu | — | 🟢 |
+| 3 Verify & integration tests | ⬜ Chưa bắt đầu | — | 🔴 |
+
+### Files đã tạo/sửa trong Phase 1
+
+**Mới:**
+- `ClinicBooking.Application/Features/Scheduling/Dtos/LichNoiTruResponse.cs`
+- `ClinicBooking.Application/Features/Scheduling/Dtos/CaLamViecAdminResponse.cs`
+- `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachLichNoiTruTheoBacSi/{Query,Handler}.cs`
+- `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachCaLamViecChoDuyet/{Query,Handler}.cs`
+- `ClinicBooking.Application/Features/Scheduling/Queries/ThongKeDuyetCa/{Query,Handler}.cs` (Query + Response cùng file)
+
+**Sửa:**
+- `ClinicBooking.Application/Features/Doctors/Queries/DanhSachBacSiCongKhai/{Query,Handler}.cs` — thêm filter `LoaiHopDong?`
+- `ClinicBooking.Web/Pages/Admin/LichNoiTru.cshtml(.cs)` — wire MediatR + bỏ mock UI
+- `ClinicBooking.Web/Pages/Admin/DuyetCa.cshtml(.cs)` — wire MediatR + bỏ mock UI
+
+### Quyết định kiến trúc Phase 1
+
+- **Không mở rộng** `DanhSachCaLamViecCongKhaiQuery` để thêm filter `TrangThaiDuyet` — thay vào đó tạo `DanhSachCaLamViecChoDuyetQuery` mới + DTO `CaLamViecAdminResponse` riêng để tách field nhạy cảm (`LyDoTuChoi`, `IdAdminDuyet`, `NgayDuyet`) khỏi DTO public.
+- **Modal hiện qua class `.show`** + JS thuần (không dùng modal framework) — đồng nhất với pattern hiện có.
+- **Flash message** dùng `TempData["SuccessMessage"]/["ErrorMessage"]` render inline trong từng page (vì `_AdminLayout` chỉ có `showToast()` JS).
+- **`NgayTrongTuan`** chốt 0=CN, 1=T2, …, 6=T7 (khớp `(int)DayOfWeek` của handler `SinhCaLamViecTuLichNoiTru`).
+
+### Vấn đề cần follow-up
+
+- ⚠️ `SinhCaLamViecTuLichNoiTruHandler` check trùng theo `(IdBacSi, NgayLamViec)` — **không phân biệt ca Sáng/Chiều**. Một BS có 2 mẫu cùng ngày sẽ chỉ sinh được 1 ca. Cần sửa thêm `IdDinhNghiaCa` vào điều kiện.
+- ⚠️ `IdAdminDuyet` đang truyền `IdTaiKhoan`. Cần verify schema (entity `Admin` có FK riêng không?) trước khi vào Phase 2.
+- ⚠️ `CaLamViec.IdAdminDuyet` navigation property là `TaiKhoan?` (thấy ở entity) — phù hợp với cách đang truyền.
+
+---
+
 ## Hiện trạng
 
 ### Backend đã có (không cần code mới)
@@ -296,10 +350,14 @@ Mỗi commit kèm screenshot UI vào `docs/screenshots/admin-*.png` (optional).
 
 ## Định nghĩa hoàn thành (DoD)
 
-- [ ] Toàn bộ trang `Pages/Admin/*.cshtml.cs` không còn method `OnGet() {}` rỗng.
-- [ ] Mọi mock data (`onclick="approveAll()"`, `<div class="bs-list-item" onclick="selectDoctor(this,'Trần…`) bị thay bằng `@foreach` từ Model.
-- [ ] `dotnet build` xanh, `dotnet test` toàn bộ pass.
-- [ ] Admin có thể: tạo BS nội trú → cấu hình lịch → sinh ca → bệnh nhân đặt được lịch khớp slot.
-- [ ] Admin có thể: thấy ca pending của BS hợp đồng → duyệt/từ chối → trạng thái thay đổi đúng.
+- [x] `Pages/Admin/LichNoiTru.cshtml.cs` không còn `OnGet() {}` rỗng — wire MediatR đầy đủ.
+- [x] `Pages/Admin/DuyetCa.cshtml.cs` không còn `OnGet() {}` rỗng — wire MediatR đầy đủ.
+- [ ] Còn 7 trang stub: `Accounts`, `BacSi`, `Phong`, `ChuyenKhoa`, `DichVu`, `CaLamViec`, `ThongBao`, `ThongKe` (Dashboard có một phần).
+- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` đã thay bằng `@foreach` từ Model.
+- [ ] Còn mock trong các trang admin khác.
+- [x] `dotnet build` xanh (Phase 1).
+- [ ] `dotnet test` chưa chạy lại sau Phase 1 — cần verify.
+- [ ] Admin tạo BS nội trú → cấu hình lịch → sinh ca → bệnh nhân đặt — chờ verify UI thủ công.
+- [ ] Admin thấy ca pending → duyệt/từ chối → trạng thái thay đổi đúng — chờ verify UI thủ công.
 - [ ] Admin CRUD được Account/BacSi/Phong/ChuyenKhoa/DichVu.
 - [ ] Dashboard hiển thị số liệu thực (không hardcode), trừ phần doanh thu (chờ M3).
