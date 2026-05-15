@@ -19,10 +19,10 @@
 
 | Phase | Trạng thái | Commit | Ưu tiên |
 |---|---|---|---|
-| 1.1 Admin/LichNoiTru | ✅ DONE | `02e2c57` | 🔴 |
-| 1.2 Admin/DuyetCa | ✅ DONE | `a98e448` | 🔴 |
-| 2.2 Admin/BacSi | ⬜ Tiếp theo | — | 🔴 |
-| 2.4 Admin/CaLamViec | ⬜ Sau BacSi | — | 🔴 |
+| 1.1 Admin/LichNoiTru | ✅ DONE (pushed) | `02e2c57` | 🔴 |
+| 1.2 Admin/DuyetCa | ✅ DONE (pushed) | `a98e448` | 🔴 |
+| 2.2 Admin/BacSi | ✅ DONE (pushed) | `b8bfb7d` | 🔴 |
+| 2.4 Admin/CaLamViec | ⬜ Tiếp theo | — | 🔴 |
 | 2.1 Admin/Accounts | ⬜ Chưa bắt đầu | — | 🟡 |
 | 2.3 Admin/Phong | ⬜ Chưa bắt đầu | — | 🟡 |
 | 2.3 Admin/ChuyenKhoa | ⬜ Chưa bắt đầu | — | 🟡 |
@@ -32,26 +32,45 @@
 | 2.7 Admin/ThongBao | ⬜ Chưa bắt đầu | — | 🟢 |
 | 3 Verify & integration tests | ⬜ Chưa bắt đầu | — | 🔴 |
 
-### Files đã tạo/sửa trong Phase 1
+**Đã giải quyết blocker:** Admin có thể tự tạo BS hợp đồng qua `/Admin/BacSi` → unblock test đầy đủ Phase 1.2 DuyetCa.
 
-**Mới:**
+### Files đã tạo/sửa
+
+**Phase 1 — mới:**
 - `ClinicBooking.Application/Features/Scheduling/Dtos/LichNoiTruResponse.cs`
 - `ClinicBooking.Application/Features/Scheduling/Dtos/CaLamViecAdminResponse.cs`
 - `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachLichNoiTruTheoBacSi/{Query,Handler}.cs`
 - `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachCaLamViecChoDuyet/{Query,Handler}.cs`
-- `ClinicBooking.Application/Features/Scheduling/Queries/ThongKeDuyetCa/{Query,Handler}.cs` (Query + Response cùng file)
+- `ClinicBooking.Application/Features/Scheduling/Queries/ThongKeDuyetCa/{Query,Handler}.cs`
 
-**Sửa:**
+**Phase 1 — sửa:**
 - `ClinicBooking.Application/Features/Doctors/Queries/DanhSachBacSiCongKhai/{Query,Handler}.cs` — thêm filter `LoaiHopDong?`
 - `ClinicBooking.Web/Pages/Admin/LichNoiTru.cshtml(.cs)` — wire MediatR + bỏ mock UI
 - `ClinicBooking.Web/Pages/Admin/DuyetCa.cshtml(.cs)` — wire MediatR + bỏ mock UI
 
-### Quyết định kiến trúc Phase 1
+**Phase 2.2 — mới:**
+- `ClinicBooking.Application/Features/Doctors/Commands/TaoBacSi/{Command,Validator,Handler}.cs`
+- `ClinicBooking.Application/Features/Doctors/Commands/CapNhatBacSi/{Command,Validator,Handler}.cs`
+- `ClinicBooking.Application/Features/Doctors/Dtos/BacSiAdminResponse.cs`
+- `ClinicBooking.Application/Features/Doctors/Queries/DanhSachBacSiAdmin/{Query,Handler}.cs`
 
+**Phase 2.2 — sửa:**
+- `ClinicBooking.Web/Pages/Admin/BacSi.cshtml(.cs)` — wire CRUD + filter + 2 modal (tạo/sửa) + đổi trạng thái
+
+### Quyết định kiến trúc
+
+**Phase 1:**
 - **Không mở rộng** `DanhSachCaLamViecCongKhaiQuery` để thêm filter `TrangThaiDuyet` — thay vào đó tạo `DanhSachCaLamViecChoDuyetQuery` mới + DTO `CaLamViecAdminResponse` riêng để tách field nhạy cảm (`LyDoTuChoi`, `IdAdminDuyet`, `NgayDuyet`) khỏi DTO public.
 - **Modal hiện qua class `.show`** + JS thuần (không dùng modal framework) — đồng nhất với pattern hiện có.
 - **Flash message** dùng `TempData["SuccessMessage"]/["ErrorMessage"]` render inline trong từng page (vì `_AdminLayout` chỉ có `showToast()` JS).
 - **`NgayTrongTuan`** chốt 0=CN, 1=T2, …, 6=T7 (khớp `(int)DayOfWeek` của handler `SinhCaLamViecTuLichNoiTru`).
+
+**Phase 2.2:**
+- **Tạo `BacSi` đồng thời với `TaiKhoan`** trong 1 `SaveChangesAsync()` qua navigation property — đảm bảo atomic, không cần transaction explicit.
+- **DTO `BacSiAdminResponse` riêng** cho admin (chứa `TenDangNhap/Email/SDT/TaiKhoanHoatDong`), tách khỏi `BacSiPublicResponse` để không expose info nội bộ ở public API.
+- **Đổi trạng thái BS** dùng lại `CapNhatBacSiCommand` thay vì tạo command riêng — đơn giản, ít command. Trade-off: phải re-fetch BS hiện tại, có overhead 1 query — chấp nhận được vì action ít gọi.
+- **Conflict namespace `BacSi`** (entity vs `Application.Features.BacSi` namespace) → dùng alias `using BacSiEntity = ClinicBooking.Domain.Entities.BacSi;` trong handler.
+- **Modal sửa populate qua JSON inline**: `onclick='moModalSua(@Html.Raw(JsonSerializer.Serialize(bs)))'` — đơn giản, không cần fetch API riêng.
 
 ### Vấn đề cần follow-up
 
@@ -350,14 +369,16 @@ Mỗi commit kèm screenshot UI vào `docs/screenshots/admin-*.png` (optional).
 
 ## Định nghĩa hoàn thành (DoD)
 
-- [x] `Pages/Admin/LichNoiTru.cshtml.cs` không còn `OnGet() {}` rỗng — wire MediatR đầy đủ.
-- [x] `Pages/Admin/DuyetCa.cshtml.cs` không còn `OnGet() {}` rỗng — wire MediatR đầy đủ.
-- [ ] Còn 7 trang stub: `Accounts`, `BacSi`, `Phong`, `ChuyenKhoa`, `DichVu`, `CaLamViec`, `ThongBao`, `ThongKe` (Dashboard có một phần).
-- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` đã thay bằng `@foreach` từ Model.
+- [x] `Pages/Admin/LichNoiTru.cshtml.cs` wire MediatR đầy đủ.
+- [x] `Pages/Admin/DuyetCa.cshtml.cs` wire MediatR đầy đủ.
+- [x] `Pages/Admin/BacSi.cshtml.cs` wire MediatR đầy đủ (CRUD + đổi trạng thái).
+- [ ] Còn 6 trang stub: `Accounts`, `Phong`, `ChuyenKhoa`, `DichVu`, `CaLamViec`, `ThongBao`, `ThongKe` (Dashboard có một phần).
+- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` + `BacSi.cshtml` đã thay bằng `@foreach` từ Model.
 - [ ] Còn mock trong các trang admin khác.
-- [x] `dotnet build` xanh (Phase 1).
-- [ ] `dotnet test` chưa chạy lại sau Phase 1 — cần verify.
+- [x] `dotnet build` xanh sau cả 3 phase.
+- [ ] `dotnet test` chưa chạy lại sau Phase 1+2.2 — cần verify regression.
+- [x] Admin có thể CRUD BS (Phase 2.2) → tạo được BS hợp đồng qua UI.
 - [ ] Admin tạo BS nội trú → cấu hình lịch → sinh ca → bệnh nhân đặt — chờ verify UI thủ công.
 - [ ] Admin thấy ca pending → duyệt/từ chối → trạng thái thay đổi đúng — chờ verify UI thủ công.
-- [ ] Admin CRUD được Account/BacSi/Phong/ChuyenKhoa/DichVu.
+- [ ] Admin CRUD được Account/Phong/ChuyenKhoa/DichVu (BacSi đã xong).
 - [ ] Dashboard hiển thị số liệu thực (không hardcode), trừ phần doanh thu (chờ M3).
