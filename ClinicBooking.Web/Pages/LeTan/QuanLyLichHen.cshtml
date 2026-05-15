@@ -201,13 +201,13 @@
 
 <!-- ===== MODAL ĐẶT LỊCH VÃNG LAI ===== -->
 <div class="modal-overlay" id="modal-dat-lich-vang-lai">
-    <div class="modal-box" style="max-width:560px;">
+    <div class="modal-box" style="max-width:560px;max-height:90vh;display:flex;flex-direction:column;">
         <div class="modal-header">
             <span class="modal-title"><i class="ph ph-calendar-plus"></i> Đặt lịch mới tại quầy</span>
             <button class="modal-close" onclick="dongModalDatLich()">✕</button>
         </div>
-        <form method="post" asp-page-handler="DatLichVangLai" id="form-dat-lich-vang-lai">
-            <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--space-4);">
+        <form method="post" asp-page-handler="DatLichVangLai" id="form-dat-lich-vang-lai" onsubmit="return validateTruocSubmit()" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--space-4);overflow-y:auto;flex:1;">
 
                 <!-- BƯỚC 1: Tìm bệnh nhân -->
                 <div>
@@ -220,7 +220,7 @@
                         <div style="flex:1;">
                             <label class="form-label">Số điện thoại <span class="required-mark">*</span></label>
                             <input type="tel" class="form-input" id="vl-sdt" placeholder="0912345678"
-                                   maxlength="10" oninput="resetTimKiem()" />
+                                   maxlength="10" oninput="onSdtInput(this)" />
                         </div>
                         <button type="button" class="btn btn-secondary" onclick="timBenhNhan()" id="btn-tim-bn">
                             <i class="ph ph-magnifying-glass"></i> Tìm
@@ -367,6 +367,23 @@ function setHuyTarget(id) {
 
 // ===== ĐẶT LỊCH VÃNG LAI =====
 let idBenhNhanDaChon = null;
+let daTimKiem = false;
+
+function onSdtInput(el) {
+    resetTimKiem();
+    if (el.value.replace(/\D/g, '').length >= 10) timBenhNhan();
+}
+
+function validateTruocSubmit() {
+    const idCu = document.getElementById('vl-id-bn-cu').value;
+    const sdtHidden = document.getElementById('vl-sdt-hidden').value;
+    if (!idCu && !sdtHidden) {
+        alert('Vui lòng nhập số điện thoại và nhấn "Tìm" trước khi đặt lịch.');
+        document.getElementById('vl-sdt').focus();
+        return false;
+    }
+    return true;
+}
 
 function dongModalDatLich() {
     closeModal('modal-dat-lich-vang-lai');
