@@ -1,4 +1,5 @@
 using ClinicBooking.Application.Features.Doctors.Dtos;
+using ClinicBooking.Domain.Enums;
 using MediatR;
 
 namespace ClinicBooking.Application.Features.Doctors.Queries.DanhSachBacSiCongKhai;
@@ -8,4 +9,5 @@ public sealed record DanhSachBacSiCongKhaiQuery(
     int KichThuocTrang = 20,
     int? IdChuyenKhoa = null,
     string? TuKhoa = null,
-    bool? DangLamViec = null) : IRequest<IReadOnlyList<BacSiPublicResponse>>;
+    bool? DangLamViec = null,
+    LoaiHopDong? LoaiHopDong = null) : IRequest<IReadOnlyList<BacSiPublicResponse>>;
