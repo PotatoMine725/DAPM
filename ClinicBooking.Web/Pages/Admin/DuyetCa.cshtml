@@ -10,293 +10,232 @@
 <div class="section-title">Duyệt ca bác sĩ hợp đồng</div>
 <div class="section-sub">Xem xét và phê duyệt yêu cầu đăng ký ca làm việc từ bác sĩ hợp đồng</div>
 
-<!-- Summary bar -->
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
-  <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(230,81,0,.15);display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-clock"></i></div>
-    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--warning)" id="pending-count">5</div><div style="font-size:12px;color:var(--text-secondary)">Chờ duyệt</div></div>
-  </div>
-  <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(46,125,50,.15);display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-check"></i></div>
-    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--success)">28</div><div style="font-size:12px;color:var(--text-secondary)">Đã duyệt tháng này</div></div>
-  </div>
-  <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(198,40,40,.15);display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-times"></i></div>
-    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--danger)">3</div><div style="font-size:12px;color:var(--text-secondary)">Đã từ chối tháng này</div></div>
-  </div>
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary)"><i class="fa-solid fa-file-contract"></i></div>
-    <div><div style="font-family:'Lexend';font-size:22px;font-weight:700">8</div><div style="font-size:12px;color:var(--text-secondary)">Bác sĩ hợp đồng</div></div>
-  </div>
-</div>
-
-<div style="display:grid;grid-template-columns:1fr 380px;gap:18px">
-  <!-- Pending list -->
-  <div>
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Danh sách chờ duyệt</div>
-          <div class="card-sub">Sắp xếp theo thứ tự gửi yêu cầu</div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="approveAll()"><i class="fa-solid fa-check-double"></i> Duyệt tất cả</button>
-        </div>
-      </div>
-      <table>
-        <thead>
-          <tr><th>Bác sĩ</th><th>Chuyên khoa</th><th>Ngày làm</th><th>Ca</th><th>Giờ</th><th>Phòng</th><th>Gửi lúc</th><th>Thao tác</th></tr>
-        </thead>
-        <tbody id="pending-table">
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#0891b2">L</div><strong>BS. Lê Thanh Tâm</strong></div></td>
-            <td><span class="badge badge-primary">Tim mạch</span></td>
-            <td>12/03/2025</td>
-            <td><span class="badge badge-primary">Sáng</span></td>
-            <td style="font-size:12.5px">07:00–11:00</td>
-            <td>P101</td>
-            <td style="font-size:12px;color:var(--text-secondary)">08/03 08:30</td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Lê Thanh Tâm','Tim mạch','12/03','Sáng','07:00–11:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
-                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#dc2626">H</div><strong>BS. Hồ Văn Minh</strong></div></td>
-            <td><span class="badge" style="background:#f3e8ff;color:#7c3aed">Thần kinh</span></td>
-            <td>13/03/2025</td>
-            <td><span class="badge badge-success">Chiều</span></td>
-            <td style="font-size:12.5px">13:00–17:00</td>
-            <td>P305</td>
-            <td style="font-size:12px;color:var(--text-secondary)">08/03 09:15</td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Hồ Văn Minh','Thần kinh','13/03','Chiều','13:00–17:00','P305','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
-                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#059669">N</div><strong>BS. Nguyễn Hải Long</strong></div></td>
-            <td><span class="badge badge-primary">Tim mạch</span></td>
-            <td>14/03/2025</td>
-            <td><span class="badge badge-warning">Tối</span></td>
-            <td style="font-size:12.5px">18:00–22:00</td>
-            <td>P101</td>
-            <td style="font-size:12px;color:var(--text-secondary)">08/03 10:00</td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Nguyễn Hải Long','Tim mạch','14/03','Tối','18:00–22:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
-                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#7c3aed">P</div><strong>BS. Phùng Minh Đức</strong></div></td>
-            <td><span class="badge badge-primary">Tim mạch</span></td>
-            <td>15/03/2025</td>
-            <td><span class="badge badge-primary">Sáng</span></td>
-            <td style="font-size:12.5px">07:00–11:00</td>
-            <td>P101</td>
-            <td style="font-size:12px;color:var(--text-secondary)">08/03 11:00</td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Phùng Minh Đức','Tim mạch','15/03','Sáng','07:00–11:00','P101','8 slot (30 phút)')"><i class="fa-solid fa-check"></i></button>
-                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar-circle avatar-sm" style="background:#0891b2">T</div><strong>BS. Trương Anh Khoa</strong></div></td>
-            <td><span class="badge" style="background:#e8f5e9;color:#2e7d32">Nhi khoa</span></td>
-            <td>16/03/2025</td>
-            <td><span class="badge badge-success">Chiều</span></td>
-            <td style="font-size:12.5px">13:00–17:00</td>
-            <td>P203</td>
-            <td style="font-size:12px;color:var(--text-secondary)">08/03 13:45</td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="openModal('modal-duyet','BS. Trương Anh Khoa','Nhi khoa','16/03','Chiều','13:00–17:00','P203','12 slot (20 phút)')"><i class="fa-solid fa-check"></i></button>
-                <button class="btn btn-ghost btn-sm" onclick="openModal('modal-detail-ca')"><i class="fa-solid fa-eye"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
     </div>
-  </div>
-
-  <!-- Right: History & Notes -->
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div class="card">
-      <div class="card-header"><div class="card-title">Quyết định gần đây</div></div>
-      <div class="card-body-pad">
-        <div class="timeline">
-          <div class="tl-item">
-            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
-            <div class="tl-body">
-              <div class="tl-title">Đã duyệt — BS. Vũ Đức Thắng</div>
-              <div class="tl-desc">Ca sáng · T5 · P102 · 8 slot</div>
-              <div class="tl-time">08/03/2025 lúc 08:05</div>
-            </div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-icon red"><i class="fa-solid fa-times"></i></div>
-            <div class="tl-body">
-              <div class="tl-title">Từ chối — BS. Trương Anh Khoa</div>
-              <div class="tl-desc">Ca chiều · T6 · P305 — Phòng đang bảo trì</div>
-              <div class="tl-time">07/03/2025 lúc 15:30</div>
-            </div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
-            <div class="tl-body">
-              <div class="tl-title">Đã duyệt — BS. Phùng Minh Đức</div>
-              <div class="tl-desc">Ca sáng · T2 · P101 · 8 slot</div>
-              <div class="tl-time">07/03/2025 lúc 11:20</div>
-            </div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-icon green"><i class="fa-solid fa-check"></i></div>
-            <div class="tl-body">
-              <div class="tl-title">Đã duyệt — BS. Hồ Văn Minh</div>
-              <div class="tl-desc">Ca chiều · T3 · P305 · 8 slot</div>
-              <div class="tl-time">06/03/2025 lúc 09:00</div>
-            </div>
-          </div>
-        </div>
-      </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
     </div>
-
-    <!-- Quick note -->
-    <div class="card">
-      <div class="card-header"><div class="card-title">Lưu ý duyệt ca</div></div>
-      <div class="card-body-pad" style="display:flex;flex-direction:column;gap:8px;font-size:13px">
-        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);flex-shrink:0;margin-top:2px"></i><span>P305 đang bảo trì — <strong>không duyệt ca</strong> vào phòng này</span></div>
-        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-circle-info" style="color:var(--primary);flex-shrink:0;margin-top:2px"></i><span>BS. Nguyễn Hoàng Nam đang tạm nghỉ — kiểm tra trước khi duyệt</span></div>
-        <div style="display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-check-circle" style="color:var(--success);flex-shrink:0;margin-top:2px"></i><span>Phòng P101, P203, P102 đang hoạt động bình thường</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Xác nhận duyệt -->
-<div class="modal-overlay" id="modal-duyet">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-circle-check" style="color:var(--success);margin-right:8px"></i>Xác nhận duyệt ca</div>
-      <div class="modal-close" onclick="closeModal('modal-duyet')"><i class="fa-solid fa-times"></i></div>
-    </div>
-    <div class="modal-body">
-      <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:16px;margin-bottom:18px">
-        <div class="info-grid" id="duyet-info">
-          <div class="info-item"><div class="il">Bác sĩ</div><div class="iv" id="d-bs">—</div></div>
-          <div class="info-item"><div class="il">Chuyên khoa</div><div class="iv" id="d-ck">—</div></div>
-          <div class="info-item"><div class="il">Ngày làm</div><div class="iv" id="d-ngay">—</div></div>
-          <div class="info-item"><div class="il">Ca trực</div><div class="iv" id="d-ca">—</div></div>
-          <div class="info-item"><div class="il">Giờ</div><div class="iv" id="d-gio">—</div></div>
-          <div class="info-item"><div class="il">Phòng</div><div class="iv" id="d-phong">—</div></div>
-          <div class="info-item"><div class="il">Số slot</div><div class="iv" id="d-slot">—</div></div>
-        </div>
-      </div>
-      <p style="font-size:13.5px;color:var(--text-secondary)">Bạn có chắc muốn <strong style="color:var(--success)">phê duyệt</strong> ca này? Hệ thống sẽ gửi thông báo tới bác sĩ ngay lập tức.</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-duyet')">Hủy</button>
-      <button class="btn btn-primary" onclick="closeModal('modal-duyet');showToast('Đã duyệt ca thành công!')"><i class="fa-solid fa-check"></i> Xác nhận duyệt</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Xem chi tiết ca -->
-<div class="modal-overlay" id="modal-detail-ca">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-calendar-day" style="color:var(--primary);margin-right:8px"></i>Chi tiết yêu cầu ca</div>
-      <div class="modal-close" onclick="closeModal('modal-detail-ca')"><i class="fa-solid fa-times"></i></div>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--primary-light);border-radius:var(--radius-sm);margin-bottom:18px">
-        <div style="width:48px;height:48px;border-radius:50%;background:#0891b2;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700">L</div>
-        <div>
-          <div style="font-size:15px;font-weight:700">BS. Lê Thanh Tâm</div>
-          <div style="font-size:12.5px;color:var(--text-secondary)">Tim mạch · Bác sĩ · 3 năm kinh nghiệm · Hợp đồng</div>
-        </div>
-      </div>
-      <div class="info-grid" style="margin-bottom:16px">
-        <div class="info-item"><div class="il">Ngày làm việc</div><div class="iv">12/03/2025 (Thứ 4)</div></div>
-        <div class="info-item"><div class="il">Ca trực</div><div class="iv"><span class="badge badge-primary">Sáng</span></div></div>
-        <div class="info-item"><div class="il">Giờ làm</div><div class="iv">07:00 – 11:00 (4 tiếng)</div></div>
-        <div class="info-item"><div class="il">Phòng yêu cầu</div><div class="iv">P101 — Tim mạch 1</div></div>
-        <div class="info-item"><div class="il">Slot ước tính</div><div class="iv">8 slot (30 phút/slot)</div></div>
-        <div class="info-item"><div class="il">Nguồn tạo</div><div class="iv">Bác sĩ tự đăng ký</div></div>
-        <div class="info-item"><div class="il">Gửi yêu cầu</div><div class="iv">08/03/2025 lúc 08:30</div></div>
-        <div class="info-item"><div class="il">Trạng thái phòng</div><div class="iv"><span class="badge badge-success">Đang hoạt động</span></div></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-detail-ca')">Đóng</button>
-      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-detail-ca');openModal('modal-tuchoi')"><i class="fa-solid fa-times"></i> Từ chối</button>
-      <button class="btn btn-primary" onclick="closeModal('modal-detail-ca');showToast('Đã duyệt ca thành công!')"><i class="fa-solid fa-check"></i> Duyệt</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Từ chối ca -->
-<div class="modal-overlay" id="modal-tuchoi">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-circle-xmark" style="color:var(--danger);margin-right:8px"></i>Từ chối ca làm việc</div>
-      <div class="modal-close" onclick="closeModal('modal-tuchoi')"><i class="fa-solid fa-times"></i></div>
-    </div>
-    <div class="modal-body">
-      <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13px">
-        <strong>BS. Lê Thanh Tâm</strong> · T4 · Ca sáng 07:00–11:00 · P101
-      </div>
-      <div class="form-group">
-        <label>Lý do từ chối <span class="req">*</span></label>
-        <textarea class="form-control" placeholder="Nhập lý do để thông báo cho bác sĩ..." style="min-height:110px"></textarea>
-      </div>
-      <div class="form-group" style="margin-top:12px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-          <span style="font-size:13px">Gửi thông báo SMS cho bác sĩ</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-tuchoi')">Hủy</button>
-      <button class="btn btn-danger" onclick="closeModal('modal-tuchoi');showToast('Đã từ chối ca.')"><i class="fa-solid fa-times"></i> Xác nhận từ chối</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// Override openModal to fill dynamic info for modal-duyet
-const _openModalBase = openModal;
-function openModal(id, bs, ck, ngay, ca, gio, phong, slot) {
-    _openModalBase(id);
-    if (id === 'modal-duyet' && bs) {
-        document.getElementById('d-bs').textContent = bs;
-        document.getElementById('d-ck').textContent = ck || '—';
-        document.getElementById('d-ngay').textContent = ngay ? ngay + '/2025' : '—';
-        document.getElementById('d-ca').textContent = ca || '—';
-        document.getElementById('d-gio').textContent = gio || '—';
-        document.getElementById('d-phong').textContent = phong || '—';
-        document.getElementById('d-slot').textContent = slot || '—';
-    }
 }
 
-function approveAll() {
-    if (confirm('Bạn có chắc muốn duyệt tất cả các ca đang chờ?')) {
-        showToast('Tất cả ca đã được duyệt!', 'success');
+<!-- Summary bar -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+    <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(230,81,0,.15);display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-clock"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--warning)">@Model.ThongKe.SoChoDuyet</div><div style="font-size:12px;color:var(--text-secondary)">Chờ duyệt</div></div>
+    </div>
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(46,125,50,.15);display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-check"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--success)">@Model.ThongKe.SoDaDuyet</div><div style="font-size:12px;color:var(--text-secondary)">Đã duyệt tháng này</div></div>
+    </div>
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(198,40,40,.15);display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-times"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--danger)">@Model.ThongKe.SoTuChoi</div><div style="font-size:12px;color:var(--text-secondary)">Đã từ chối tháng này</div></div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary)"><i class="fa-solid fa-file-contract"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700">@Model.ThongKe.SoBacSiHopDong</div><div style="font-size:12px;color:var(--text-secondary)">Bác sĩ hợp đồng</div></div>
+    </div>
+</div>
+
+<!-- Pending list -->
+<div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+        <div>
+            <div class="card-title">Danh sách chờ duyệt (@Model.DanhSachChoDuyet.Count)</div>
+            <div class="card-sub">Sắp xếp theo thứ tự gửi yêu cầu</div>
+        </div>
+    </div>
+
+    @if (Model.DanhSachChoDuyet.Count == 0)
+    {
+        <div style="padding:40px;text-align:center;color:var(--text-secondary)">
+            <i class="fa-solid fa-circle-check fa-2x" style="margin-bottom:12px;color:var(--success);opacity:0.6"></i>
+            <div>Không có ca nào đang chờ duyệt.</div>
+        </div>
     }
+    else
+    {
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th style="text-align:left">Bác sĩ</th>
+                    <th style="text-align:left">Chuyên khoa</th>
+                    <th style="text-align:left">Ngày làm</th>
+                    <th style="text-align:left">Ca</th>
+                    <th style="text-align:left">Giờ</th>
+                    <th style="text-align:left">Phòng</th>
+                    <th style="text-align:left">Gửi lúc</th>
+                    <th style="text-align:left;width:160px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ca in Model.DanhSachChoDuyet)
+                {
+                    var initial = string.IsNullOrEmpty(ca.HoTenBacSi) ? "?" : ca.HoTenBacSi[..1].ToUpper();
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:9px">
+                                <div class="avatar-circle avatar-sm" style="background:#0891b2">@initial</div>
+                                <strong>BS. @ca.HoTenBacSi</strong>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-primary">@ca.TenChuyenKhoa</span></td>
+                        <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge badge-primary">@ca.TenCa</span></td>
+                        <td style="font-size:12.5px">@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm")</td>
+                        <td>@ca.MaPhong</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">@ca.NgayTao.ToString("dd/MM HH:mm")</td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <button class="btn btn-primary btn-sm" type="button"
+                                        onclick="moModalDuyet(@ca.IdCaLamViec, '@ca.HoTenBacSi', '@ca.TenChuyenKhoa', '@ca.NgayLamViec.ToString("dd/MM/yyyy")', '@ca.TenCa', '@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm")', '@ca.MaPhong', '@ca.SoSlotToiDa slot')">
+                                    <i class="fa-solid fa-check"></i> Duyệt
+                                </button>
+                                <button class="btn btn-danger btn-sm" type="button"
+                                        onclick="moModalTuChoi(@ca.IdCaLamViec, '@ca.HoTenBacSi')">
+                                    <i class="fa-solid fa-times"></i> Từ chối
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<!-- Recent processed -->
+@if (Model.DanhSachDaXuLy.Count > 0)
+{
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Xử lý gần đây</div>
+                <div class="card-sub">10 ca duyệt + 10 ca từ chối mới nhất</div>
+            </div>
+        </div>
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th style="text-align:left">Bác sĩ</th>
+                    <th style="text-align:left">Ngày làm</th>
+                    <th style="text-align:left">Ca</th>
+                    <th style="text-align:left">Trạng thái</th>
+                    <th style="text-align:left">Lý do từ chối</th>
+                    <th style="text-align:left">Duyệt lúc</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ca in Model.DanhSachDaXuLy)
+                {
+                    var isApproved = ca.TrangThaiDuyet == "DaDuyet";
+                    <tr>
+                        <td><strong>BS. @ca.HoTenBacSi</strong></td>
+                        <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                        <td>@ca.TenCa (@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm"))</td>
+                        <td>
+                            @if (isApproved)
+                            {
+                                <span class="badge badge-success">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Đã từ chối</span>
+                            }
+                        </td>
+                        <td style="color:var(--text-secondary);font-size:13px">@(ca.LyDoTuChoi ?? "—")</td>
+                        <td style="color:var(--text-secondary);font-size:12px">@(ca.NgayDuyet?.ToString("dd/MM HH:mm") ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Modal Duyệt -->
+<div id="modal-duyet" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);padding:24px;max-width:480px;width:90%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Xác nhận duyệt ca</h3>
+            <button type="button" onclick="dongModal('modal-duyet')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <div style="background:var(--background-light);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13.5px">
+            <div style="margin-bottom:6px"><strong>Bác sĩ:</strong> <span id="d-bs">—</span></div>
+            <div style="margin-bottom:6px"><strong>Chuyên khoa:</strong> <span id="d-ck">—</span></div>
+            <div style="margin-bottom:6px"><strong>Ngày làm:</strong> <span id="d-ngay">—</span></div>
+            <div style="margin-bottom:6px"><strong>Ca:</strong> <span id="d-ca">—</span> · <span id="d-gio">—</span></div>
+            <div style="margin-bottom:6px"><strong>Phòng:</strong> <span id="d-phong">—</span></div>
+            <div><strong>Số slot:</strong> <span id="d-slot">—</span></div>
+        </div>
+        <form method="post" asp-page-handler="Duyet">
+            <input type="hidden" id="d-id" asp-for="IdCaLamViecChon" />
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-duyet')">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Xác nhận duyệt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Từ chối -->
+<div id="modal-tu-choi" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);padding:24px;max-width:480px;width:90%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Từ chối ca: <span id="t-bs">—</span></h3>
+            <button type="button" onclick="dongModal('modal-tu-choi')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="TuChoi">
+            <input type="hidden" id="t-id" asp-for="IdCaLamViecChon" />
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Lý do từ chối <span style="color:var(--danger)">*</span></label>
+            <textarea asp-for="LyDoTuChoi" required rows="4" placeholder="VD: Trùng ca với BS khác tại phòng này"
+                      style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;resize:vertical;font-family:inherit"></textarea>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-tu-choi')">Hủy</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-times"></i> Xác nhận từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.modal-overlay.show { display: flex !important; }
+.section-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.section-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+.card table th, .card table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.card table thead th { font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; }
+.avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+.avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); }
+</style>
+
+<script>
+function moModalDuyet(id, bs, ck, ngay, ca, gio, phong, slot) {
+    document.getElementById('d-id').value = id;
+    document.getElementById('d-bs').textContent = 'BS. ' + bs;
+    document.getElementById('d-ck').textContent = ck;
+    document.getElementById('d-ngay').textContent = ngay;
+    document.getElementById('d-ca').textContent = ca;
+    document.getElementById('d-gio').textContent = gio;
+    document.getElementById('d-phong').textContent = phong;
+    document.getElementById('d-slot').textContent = slot;
+    document.getElementById('modal-duyet').classList.add('show');
+}
+function moModalTuChoi(id, bs) {
+    document.getElementById('t-id').value = id;
+    document.getElementById('t-bs').textContent = 'BS. ' + bs;
+    document.getElementById('modal-tu-choi').classList.add('show');
+}
+function dongModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('show');
 }
 </script>
