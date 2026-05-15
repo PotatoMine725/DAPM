@@ -50,13 +50,6 @@ public class LienKetHoSoModel : PageModel
     // Bước 1 → gửi OTP
     public async Task<IActionResult> OnPostGuiOtpAsync()
     {
-        if (string.IsNullOrWhiteSpace(SoDienThoai))
-        {
-            ErrorMessage = "Vui lòng nhập số điện thoại.";
-            Buoc = 1;
-            return Page();
-        }
-
         if (string.IsNullOrWhiteSpace(EmailNhan))
         {
             ErrorMessage = "Vui lòng nhập email để nhận mã OTP.";
