@@ -1,4 +1,5 @@
 @page
+@using System.Text.Json
 @model ClinicBooking.Web.Pages.Admin.DichVuModel
 @{
     Layout = "_AdminLayout";
@@ -8,242 +9,166 @@
 }
 
 <div class="section-title">Quản lý dịch vụ</div>
-<div class="section-sub">Cấu hình các dịch vụ khám, chẩn đoán theo từng chuyên khoa</div>
+<div class="section-sub">Danh mục dịch vụ khám / xét nghiệm theo chuyên khoa</div>
 
-<!-- Summary -->
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary)"><i class="fa-solid fa-syringe"></i></div>
-    <div><div style="font-family:'Lexend';font-size:20px;font-weight:700">18</div><div style="font-size:12px;color:var(--text-secondary)">Tổng dịch vụ</div></div>
-  </div>
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--success-bg);display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-eye"></i></div>
-    <div><div style="font-family:'Lexend';font-size:20px;font-weight:700">15</div><div style="font-size:12px;color:var(--text-secondary)">Đang hiển thị</div></div>
-  </div>
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--danger-bg);display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-eye-slash"></i></div>
-    <div><div style="font-family:'Lexend';font-size:20px;font-weight:700">3</div><div style="font-size:12px;color:var(--text-secondary)">Đã ẩn</div></div>
-  </div>
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
-    <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--warning-bg);display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-stethoscope"></i></div>
-    <div><div style="font-family:'Lexend';font-size:20px;font-weight:700">4</div><div style="font-size:12px;color:var(--text-secondary)">Chuyên khoa</div></div>
-  </div>
-</div>
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
 
-<!-- Toolbar -->
-<div class="toolbar">
-  <div class="toolbar-left">
-    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="search-services" placeholder="Tìm tên dịch vụ..."></div>
-    <select class="filter-select" id="filter-specialty">
-      <option value="">Tất cả chuyên khoa</option><option>Tim mạch</option><option>Nhi khoa</option><option>Thần kinh</option><option>Da liễu</option>
-    </select>
-    <select class="filter-select" id="filter-status">
-      <option value="">Tất cả trạng thái</option><option value="true">Đang hiển thị</option><option value="false">Đã ẩn</option>
-    </select>
-  </div>
-  <div class="toolbar-right">
-    <button class="btn btn-primary" onclick="openModal('modal-add-dv')"><i class="fa-solid fa-plus"></i> Thêm dịch vụ</button>
-  </div>
-</div>
-
-<!-- Services Table -->
 <div class="card">
-  <table>
-    <thead>
-      <tr><th>ID</th><th>Tên dịch vụ</th><th>Chuyên khoa</th><th>Thời gian (phút)</th><th>Mô tả</th><th>Lượt dùng</th><th>Hiển thị</th><th>Thao tác</th></tr>
-    </thead>
-    <tbody id="services-table">
-      <tr>
-        <td style="color:var(--text-disabled)">#1</td>
-        <td><strong>Khám tổng quát Tim mạch</strong></td>
-        <td><span class="badge badge-primary">Tim mạch</span></td>
-        <td><span class="badge badge-neutral">30 phút</span></td>
-        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo ECG, siêu âm tim cơ bản</td>
-        <td>
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">142</div>
-          <div class="progress" style="width:80px"><div class="progress-bar" style="width:83%"></div></div>
-        </td>
-        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
-        <td><div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteService(1)"><i class="fa-solid fa-trash"></i></button>
-        </div></td>
-      </tr>
-      <tr>
-        <td style="color:var(--text-disabled)">#2</td>
-        <td><strong>Siêu âm ổ bụng</strong></td>
-        <td><span class="badge badge-primary">Tim mạch</span></td>
-        <td><span class="badge badge-neutral">20 phút</span></td>
-        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Siêu âm chẩn đoán ổ bụng toàn diện</td>
-        <td>
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">98</div>
-          <div class="progress" style="width:80px"><div class="progress-bar" style="width:57%;background:var(--success)"></div></div>
-        </td>
-        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
-        <td><div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteService(2)"><i class="fa-solid fa-trash"></i></button>
-        </div></td>
-      </tr>
-      <tr>
-        <td style="color:var(--text-disabled)">#3</td>
-        <td><strong>Khám Nhi tổng quát</strong></td>
-        <td><span class="badge" style="background:#e8f5e9;color:#2e7d32">Nhi khoa</span></td>
-        <td><span class="badge badge-neutral">15 phút</span></td>
-        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Khám sức khỏe định kỳ trẻ em</td>
-        <td>
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">67</div>
-          <div class="progress" style="width:80px"><div class="progress-bar" style="width:39%;background:#059669"></div></div>
-        </td>
-        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
-        <td><div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteService(3)"><i class="fa-solid fa-trash"></i></button>
-        </div></td>
-      </tr>
-      <tr>
-        <td style="color:var(--text-disabled)">#4</td>
-        <td><strong>Điện não đồ</strong></td>
-        <td><span class="badge" style="background:#f3e8ff;color:#7c3aed">Thần kinh</span></td>
-        <td><span class="badge badge-neutral">45 phút</span></td>
-        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Đo hoạt động điện não EEG</td>
-        <td>
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">35</div>
-          <div class="progress" style="width:80px"><div class="progress-bar" style="width:20%;background:#7c3aed"></div></div>
-        </td>
-        <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
-        <td><div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteService(4)"><i class="fa-solid fa-trash"></i></button>
-        </div></td>
-      </tr>
-      <tr>
-        <td style="color:var(--text-disabled)">#5</td>
-        <td><strong>Laser điều trị da</strong></td>
-        <td><span class="badge" style="background:#fae8ff;color:#9333ea">Da liễu</span></td>
-        <td><span class="badge badge-neutral">60 phút</span></td>
-        <td style="font-size:12.5px;color:var(--text-secondary);max-width:180px">Điều trị các tổn thương da bằng laser</td>
-        <td>
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">22</div>
-          <div class="progress" style="width:80px"><div class="progress-bar" style="width:13%;background:#9333ea"></div></div>
-        </td>
-        <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
-        <td><div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-edit-dv')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="deleteService(5)"><i class="fa-solid fa-trash"></i></button>
-        </div></td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="pagination">
-    <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="page-btn active">1</button>
-    <button class="page-btn">2</button>
-    <button class="page-btn">3</button>
-    <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
-    <span class="page-info">Hiển thị 1–5 / 18 dịch vụ</span>
-  </div>
+    <div class="card-header">
+        <div class="card-title">Danh sách dịch vụ (@Model.DanhSach.Count)</div>
+        <button class="btn btn-primary" onclick="moModalTao()"><i class="fa-solid fa-plus"></i> Thêm dịch vụ</button>
+    </div>
+
+    <form method="get" class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tìm theo tên dịch vụ..."></div>
+        <select class="form-control" style="width:200px" name="idChuyenKhoa" onchange="this.form.submit()">
+            <option value="">Tất cả chuyên khoa</option>
+            @foreach (var ck in Model.DanhSachChuyenKhoa)
+            {
+                var sel = Model.IdChuyenKhoaLoc == ck.IdChuyenKhoa ? "selected" : null;
+                <option value="@ck.IdChuyenKhoa" selected="@sel">@ck.TenChuyenKhoa</option>
+            }
+        </select>
+        <select class="form-control" style="width:160px" name="hienThi" onchange="this.form.submit()">
+            <option value="">Tất cả</option>
+            <option value="true" selected="@(Model.HienThiLoc == true ? "selected" : null)">Hiển thị</option>
+            <option value="false" selected="@(Model.HienThiLoc == false ? "selected" : null)">Ẩn</option>
+        </select>
+        <button type="submit" class="btn btn-ghost btn-sm">Lọc</button>
+    </form>
 </div>
 
-<!-- Modal: Thêm dịch vụ -->
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Tên dịch vụ</th><th>Chuyên khoa</th><th>Mô tả</th><th>Ước tính (phút)</th><th>Hiển thị</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody>
+            @if (Model.DanhSach.Count == 0)
+            {
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-secondary)">Chưa có dịch vụ nào.</td></tr>
+            }
+            @foreach (var dv in Model.DanhSach)
+            {
+                <tr>
+                    <td><strong>@dv.TenDichVu</strong></td>
+                    <td>@dv.TenChuyenKhoa</td>
+                    <td style="font-size:12px;color:var(--text-secondary);max-width:280px">@dv.MoTa</td>
+                    <td>@(dv.ThoiGianUocTinh?.ToString() ?? "—")</td>
+                    <td>
+                        @if (dv.HienThi)
+                        {
+                            <span class="badge badge-success">Có</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-warning">Ẩn</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="action-btns" style="display:flex;gap:6px">
+                            <button class="btn btn-ghost btn-sm" title="Sửa" onclick='moModalSua(@Html.Raw(JsonSerializer.Serialize(dv)))'><i class="fa-solid fa-pen"></i></button>
+                            <form method="post" asp-page-handler="Xoa" style="display:inline" onsubmit="return confirm('Xoá dịch vụ @dv.TenDichVu?');">
+                                <input type="hidden" name="IdDichVuXoa" value="@dv.IdDichVu" />
+                                <button type="submit" class="btn btn-ghost btn-sm" title="Xoá" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tạo -->
 <div class="modal-overlay" id="modal-add-dv">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-syringe" style="color:var(--primary);margin-right:8px"></i>Thêm dịch vụ mới</div>
+      <div class="modal-title"><i class="fa-solid fa-briefcase-medical" style="color:var(--primary);margin-right:8px"></i>Thêm dịch vụ</div>
       <div class="modal-close" onclick="closeModal('modal-add-dv')"><i class="fa-solid fa-times"></i></div>
     </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group"><label>Tên dịch vụ <span class="req">*</span></label><input type="text" class="form-control" placeholder="VD: Khám tổng quát, Siêu âm ổ bụng..."></div>
-        <div class="form-group">
-          <label>Chuyên khoa <span class="req">*</span></label>
-          <select class="form-control"><option>-- Chọn chuyên khoa --</option><option>Tim mạch</option><option>Nhi khoa</option><option>Thần kinh</option><option>Da liễu</option></select>
-          <div class="form-hint">Dùng để lọc ca làm việc khi bệnh nhân chọn dịch vụ</div>
+    <form method="post" asp-page-handler="Tao">
+      <div class="modal-body">
+        <div class="form-group"><label>Chuyên khoa *</label>
+            <select class="form-control" name="IdChuyenKhoaInput" required>
+                <option value="">Chọn chuyên khoa</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                }
+            </select>
         </div>
-        <div class="form-group"><label>Mô tả dịch vụ</label><textarea class="form-control" placeholder="Mô tả chi tiết hiển thị cho bệnh nhân..."></textarea></div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Thời gian ước tính (phút)</label>
-            <input type="number" class="form-control" placeholder="VD: 30" min="5" step="5">
-            <div class="form-hint">Hint để hệ thống chọn slot phù hợp</div>
-          </div>
-          <div class="form-group" style="justify-content:flex-end;padding-top:22px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <span style="font-size:13.5px;font-weight:500">Hiển thị cho bệnh nhân</span>
-            </div>
-          </div>
+        <div class="form-group"><label>Tên dịch vụ *</label><input type="text" class="form-control" name="TenDichVu" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" maxlength="500"></textarea></div>
+        <div class="form-group"><label>Thời gian ước tính (phút)</label><input type="number" class="form-control" name="ThoiGianUocTinh" min="1" max="240"></div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" value="true" checked /> Hiển thị cho bệnh nhân</label>
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-add-dv')">Hủy</button>
-      <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm dịch vụ</button>
-    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-dv')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm</button>
+      </div>
+    </form>
   </div>
 </div>
 
-<!-- Modal: Sửa dịch vụ -->
+<!-- Modal Sửa -->
 <div class="modal-overlay" id="modal-edit-dv">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Sửa — Khám tổng quát Tim mạch</div>
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Sửa dịch vụ</div>
       <div class="modal-close" onclick="closeModal('modal-edit-dv')"><i class="fa-solid fa-times"></i></div>
     </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group"><label>Tên dịch vụ <span class="req">*</span></label><input type="text" class="form-control" value="Khám tổng quát Tim mạch"></div>
-        <div class="form-group"><label>Chuyên khoa</label><select class="form-control"><option selected>Tim mạch</option><option>Nhi khoa</option></select></div>
-        <div class="form-group"><label>Mô tả dịch vụ</label><textarea class="form-control">Đo ECG, siêu âm tim cơ bản</textarea></div>
-        <div class="form-row">
-          <div class="form-group"><label>Thời gian ước tính (phút)</label><input type="number" class="form-control" value="30"></div>
-          <div class="form-group" style="justify-content:flex-end;padding-top:22px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <span style="font-size:13.5px;font-weight:500">Đang hiển thị</span>
-            </div>
-          </div>
+    <form method="post" asp-page-handler="CapNhat">
+      <input type="hidden" name="IdDichVuSua" id="dv-id" />
+      <div class="modal-body">
+        <div class="form-group"><label>Chuyên khoa *</label>
+            <select class="form-control" name="IdChuyenKhoaInput" id="dv-ck" required>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                }
+            </select>
         </div>
-        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--primary)">
-          <i class="fa-solid fa-circle-info"></i> Dịch vụ này được dùng <strong>142 lần</strong>. Ẩn sẽ không ảnh hưởng lịch hẹn đã đặt.
+        <div class="form-group"><label>Tên dịch vụ *</label><input type="text" class="form-control" name="TenDichVu" id="dv-ten" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" id="dv-mota" maxlength="500"></textarea></div>
+        <div class="form-group"><label>Thời gian ước tính (phút)</label><input type="number" class="form-control" name="ThoiGianUocTinh" id="dv-tg" min="1" max="240"></div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" id="dv-hien" value="true" /> Hiển thị cho bệnh nhân</label>
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-edit-dv')">Hủy</button>
-      <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
-    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-dv')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
-function deleteService(id) {
-    if (confirm('Bạn có chắc muốn xóa dịch vụ này?')) {
-        showToast('Dịch vụ đã được xóa!', 'success');
-    }
+function moModalTao() {
+    document.querySelector('#modal-add-dv form').reset();
+    openModal('modal-add-dv');
 }
-
-document.getElementById('search-services')?.addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    document.querySelectorAll('#services-table tr').forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
-    });
-});
-
-document.getElementById('filter-specialty')?.addEventListener('change', filterServices);
-document.getElementById('filter-status')?.addEventListener('change', filterServices);
-
-function filterServices() {
-    const specialty = document.getElementById('filter-specialty').value;
-    const status = document.getElementById('filter-status').value;
-    document.querySelectorAll('#services-table tr').forEach(row => {
-        let show = true;
-        if (specialty && !row.textContent.includes(specialty)) show = false;
-        if (status) {
-            const cb = row.querySelector('input[type="checkbox"]');
-            if (cb && ((status === 'true' && !cb.checked) || (status === 'false' && cb.checked))) show = false;
-        }
-        row.style.display = show ? '' : 'none';
-    });
+function moModalSua(dv) {
+    document.getElementById('dv-id').value = dv.idDichVu;
+    document.getElementById('dv-ck').value = dv.idChuyenKhoa;
+    document.getElementById('dv-ten').value = dv.tenDichVu || '';
+    document.getElementById('dv-mota').value = dv.moTa || '';
+    document.getElementById('dv-tg').value = dv.thoiGianUocTinh ?? '';
+    document.getElementById('dv-hien').checked = !!dv.hienThi;
+    openModal('modal-edit-dv');
 }
 </script>

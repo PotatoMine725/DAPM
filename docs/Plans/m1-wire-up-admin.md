@@ -1,4 +1,4 @@
-# Kế hoạch M1 — Wire-up Admin Portal
+aa# Kế hoạch M1 — Wire-up Admin Portal
 
 **Mục tiêu:** Thay toàn bộ mock-data trong `ClinicBooking.Web/Pages/Admin/*` bằng MediatR thật.
 **Branch xuất phát:** `feature/module1/portal-sat-demo` (latest `489feaa`).
@@ -22,11 +22,11 @@
 | 1.1 Admin/LichNoiTru | ✅ DONE (pushed) | `02e2c57` | 🔴 |
 | 1.2 Admin/DuyetCa | ✅ DONE (pushed) | `a98e448` | 🔴 |
 | 2.2 Admin/BacSi | ✅ DONE (pushed) | `b8bfb7d` | 🔴 |
-| 2.4 Admin/CaLamViec | ✅ DONE (uncommitted) | — | 🔴 |
+| 2.4 Admin/CaLamViec | ✅ DONE (pushed) | (cmt trước) | 🔴 |
 | 2.1 Admin/Accounts | ⬜ Chưa bắt đầu | — | 🟡 |
-| 2.3 Admin/Phong | ⬜ Chưa bắt đầu | — | 🟡 |
-| 2.3 Admin/ChuyenKhoa | ⬜ Chưa bắt đầu | — | 🟡 |
-| 2.3 Admin/DichVu | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.3 Admin/Phong | ✅ DONE (uncommitted) | — | 🟡 |
+| 2.3 Admin/ChuyenKhoa | ✅ DONE (uncommitted) | — | 🟡 |
+| 2.3 Admin/DichVu | ✅ DONE (uncommitted) | — | 🟡 |
 | 2.5 Admin/Dashboard | ⬜ Chưa bắt đầu | — | 🟢 |
 | 2.6 Admin/ThongKe | ⬜ Chưa bắt đầu | — | 🟢 |
 | 2.7 Admin/ThongBao | ⬜ Chưa bắt đầu | — | 🟢 |
@@ -60,6 +60,11 @@
 **Phase 2.4 — sửa:**
 - `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachCaLamViecChoDuyet/{Query,Handler}.cs` — thêm filter `IdBacSi?` + `IdPhong?` (backward compat, dùng chung query này cho DuyetCa + CaLamViec)
 - `ClinicBooking.Web/Pages/Admin/CaLamViec.cshtml(.cs)` — wire MediatR: list + 6 filter (BS/Phòng/CK/TrangThai/TuNgay/DenNgay) + modal tạo (`TaoCaLamViecCommand`) + xoá row (`XoaCaLamViecCommand`)
+
+**Phase 2.3 — sửa (Phong/ChuyenKhoa/DichVu):**
+- `ClinicBooking.Web/Pages/Admin/Phong.cshtml(.cs)` — wire CRUD `Tao/CapNhat/Xoa PhongCommand` + lọc trạng thái/từ khoá.
+- `ClinicBooking.Web/Pages/Admin/ChuyenKhoa.cshtml(.cs)` — wire CRUD `Tao/CapNhat/Xoa ChuyenKhoaCommand` + table view + 2 modal.
+- `ClinicBooking.Web/Pages/Admin/DichVu.cshtml(.cs)` — wire CRUD `Tao/CapNhat/Xoa DichVuCommand` + lọc theo CK + table view.
 
 ### Quyết định kiến trúc
 
@@ -377,8 +382,9 @@ Mỗi commit kèm screenshot UI vào `docs/screenshots/admin-*.png` (optional).
 - [x] `Pages/Admin/DuyetCa.cshtml.cs` wire MediatR đầy đủ.
 - [x] `Pages/Admin/BacSi.cshtml.cs` wire MediatR đầy đủ (CRUD + đổi trạng thái).
 - [x] `Pages/Admin/CaLamViec.cshtml.cs` wire MediatR đầy đủ (list + filter + tạo + xoá).
-- [ ] Còn 5 trang stub: `Accounts`, `Phong`, `ChuyenKhoa`, `DichVu`, `ThongBao`, `ThongKe` (Dashboard có một phần).
-- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` + `BacSi.cshtml` + `CaLamViec.cshtml` đã thay bằng `@foreach` từ Model.
+- [x] `Pages/Admin/{Phong,ChuyenKhoa,DichVu}.cshtml.cs` wire MediatR đầy đủ (CRUD).
+- [ ] Còn 3 trang stub: `Accounts`, `ThongBao`, `ThongKe` (Dashboard có một phần).
+- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` + `BacSi.cshtml` + `CaLamViec.cshtml` + `Phong.cshtml` + `ChuyenKhoa.cshtml` + `DichVu.cshtml` đã thay bằng `@foreach` từ Model.
 - [ ] Còn mock trong các trang admin khác.
 - [x] `dotnet build` xanh sau cả 3 phase.
 - [ ] `dotnet test` chưa chạy lại sau Phase 1+2.2 — cần verify regression.
