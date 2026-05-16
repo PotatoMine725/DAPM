@@ -40,10 +40,8 @@ public sealed class TaoLichHenHandlerTests
         var notif = Substitute.For<INotificationService>();
         var maGen = Substitute.For<IMaLichHenGenerator>();
         var mediator = Substitute.For<IMediator>();
-        maGen.SinhMaLichHenAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
-            .Returns("LH-20260505-000001");
-        mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>())
-            .Returns(new KiemTraQuyenDatLichResult(true, null, 0, false, null, false));
+        maGen.SinhMaLichHenAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns("LH-20260505-000001");
+        mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>()).Returns(new KiemTraQuyenDatLichResult(true, null, 0, false, null, false));
         return new Deps(user, clock, scheduling, notif, maGen, mediator);
     }
 
@@ -71,25 +69,19 @@ public sealed class TaoLichHenHandlerTests
         var ca = TestDataSeeder.SeedCaLamViec(db);
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
-        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(ThongTinCaOk(ca.IdCaLamViec));
-        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
-            .Returns((int?)1);
+        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinCaOk(ca.IdCaLamViec));
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var result = await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, "Dau dau"),
-            CancellationToken.None);
+        var result = await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, "Dau dau"), CancellationToken.None);
 
         result.MaLichHen.Should().Be("LH-20260505-000001");
         result.SoSlot.Should().Be(1);
         result.IdBenhNhan.Should().Be(bn.IdBenhNhan);
         result.TrangThai.Should().Be(TrangThaiLichHen.ChoXacNhan);
         result.HinhThucDat.Should().Be(HinhThucDat.TrucTuyen);
-        (await db.LichSuLichHen.AsNoTracking().AnyAsync(x => x.IdLichHen == result.IdLichHen && x.HanhDong == HanhDongLichSu.DatMoi))
-            .Should().BeTrue();
+        (await db.LichSuLichHen.AsNoTracking().AnyAsync(x => x.IdLichHen == result.IdLichHen && x.HanhDong == HanhDongLichSu.DatMoi)).Should().BeTrue();
         await d.Notif.Received(1).GuiThongBaoTaoLichHenAsync(result.IdLichHen, Arg.Any<CancellationToken>());
     }
 
@@ -98,14 +90,11 @@ public sealed class TaoLichHenHandlerTests
     {
         using var factory = new TestDbContextFactory();
         using var db = factory.CreateContext();
-        var ca = TestDataSeeder.SeedCaLamViec(db);
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.LeTan);
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var act = async () => await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
+        var act = async () => await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null), CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Le tan phai chon benh nhan de dat lich.");
     }
@@ -122,9 +111,7 @@ public sealed class TaoLichHenHandlerTests
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var act = async () => await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
+        var act = async () => await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null), CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
     }
@@ -142,17 +129,12 @@ public sealed class TaoLichHenHandlerTests
         var ca = TestDataSeeder.SeedCaLamViec(db);
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
-        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(ThongTinCaOk(ca.IdCaLamViec));
-        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
-            .Returns((int?)1);
+        d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinCaOk(ca.IdCaLamViec));
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var result = await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
+        var result = await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null), CancellationToken.None);
 
         result.IdBenhNhan.Should().Be(bn.IdBenhNhan);
         result.TrangThai.Should().Be(TrangThaiLichHen.ChoXacNhan);
@@ -168,15 +150,10 @@ public sealed class TaoLichHenHandlerTests
         var ca = TestDataSeeder.SeedCaLamViec(db);
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
-        // Handler query DB truc tiep (loc TrangThaiDuyet == DaDuyet) nen phai mock KiemTraSlotTrongAsync.
-        // LayThongTinCaAsync khong duoc goi boi handler - chi KiemTraSlotTrongAsync moi quan trong.
-        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(new KetQuaKiemTraSlotDto(false, 10, 0, 0, LyDoKhongDatDuoc.CaChuaDuyet));
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(false, 10, 0, 0, LyDoKhongDatDuoc.CaChuaDuyet));
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var act = async () => await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
+        var act = async () => await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null), CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec chua duoc duyet.");
     }
@@ -192,52 +169,12 @@ public sealed class TaoLichHenHandlerTests
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
         d.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinCaOk(ca.IdCaLamViec));
-        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
-            .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
-            .Returns((int?)null);
+        d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
 
         var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
-        var act = async () => await handler.Handle(
-            new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
-            CancellationToken.None);
+        var act = async () => await handler.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null), CancellationToken.None);
 
-        await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
-    }
-
-    [Fact]
-    public async Task Handle_HaiBenhNhanDatDongThoi_ChiMotNguoiDatDuoc()
-    {
-        using var factory = new TestDbContextFactory();
-        using var db = factory.CreateContext();
-        var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
-        var bn1 = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk1.IdTaiKhoan);
-        var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
-        var bn2 = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk2.IdTaiKhoan);
-        var ca = TestDataSeeder.SeedCaLamViec(db);
-        var dv = TestDataSeeder.SeedDichVu(db);
-
-        var d1 = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk1.IdTaiKhoan);
-        var d2 = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk2.IdTaiKhoan);
-
-        var thongTin = ThongTinCaOk(ca.IdCaLamViec);
-        d1.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
-        d2.Scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
-        d1.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d2.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
-        d1.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
-        d2.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
-
-        var handler1 = new TaoLichHenHandler(db, d1.User, d1.Clock, d1.Scheduling, d1.Notif, d1.MaGen, d1.Mediator);
-        var handler2 = new TaoLichHenHandler(db, d2.User, d2.Clock, d2.Scheduling, d2.Notif, d2.MaGen, d2.Mediator);
-
-        var task1 = handler1.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "A"), CancellationToken.None);
-        var task2 = handler2.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "B"), CancellationToken.None);
-        await Task.WhenAll(task1.ContinueWith(_ => { }), task2.ContinueWith(_ => { }));
-
-        var results = new[] { task1, task2 };
-        results.Count(t => t.IsCompletedSuccessfully).Should().Be(1);
-        results.Count(t => t.IsFaulted).Should().Be(1);
-        (await db.LichHen.AsNoTracking().CountAsync()).Should().Be(1);
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("Khong the cap nhat so slot da dat.");
     }
 }

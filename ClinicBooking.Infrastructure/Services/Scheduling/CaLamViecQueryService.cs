@@ -114,7 +114,6 @@ public class CaLamViecQueryService : ICaLamViecQueryService
         var caCanRecon = await _db.CaLamViec
             .AsNoTracking()
             .Where(c => c.NgayLamViec >= tuNgay && c.NgayLamViec <= denNgay)
-            .Where(c => c.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
             .Select(c => new
             {
                 c.IdCaLamViec,
@@ -122,44 +121,31 @@ public class CaLamViecQueryService : ICaLamViecQueryService
                 c.SoSlotToiDa,
                 TongLichHen = _db.LichHen.Count(lh =>
                     lh.IdCaLamViec == c.IdCaLamViec &&
-                    lh.TrangThai != TrangThaiLichHen.HuyBenhNhan &&
-                    lh.TrangThai != TrangThaiLichHen.HuyPhongKham &&
-                    lh.TrangThai != TrangThaiLichHen.DaQuaHan &&
-                    lh.TrangThai != TrangThaiLichHen.KhongDen),
-                TongGiuCho = _db.GiuCho.Count(gc =>
-                    gc.IdCaLamViec == c.IdCaLamViec &&
-                    !gc.DaGiaiPhong &&
-                    gc.GioHetHan > now)
+                    (lh.TrangThai == TrangThaiLichHen.DaXacNhan ||
+                     lh.TrangThai == TrangThaiLichHen.DangKham ||
+                     lh.TrangThai == TrangThaiLichHen.ChoXacNhan ||
+                     lh.TrangThai == TrangThaiLichHen.HoanThanh)),
             })
             .ToListAsync(cancellationToken);
 
         var daCapNhat = 0;
         foreach (var item in caCanRecon)
         {
-            var soSlotTinhLai = item.TongLichHen + item.TongGiuCho;
-            if (soSlotTinhLai < 0 || soSlotTinhLai > item.SoSlotToiDa)
+            var soSlotTinhLai = item.TongLichHen;
+            if (soSlotTinhLai != item.SoSlotDaDat)
             {
-                continue;
+                _logger.LogWarning(
+                    "Recon slot ca {IdCaLamViec}: SoSlotDaDat hien tai {HienTai}, tinh lai {TinhLai}.",
+                    item.IdCaLamViec,
+                    item.SoSlotDaDat,
+                    soSlotTinhLai);
+
+                daCapNhat += await _db.CaLamViec
+                    .Where(c => c.IdCaLamViec == item.IdCaLamViec)
+                    .ExecuteUpdateAsync(
+                        s => s.SetProperty(c => c.SoSlotDaDat, soSlotTinhLai),
+                        cancellationToken);
             }
-
-            if (soSlotTinhLai == item.SoSlotDaDat)
-            {
-                continue;
-            }
-
-            _logger.LogWarning(
-                "Recon slot ca {IdCaLamViec}: SoSlotDaDat hien tai {HienTai}, tinh lai {TinhLai}.",
-                item.IdCaLamViec,
-                item.SoSlotDaDat,
-                soSlotTinhLai);
-
-            daCapNhat += await _db.CaLamViec
-                .Where(c => c.IdCaLamViec == item.IdCaLamViec)
-                .Where(c => c.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet)
-                .Where(c => c.SoSlotDaDat >= 0 && c.SoSlotDaDat <= c.SoSlotToiDa)
-                .ExecuteUpdateAsync(
-                    s => s.SetProperty(c => c.SoSlotDaDat, soSlotTinhLai),
-                    cancellationToken);
         }
 
         return daCapNhat;

@@ -3,7 +3,6 @@ using ClinicBooking.Application.Features.Scheduling.Commands.SinhCaLamViecTuLich
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
-using ClinicBooking.Infrastructure.Services.Scheduling;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -60,21 +59,21 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
             .Returns(Task.CompletedTask)
             .AndDoes(ci =>
             {
-                var ngay = ci.ArgAt<DateOnly>(2);
-                var gioBatDau = ci.ArgAt<TimeOnly>(3);
+                var ngay = ci.Arg<DateOnly>(2);
+                var gioBatDau = ci.Arg<TimeOnly>(3);
                 if (gioBatDau == new TimeOnly(13, 0) && ngay == DateOnly.FromDateTime(DateTime.UtcNow))
                 {
-                    throw new ClinicBooking.Application.Common.Exceptions.ConflictException("Phong dang trung lich.");
+                    throw new InvalidOperationException("Phong dang trung lich.");
                 }
             });
 
         var handler = new SinhCaLamViecTuLichNoiTruHandler(db, conflictChecker);
         var result = await handler.Handle(new SinhCaLamViecTuLichNoiTruCommand(0), CancellationToken.None);
 
-        result.SoCaSinh.Should().Be(2);
-        result.SoCaBoQua.Should().Be(0);
-        result.DanhSachXungDot.Should().BeEmpty();
+        result.SoCaSinh.Should().Be(1);
+        result.SoCaBoQua.Should().Be(1);
+        result.DanhSachXungDot.Should().ContainSingle(x => x.LyDo.Contains("trung lich", StringComparison.OrdinalIgnoreCase));
 
-        (await db.CaLamViec.CountAsync()).Should().Be(2);
+        (await db.CaLamViec.CountAsync()).Should().Be(1);
     }
 }

@@ -10,13 +10,9 @@
         <div class="page-subtitle">Chọn ngày đến khám, nhập giờ mong muốn và xác thực OTP trước khi hoàn tất.</div>
     </div>
     <div class="action-bar">
-        <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Quay lại lịch hẹn
-        </a>
+        <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">Quay lại lịch hẹn</a>
     </div>
 </div>
-
-
 
 @if (TempData["ErrorMessage"] is string err)
 {
@@ -29,15 +25,11 @@
 
 @if (Model.CanhBaoThieuBacSi.Any(x => x.HoanToanTrong))
 {
-    <div class="alert alert-danger" style="margin-bottom: var(--space-4);">
-        Không có bác sĩ chuyên khoa này trong ngày đã chọn. Vui lòng chọn ngày khác hoặc chuyên khoa khác.
-    </div>
+    <div class="alert alert-danger" style="margin-bottom: var(--space-4);">Không có bác sĩ chuyên khoa này trong ngày đã chọn. Vui lòng chọn ngày khác hoặc chuyên khoa khác.</div>
 }
 else if (Model.CanhBaoThieuBacSi.Any())
 {
-    <div class="alert alert-warning" style="margin-bottom: var(--space-4);">
-        Có ngày cần duyệt ca để đảm bảo đủ bác sĩ. Một số khung giờ vẫn đang chờ duyệt.
-    </div>
+    <div class="alert alert-warning" style="margin-bottom: var(--space-4);">Có ngày cần duyệt ca để đảm bảo đủ bác sĩ. Một số khung giờ vẫn đang chờ duyệt.</div>
 }
 
 <div class="card" style="padding: var(--space-4); margin-bottom: var(--space-4); border-left: 3px solid var(--color-primary-mid);">
@@ -54,8 +46,7 @@ else if (Model.CanhBaoThieuBacSi.Any())
             <div style="padding: var(--space-4);" class="section-stack">
                 <div class="form-group">
                     <label class="form-label">Ngày đến khám</label>
-                    <input type="date" class="form-input" asp-for="NgayChon"
-                           min="@DateOnly.FromDateTime(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")" />
+                    <input type="date" class="form-input" asp-for="NgayChon" min="@DateOnly.FromDateTime(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">Giờ mong muốn</label>
@@ -64,20 +55,13 @@ else if (Model.CanhBaoThieuBacSi.Any())
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dịch vụ khám</label>
-                    @if (!Model.DanhSachDichVu.Any())
-                    {
-                        <p style="color:var(--color-text-secondary); padding: var(--space-3);">Chưa có dịch vụ nào.</p>
-                    }
-                    else
-                    {
-                        <select class="form-select" asp-for="IdDichVu" style="width:100%;" required>
-                            <option value="0">— Chọn dịch vụ —</option>
-                            @foreach (var dv in Model.DanhSachDichVu)
-                            {
-                                <option value="@dv.IdDichVu">@dv.TenDichVu</option>
-                            }
-                        </select>
-                    }
+                    <select class="form-select" asp-for="IdDichVu" style="width:100%;" required>
+                        <option value="0">— Chọn dịch vụ —</option>
+                        @foreach (var dv in Model.DanhSachDichVu)
+                        {
+                            <option value="@dv.IdDichVu">@dv.TenDichVu</option>
+                        }
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Lý do khám / triệu chứng</label>
@@ -106,14 +90,11 @@ else if (Model.CanhBaoThieuBacSi.Any())
                         <button type="submit" formaction="?handler=GuiOtp" class="btn btn-secondary">Gửi mã OTP</button>
                         <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
                     </div>
-                    <div class="form-hint">Bấm gửi OTP để tạo mã xác thực, sau đó nhập mã và bấm hoàn tất đặt lịch.</div>
                 }
                 else
                 {
                     <div class="form-hint">OTP đang được tắt theo cấu hình Development. Bạn có thể đặt lịch trực tiếp.</div>
-                    <div class="filter-actions">
-                        <button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button>
-                    </div>
+                    <div class="filter-actions"><button type="submit" class="btn btn-primary">Hoàn tất đặt lịch</button></div>
                 }
             </div>
         </div>
@@ -122,34 +103,34 @@ else if (Model.CanhBaoThieuBacSi.Any())
     <div class="section-stack">
         <div class="card">
             <div class="card-header">
-                <span class="card-title"><i class="ph ph-info"></i> Thông tin đặt khám</span>
+                <span class="card-title"><i class="ph ph-list"></i> Ca khám khả dụng</span>
             </div>
-            <div class="summary-stack">
-                <div class="summary-item">
-                    <span class="summary-label">Ngày giờ</span>
-                    <span>@Model.NgayChon.ToString("dd/MM/yyyy") lúc @Model.GioMongMuon.ToString("HH:mm")</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Dịch vụ</span>
-                    <span>@Model.TenDichVuDaChon</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Chuyên khoa</span>
-                    <span>@Model.ChuyenKhoaHienTai</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Bác sĩ khám</span>
-                    <span>Hệ thống sẽ tự sắp xếp phù hợp</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Phòng khám</span>
-                    <span>Sẽ cập nhật sau khi đặt lịch</span>
-                </div>
+            <div style="padding: var(--space-4);" class="section-stack">
+                @if (!Model.DanhSachCa.Any())
+                {
+                    <div class="empty-state" style="padding: var(--space-6);">
+                        <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
+                        <p>Không tìm thấy ca phù hợp trong ngày đã chọn.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="data-table">
+                        <thead><tr><th>Ca</th><th>Bác sĩ</th><th>Phòng</th><th>Giờ</th></tr></thead>
+                        <tbody>
+                        @foreach (var ca in Model.DanhSachCa)
+                        {
+                            <tr>
+                                <td>@ca.IdCaLamViec</td>
+                                <td>@ca.TenChuyenKhoa</td>
+                                <td>@ca.IdPhong</td>
+                                <td>@ca.GioBatDau.ToString("HH:mm") - @ca.GioKetThuc.ToString("HH:mm")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
             </div>
-        </div>
-
-        <div class="action-bar">
-            <a href="/BenhNhan/DanhSachLichHen" class="btn btn-secondary">Huỷ bỏ</a>
         </div>
     </div>
 </form>

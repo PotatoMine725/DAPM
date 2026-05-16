@@ -24,16 +24,20 @@
 
 @if (TempData["SuccessMessage"] is string succ)
 {
-    <div class="alert alert-success" style="margin-bottom:var(--space-3);">
-        <i class="ph ph-check-circle"></i> @succ
-    </div>
+    <div class="alert alert-success" style="margin-bottom:var(--space-3);"><i class="ph ph-check-circle"></i> @succ</div>
 }
 @if (TempData["ErrorMessage"] is string err)
 {
-    <div class="alert alert-danger" style="margin-bottom:var(--space-3);">
-        <i class="ph ph-warning-circle"></i> @err
-    </div>
+    <div class="alert alert-danger" style="margin-bottom:var(--space-3);"><i class="ph ph-warning-circle"></i> @err</div>
 }
+
+<div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
+    <form method="get" style="display:flex; gap:var(--space-3); align-items:center;">
+        <label class="form-label" style="margin:0; white-space:nowrap;">Mã ca làm việc:</label>
+        <input type="number" class="form-input" name="idCaLamViec" value="@Model.IdCaLamViec" placeholder="Nhập ID ca..." style="width:160px;" />
+        <button type="submit" class="btn btn-secondary">Xem hàng chờ</button>
+    </form>
+</div>
 
 @if (!Model.DanhSachCa.Any())
 {
@@ -41,133 +45,59 @@
         <div class="hc-empty-icon"><i class="ph ph-calendar-x"></i></div>
         <p class="hc-empty-title">Không có ca nào hôm nay</p>
         <p class="hc-empty-sub">Lịch trực chưa được phân công. Liên hệ quản trị viên nếu có nhầm lẫn.</p>
-        <a class="btn btn-secondary" href="/BacSi/LichLamViec">
-            <i class="ph ph-calendar-dots"></i> Xem lịch làm việc
-        </a>
+        <a class="btn btn-secondary" href="/BacSi/LichLamViec"><i class="ph ph-calendar-dots"></i> Xem lịch làm việc</a>
+    </div>
+}
+else if (Model.IdCaLamViec.HasValue)
+{
+    <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
+        <div class="stat-card"><div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);"><i class="ph ph-clock"></i></div><div><div class="stat-value">@Model.SoChoKham</div><div class="stat-label">Đang chờ khám</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);"><i class="ph ph-stethoscope"></i></div><div><div class="stat-value">@Model.SoDangKham</div><div class="stat-label">Đang khám</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);"><i class="ph ph-check-circle"></i></div><div><div class="stat-value">@Model.SoHoanThanh</div><div class="stat-label">Hoàn thành</div></div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><span class="card-title">Ca #@Model.IdCaLamViec — Danh sách bệnh nhân</span></div>
+        @if (!Model.HangCho.Any())
+        {
+            <div class="empty-state" style="padding: var(--space-8);"><div class="empty-state-icon"><i class="ph ph-users"></i></div><p>Hàng chờ trống.</p></div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead><tr><th style="width:60px;">STT</th><th>Mã LH</th><th>Bệnh nhân</th><th>Check-in lúc</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                <tbody>
+                    @foreach (var hc in Model.HangCho)
+                    {
+                        <tr class="@(hc.TrangThai == TrangThaiHangCho.DangKham ? "row-highlight" : "")">
+                            <td><strong style="font-size:20px; color:var(--color-primary);">@hc.SoThuTu</strong></td>
+                            <td><span class="table-code">@hc.MaLichHen</span></td>
+                            <td><span style="font-weight:500;">@hc.HoTenBenhNhan</span></td>
+                            <td>@hc.NgayCheckIn.ToString("HH:mm")</td>
+                            <td>@Html.Raw(BadgeHelper.TrangThaiHangCho(hc.TrangThai))</td>
+                            <td class="table-actions">
+                                @if (hc.TrangThai == TrangThaiHangCho.DangKham)
+                                {
+                                    <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen"><i class="ph ph-file-plus"></i> Tao ho so</a>
+                                    <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
+                                        <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
+                                        <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
+                                        <button class="btn btn-sm btn-primary"><i class="ph ph-check"></i> Hoàn thành</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 }
 else
 {
-    <div class="card" style="margin-bottom: var(--space-4); padding: var(--space-4) var(--space-5);">
-        <form method="get" class="filter-bar" style="align-items:center;">
-            <label class="form-label" style="margin:0; white-space:nowrap;">
-                <i class="ph ph-calendar-check"></i> Ca của tôi:
-            </label>
-            <select class="form-select" name="idCaLamViec" style="min-width:340px;" onchange="this.form.submit()">
-                <option value="">— Chọn ca —</option>
-                @foreach (var ca in Model.DanhSachCa)
-                {
-                    var label = $"Ca #{ca.IdCaLamViec} | {ca.NgayLamViec:dd/MM} {ca.GioBatDau:HH\\:mm}–{ca.GioKetThuc:HH\\:mm} | {ca.TenChuyenKhoa}";
-                    if (Model.IdCaLamViec == ca.IdCaLamViec)
-                    {
-                        <option value="@ca.IdCaLamViec" selected>@label</option>
-                    }
-                    else
-                    {
-                        <option value="@ca.IdCaLamViec">@label</option>
-                    }
-                }
-            </select>
-        </form>
+    <div class="card">
+        <div class="empty-state" style="padding: var(--space-8);"><div class="empty-state-icon"><i class="ph ph-clipboard-text"></i></div><p>Nhập mã ca làm việc để xem danh sách bệnh nhân chờ khám.</p></div>
     </div>
-
-    @if (Model.IdCaLamViec.HasValue)
-    {
-        <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);">
-                    <i class="ph ph-clock"></i>
-                </div>
-                <div>
-                    <div class="stat-value">@Model.SoChoKham</div>
-                    <div class="stat-label">Đang chờ khám</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
-                    <i class="ph ph-stethoscope"></i>
-                </div>
-                <div>
-                    <div class="stat-value">@Model.SoDangKham</div>
-                    <div class="stat-label">Đang khám</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);">
-                    <i class="ph ph-check-circle"></i>
-                </div>
-                <div>
-                    <div class="stat-value">@Model.SoHoanThanh</div>
-                    <div class="stat-label">Hoàn thành</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">Ca #@Model.IdCaLamViec — Danh sách bệnh nhân</span>
-            </div>
-
-            @if (!Model.HangCho.Any())
-            {
-                <div class="empty-state" style="padding: var(--space-8);">
-                    <div class="empty-state-icon"><i class="ph ph-users"></i></div>
-                    <p>Hàng chờ trống.</p>
-                </div>
-            }
-            else
-            {
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width:60px;">STT</th>
-                            <th>Mã LH</th>
-                            <th>Bệnh nhân</th>
-                            <th>Check-in lúc</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var hc in Model.HangCho)
-                        {
-                            <tr class="@(hc.TrangThai == TrangThaiHangCho.DangKham ? "row-highlight" : "")">
-                                <td><strong style="font-size:20px; color:var(--color-primary);">@hc.SoThuTu</strong></td>
-                                <td><span class="table-code">@hc.MaLichHen</span></td>
-                                <td><span style="font-weight:500;">@hc.HoTenBenhNhan</span></td>
-                                <td>@hc.NgayCheckIn.ToString("HH:mm")</td>
-                                <td>@Html.Raw(BadgeHelper.TrangThaiHangCho(hc.TrangThai))</td>
-                                <td class="table-actions">
-                                    @if (hc.TrangThai == TrangThaiHangCho.DangKham)
-                                    {
-                                        <a class="btn btn-sm btn-secondary" href="/BacSi/QuanLyKham?idLichHenMoi=@hc.IdLichHen">
-                                            <i class="ph ph-file-plus"></i> Tao ho so
-                                        </a>
-                                        <form method="post" asp-page-handler="HoanThanh" style="display:inline;">
-                                            <input type="hidden" name="idHangCho" value="@hc.IdHangCho" />
-                                            <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
-                                            <button class="btn btn-sm btn-primary">
-                                                <i class="ph ph-check"></i> Hoàn thành
-                                            </button>
-                                        </form>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="card">
-            <div class="empty-state" style="padding: var(--space-8);">
-                <div class="empty-state-icon"><i class="ph ph-clipboard-text"></i></div>
-                <p>Nhập mã ca làm việc để xem danh sách bệnh nhân chờ khám.</p>
-            </div>
-        </div>
-    }
 }
 
 @section Scripts {
