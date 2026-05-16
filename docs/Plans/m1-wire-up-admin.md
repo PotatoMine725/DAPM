@@ -23,7 +23,7 @@ aa# Kế hoạch M1 — Wire-up Admin Portal
 | 1.2 Admin/DuyetCa | ✅ DONE (pushed) | `a98e448` | 🔴 |
 | 2.2 Admin/BacSi | ✅ DONE (pushed) | `b8bfb7d` | 🔴 |
 | 2.4 Admin/CaLamViec | ✅ DONE (pushed) | (cmt trước) | 🔴 |
-| 2.1 Admin/Accounts | ⬜ Chưa bắt đầu | — | 🟡 |
+| 2.1 Admin/Accounts | ➡️ Bàn giao Module 4 | `docs/Requests/yeu-cau-module4-admin-accounts.md` | 🟡 |
 | 2.3 Admin/Phong | ✅ DONE (uncommitted) | — | 🟡 |
 | 2.3 Admin/ChuyenKhoa | ✅ DONE (uncommitted) | — | 🟡 |
 | 2.3 Admin/DichVu | ✅ DONE (uncommitted) | — | 🟡 |
