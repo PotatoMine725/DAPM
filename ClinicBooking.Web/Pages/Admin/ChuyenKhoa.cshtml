@@ -1,4 +1,5 @@
 @page
+@using System.Text.Json
 @model ClinicBooking.Web.Pages.Admin.ChuyenKhoaModel
 @{
     Layout = "_AdminLayout";
@@ -7,382 +8,152 @@
     ViewData["PageTitle"] = "Quản lý chuyên khoa";
 }
 
-<!-- Search and Actions -->
+<div class="section-title">Quản lý chuyên khoa</div>
+<div class="section-sub">Danh mục chuyên khoa, slot mặc định và khung giờ mở đặt lịch</div>
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
 <div class="card">
     <div class="card-header">
-        <div class="card-title">Danh sách chuyên khoa</div>
-        <button class="btn btn-primary" onclick="openModal('modal-create-specialty')">
-            <i class="fa-solid fa-plus"></i> Thêm chuyên khoa mới
-        </button>
+        <div class="card-title">Danh sách chuyên khoa (@Model.DanhSach.Count)</div>
+        <button class="btn btn-primary" onclick="moModalTao()"><i class="fa-solid fa-plus"></i> Thêm chuyên khoa mới</button>
     </div>
-    
-    <div class="toolbar">
-        <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="form-control" id="search-specialties" placeholder="Tìm theo tên chuyên khoa...">
-        </div>
-        <select class="form-control" style="width: 200px;" id="filter-status">
-            <option value="">Tất cả trạng thái</option>
-            <option value="true">Hoạt động</option>
-            <option value="false">Ngừng hoạt động</option>
+
+    <form method="get" class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tìm theo tên chuyên khoa..."></div>
+        <select class="form-control" style="width:200px" name="hienThi" onchange="this.form.submit()">
+            <option value="">Tất cả</option>
+            <option value="true" selected="@(Model.HienThiLoc == true ? "selected" : null)">Hiển thị</option>
+            <option value="false" selected="@(Model.HienThiLoc == false ? "selected" : null)">Ẩn</option>
         </select>
-    </div>
+        <button type="submit" class="btn btn-ghost btn-sm">Lọc</button>
+    </form>
 </div>
 
-<!-- Specialties Grid -->
-<div class="specialties-grid" id="specialties-grid">
-    <div class="specialty-card">
-        <div class="specialty-header">
-            <div class="specialty-icon" style="background: var(--primary-light); color: var(--primary);">
-                <i class="fa-solid fa-stethoscope"></i>
-            </div>
-            <div class="specialty-info">
-                <div class="specialty-name">Nội tổng quát</div>
-                <div class="specialty-code">NT001</div>
-            </div>
-            <span class="badge badge-success">Hoạt động</span>
-        </div>
-        <div class="specialty-details">
-            <div class="detail-row">
-                <label>Số bác sĩ:</label>
-                <span>5 bác sĩ</span>
-            </div>
-            <div class="detail-row">
-                <label>Số phòng:</label>
-                <span>3 phòng</span>
-            </div>
-            <div class="detail-row">
-                <label>Giá khám:</label>
-                <span>200.000 VNĐ</span>
-            </div>
-        </div>
-        <div class="specialty-actions">
-            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
-                <i class="fa-solid fa-edit"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
-                <i class="fa-solid fa-eye"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
-                <i class="fa-solid fa-pause"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="specialty-card">
-        <div class="specialty-header">
-            <div class="specialty-icon" style="background: var(--success-bg); color: var(--success);">
-                <i class="fa-solid fa-heart"></i>
-            </div>
-            <div class="specialty-info">
-                <div class="specialty-name">Tim mạch</div>
-                <div class="specialty-code">TM001</div>
-            </div>
-            <span class="badge badge-success">Hoạt động</span>
-        </div>
-        <div class="specialty-details">
-            <div class="detail-row">
-                <label>Số bác sĩ:</label>
-                <span>3 bác sĩ</span>
-            </div>
-            <div class="detail-row">
-                <label>Số phòng:</label>
-                <span>2 phòng</span>
-            </div>
-            <div class="detail-row">
-                <label>Giá khám:</label>
-                <span>350.000 VNĐ</span>
-            </div>
-        </div>
-        <div class="specialty-actions">
-            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
-                <i class="fa-solid fa-edit"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
-                <i class="fa-solid fa-eye"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
-                <i class="fa-solid fa-pause"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="specialty-card">
-        <div class="specialty-header">
-            <div class="specialty-icon" style="background: var(--warning-bg); color: var(--warning);">
-                <i class="fa-solid fa-baby"></i>
-            </div>
-            <div class="specialty-info">
-                <div class="specialty-name">Nhi</div>
-                <div class="specialty-code">NH001</div>
-            </div>
-            <span class="badge badge-success">Hoạt động</span>
-        </div>
-        <div class="specialty-details">
-            <div class="detail-row">
-                <label>Số bác sĩ:</label>
-                <span>2 bác sĩ</span>
-            </div>
-            <div class="detail-row">
-                <label>Số phòng:</label>
-                <span>1 phòng</span>
-            </div>
-            <div class="detail-row">
-                <label>Giá khám:</label>
-                <span>250.000 VNĐ</span>
-            </div>
-        </div>
-        <div class="specialty-actions">
-            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
-                <i class="fa-solid fa-edit"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
-                <i class="fa-solid fa-eye"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
-                <i class="fa-solid fa-pause"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="specialty-card">
-        <div class="specialty-header">
-            <div class="specialty-icon" style="background: var(--danger-bg); color: var(--danger);">
-                <i class="fa-solid fa-venus"></i>
-            </div>
-            <div class="specialty-info">
-                <div class="specialty-name">Sản</div>
-                <div class="specialty-code">SP001</div>
-            </div>
-            <span class="badge badge-success">Hoạt động</span>
-        </div>
-        <div class="specialty-details">
-            <div class="detail-row">
-                <label>Số bác sĩ:</label>
-                <span>4 bác sĩ</span>
-            </div>
-            <div class="detail-row">
-                <label>Số phòng:</label>
-                <span>2 phòng</span>
-            </div>
-            <div class="detail-row">
-                <label>Giá khám:</label>
-                <span>300.000 VNĐ</span>
-            </div>
-        </div>
-        <div class="specialty-actions">
-            <button class="btn btn-ghost btn-sm" title="Chỉnh sửa">
-                <i class="fa-solid fa-edit"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Xem chi tiết">
-                <i class="fa-solid fa-eye"></i>
-            </button>
-            <button class="btn btn-ghost btn-sm" title="Ngừng hoạt động" style="color: var(--warning)">
-                <i class="fa-solid fa-pause"></i>
-            </button>
-        </div>
-    </div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Tên chuyên khoa</th><th>Mô tả</th><th>Slot (phút)</th><th>Giờ mở</th><th>Giờ đóng</th><th>Hiển thị</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody>
+            @if (Model.DanhSach.Count == 0)
+            {
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary)">Chưa có chuyên khoa nào.</td></tr>
+            }
+            @foreach (var ck in Model.DanhSach)
+            {
+                <tr>
+                    <td><strong>@ck.TenChuyenKhoa</strong></td>
+                    <td style="font-size:12px;color:var(--text-secondary);max-width:280px">@ck.MoTa</td>
+                    <td>@ck.ThoiGianSlotMacDinh</td>
+                    <td>@(ck.GioMoDatLich?.ToString("HH:mm") ?? "—")</td>
+                    <td>@(ck.GioDongDatLich?.ToString("HH:mm") ?? "—")</td>
+                    <td>
+                        @if (ck.HienThi)
+                        {
+                            <span class="badge badge-success">Có</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-warning">Ẩn</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="action-btns" style="display:flex;gap:6px">
+                            <button class="btn btn-ghost btn-sm" title="Sửa" onclick='moModalSua(@Html.Raw(JsonSerializer.Serialize(ck)))'><i class="fa-solid fa-pen"></i></button>
+                            <form method="post" asp-page-handler="Xoa" style="display:inline" onsubmit="return confirm('Xoá chuyên khoa @ck.TenChuyenKhoa?');">
+                                <input type="hidden" name="IdChuyenKhoaXoa" value="@ck.IdChuyenKhoa" />
+                                <button type="submit" class="btn btn-ghost btn-sm" title="Xoá" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 
-<!-- Create Specialty Modal -->
-<div class="modal-overlay" id="modal-create-specialty">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Thêm chuyên khoa mới</div>
-            <div class="modal-close" onclick="closeModal('modal-create-specialty')"><i class="fa-solid fa-xmark"></i></div>
-        </div>
-        <div class="modal-body">
-            <form id="create-specialty-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Tên chuyên khoa *</label>
-                        <input type="text" class="form-control" name="tenChuyenKhoa" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mã chuyên khoa *</label>
-                        <input type="text" class="form-control" name="maChuyenKhoa" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Giá khám (VNĐ) *</label>
-                        <input type="number" class="form-control" name="giaKham" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mô tả</label>
-                        <textarea class="form-control" name="moTa" rows="3"></textarea>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" name="trangThai" checked> 
-                        Chuyên khoa hoạt động
-                    </label>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-ghost" onclick="closeModal('modal-create-specialty')">
-                Hủy
-            </button>
-            <button type="button" class="btn btn-primary" onclick="createSpecialty()">
-                Thêm chuyên khoa
-            </button>
-        </div>
+<!-- Modal Tạo -->
+<div class="modal-overlay" id="modal-add-ck">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-stethoscope" style="color:var(--primary);margin-right:8px"></i>Thêm chuyên khoa</div>
+      <div class="modal-close" onclick="closeModal('modal-add-ck')"><i class="fa-solid fa-times"></i></div>
     </div>
+    <form method="post" asp-page-handler="Tao">
+      <div class="modal-body">
+        <div class="form-group"><label>Tên chuyên khoa *</label><input type="text" class="form-control" name="TenChuyenKhoa" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" maxlength="500"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="form-group"><label>Slot mặc định (phút) *</label><input type="number" class="form-control" name="ThoiGianSlotMacDinh" value="20" min="5" max="120" required></div>
+            <div class="form-group"><label>Giờ mở</label><input type="time" class="form-control" name="GioMoDatLich"></div>
+            <div class="form-group"><label>Giờ đóng</label><input type="time" class="form-control" name="GioDongDatLich"></div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" value="true" checked /> Hiển thị cho bệnh nhân</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-ck')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<style>
-
-
-
-
-
-
-
-
-.specialties-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.specialty-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow-sm);
-    transition: .2s;
-}
-
-.specialty-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-.specialty-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.specialty-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.specialty-info {
-    flex: 1;
-}
-
-.specialty-info .specialty-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.specialty-info .specialty-code {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 2px;
-}
-
-.specialty-details {
-    margin-bottom: 16px;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--subtle);
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-}
-
-.detail-row label {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.detail-row span {
-    font-size: 13px;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.specialty-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-
-
-
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-</style>
+<!-- Modal Sửa -->
+<div class="modal-overlay" id="modal-edit-ck">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Sửa chuyên khoa</div>
+      <div class="modal-close" onclick="closeModal('modal-edit-ck')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <form method="post" asp-page-handler="CapNhat">
+      <input type="hidden" name="IdChuyenKhoaSua" id="ck-id" />
+      <div class="modal-body">
+        <div class="form-group"><label>Tên chuyên khoa *</label><input type="text" class="form-control" name="TenChuyenKhoa" id="ck-ten" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" id="ck-mota" maxlength="500"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="form-group"><label>Slot (phút) *</label><input type="number" class="form-control" name="ThoiGianSlotMacDinh" id="ck-slot" min="5" max="120" required></div>
+            <div class="form-group"><label>Giờ mở</label><input type="time" class="form-control" name="GioMoDatLich" id="ck-giomo"></div>
+            <div class="form-group"><label>Giờ đóng</label><input type="time" class="form-control" name="GioDongDatLich" id="ck-giodong"></div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" id="ck-hien" value="true" /> Hiển thị cho bệnh nhân</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-ck')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
-function createSpecialty() {
-    const form = document.getElementById('create-specialty-form');
-    const formData = new FormData(form);
-    
-    // Validate form
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    // Create specialty logic here
-    showToast('Chuyên khoa đã được thêm thành công!', 'success');
-    closeModal('modal-create-specialty');
-    form.reset();
+function moModalTao() {
+    document.querySelector('#modal-add-ck form').reset();
+    openModal('modal-add-ck');
 }
-
-// Search functionality
-document.getElementById('search-specialties')?.addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const cards = document.querySelectorAll('.specialty-card');
-    
-    cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? '' : 'none';
-    });
-});
-
-// Filter functionality
-document.getElementById('filter-status')?.addEventListener('change', function() {
-    const status = this.value;
-    const cards = document.querySelectorAll('.specialty-card');
-    
-    cards.forEach(card => {
-        let show = true;
-        
-        if (status && !card.textContent.includes(status === 'true' ? 'Hoạt động' : 'Ngừng hoạt động')) {
-            show = false;
-        }
-        
-        card.style.display = show ? '' : 'none';
-    });
-});
+function moModalSua(ck) {
+    document.getElementById('ck-id').value = ck.idChuyenKhoa;
+    document.getElementById('ck-ten').value = ck.tenChuyenKhoa || '';
+    document.getElementById('ck-mota').value = ck.moTa || '';
+    document.getElementById('ck-slot').value = ck.thoiGianSlotMacDinh ?? 20;
+    document.getElementById('ck-giomo').value = ck.gioMoDatLich || '';
+    document.getElementById('ck-giodong').value = ck.gioDongDatLich || '';
+    document.getElementById('ck-hien').checked = !!ck.hienThi;
+    openModal('modal-edit-ck');
+}
 </script>

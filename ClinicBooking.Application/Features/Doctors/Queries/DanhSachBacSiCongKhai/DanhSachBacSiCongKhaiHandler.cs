@@ -42,6 +42,11 @@ public sealed class DanhSachBacSiCongKhaiHandler : IRequestHandler<DanhSachBacSi
         // doctors if the data set has not been fully synced yet.
         query = query.Where(x => x.ChuyenKhoa.HienThi);
 
+        if (request.LoaiHopDong.HasValue)
+        {
+            query = query.Where(x => x.LoaiHopDong == request.LoaiHopDong.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.TuKhoa))
         {
             query = query.Where(x => x.HoTen.Contains(request.TuKhoa));
