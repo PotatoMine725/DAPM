@@ -22,7 +22,7 @@
 | 1.1 Admin/LichNoiTru | ✅ DONE (pushed) | `02e2c57` | 🔴 |
 | 1.2 Admin/DuyetCa | ✅ DONE (pushed) | `a98e448` | 🔴 |
 | 2.2 Admin/BacSi | ✅ DONE (pushed) | `b8bfb7d` | 🔴 |
-| 2.4 Admin/CaLamViec | ⬜ Tiếp theo | — | 🔴 |
+| 2.4 Admin/CaLamViec | ✅ DONE (uncommitted) | — | 🔴 |
 | 2.1 Admin/Accounts | ⬜ Chưa bắt đầu | — | 🟡 |
 | 2.3 Admin/Phong | ⬜ Chưa bắt đầu | — | 🟡 |
 | 2.3 Admin/ChuyenKhoa | ⬜ Chưa bắt đầu | — | 🟡 |
@@ -56,6 +56,10 @@
 
 **Phase 2.2 — sửa:**
 - `ClinicBooking.Web/Pages/Admin/BacSi.cshtml(.cs)` — wire CRUD + filter + 2 modal (tạo/sửa) + đổi trạng thái
+
+**Phase 2.4 — sửa:**
+- `ClinicBooking.Application/Features/Scheduling/Queries/DanhSachCaLamViecChoDuyet/{Query,Handler}.cs` — thêm filter `IdBacSi?` + `IdPhong?` (backward compat, dùng chung query này cho DuyetCa + CaLamViec)
+- `ClinicBooking.Web/Pages/Admin/CaLamViec.cshtml(.cs)` — wire MediatR: list + 6 filter (BS/Phòng/CK/TrangThai/TuNgay/DenNgay) + modal tạo (`TaoCaLamViecCommand`) + xoá row (`XoaCaLamViecCommand`)
 
 ### Quyết định kiến trúc
 
@@ -372,8 +376,9 @@ Mỗi commit kèm screenshot UI vào `docs/screenshots/admin-*.png` (optional).
 - [x] `Pages/Admin/LichNoiTru.cshtml.cs` wire MediatR đầy đủ.
 - [x] `Pages/Admin/DuyetCa.cshtml.cs` wire MediatR đầy đủ.
 - [x] `Pages/Admin/BacSi.cshtml.cs` wire MediatR đầy đủ (CRUD + đổi trạng thái).
-- [ ] Còn 6 trang stub: `Accounts`, `Phong`, `ChuyenKhoa`, `DichVu`, `CaLamViec`, `ThongBao`, `ThongKe` (Dashboard có một phần).
-- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` + `BacSi.cshtml` đã thay bằng `@foreach` từ Model.
+- [x] `Pages/Admin/CaLamViec.cshtml.cs` wire MediatR đầy đủ (list + filter + tạo + xoá).
+- [ ] Còn 5 trang stub: `Accounts`, `Phong`, `ChuyenKhoa`, `DichVu`, `ThongBao`, `ThongKe` (Dashboard có một phần).
+- [x] Mock data trong `LichNoiTru.cshtml` + `DuyetCa.cshtml` + `BacSi.cshtml` + `CaLamViec.cshtml` đã thay bằng `@foreach` từ Model.
 - [ ] Còn mock trong các trang admin khác.
 - [x] `dotnet build` xanh sau cả 3 phase.
 - [ ] `dotnet test` chưa chạy lại sau Phase 1+2.2 — cần verify regression.

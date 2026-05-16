@@ -10,5 +10,7 @@ public sealed record DanhSachCaLamViecChoDuyetQuery(
     TrangThaiDuyetCa? TrangThaiDuyet = TrangThaiDuyetCa.ChoDuyet,
     NguonTaoCa? NguonTaoCa = null,
     int? IdChuyenKhoa = null,
+    int? IdBacSi = null,
+    int? IdPhong = null,
     DateOnly? TuNgay = null,
     DateOnly? DenNgay = null) : IRequest<IReadOnlyList<CaLamViecAdminResponse>>;

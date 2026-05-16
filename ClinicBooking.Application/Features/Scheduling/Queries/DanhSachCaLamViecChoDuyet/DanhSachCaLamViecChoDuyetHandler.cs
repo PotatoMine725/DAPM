@@ -42,6 +42,16 @@ public sealed class DanhSachCaLamViecChoDuyetHandler
             query = query.Where(x => x.IdChuyenKhoa == request.IdChuyenKhoa.Value);
         }
 
+        if (request.IdBacSi.HasValue)
+        {
+            query = query.Where(x => x.IdBacSi == request.IdBacSi.Value);
+        }
+
+        if (request.IdPhong.HasValue)
+        {
+            query = query.Where(x => x.IdPhong == request.IdPhong.Value);
+        }
+
         if (request.TuNgay.HasValue)
         {
             query = query.Where(x => x.NgayLamViec >= request.TuNgay.Value);
