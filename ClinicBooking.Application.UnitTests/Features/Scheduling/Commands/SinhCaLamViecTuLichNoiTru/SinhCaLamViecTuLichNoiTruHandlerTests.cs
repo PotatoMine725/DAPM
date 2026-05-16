@@ -1,0 +1,80 @@
+using ClinicBooking.Application.Abstractions.Scheduling;
+using ClinicBooking.Application.Features.Scheduling.Commands.SinhCaLamViecTuLichNoiTru;
+using ClinicBooking.Application.UnitTests.Common;
+using ClinicBooking.Domain.Entities;
+using ClinicBooking.Domain.Enums;
+using ClinicBooking.Infrastructure.Services.Scheduling;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using NSubstitute;
+
+namespace ClinicBooking.Application.UnitTests.Features.Scheduling.Commands.SinhCaLamViecTuLichNoiTru;
+
+public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
+{
+    [Fact]
+    public async Task Handle_SinhCaVaBoQuaXungDot_TraKetQuaChiTiet()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+
+        var chuyenKhoa = TestDataSeeder.SeedChuyenKhoa(db, "CK NOITRU");
+        var tk = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BacSi);
+        var phong = TestDataSeeder.SeedPhong(db);
+        var dinhNghiaSang = TestDataSeeder.SeedDinhNghiaCa(db, tenCa: "Sang", gioBatDau: new TimeOnly(8, 0), gioKetThuc: new TimeOnly(12, 0));
+        var dinhNghiaChieu = TestDataSeeder.SeedDinhNghiaCa(db, tenCa: "Chieu", gioBatDau: new TimeOnly(13, 0), gioKetThuc: new TimeOnly(17, 0));
+
+        var bacSi = new BacSi
+        {
+            IdTaiKhoan = tk.IdTaiKhoan,
+            IdChuyenKhoa = chuyenKhoa.IdChuyenKhoa,
+            HoTen = "BS Noi Tru",
+            LoaiHopDong = LoaiHopDong.NoiTru,
+            TrangThai = TrangThaiBacSi.DangLam,
+            NgayTao = DateTime.UtcNow
+        };
+        db.BacSi.Add(bacSi);
+        await db.SaveChangesAsync();
+
+        db.LichNoiTru.AddRange(
+            new LichNoiTru
+            {
+                IdBacSi = bacSi.IdBacSi,
+                IdPhong = phong.IdPhong,
+                IdDinhNghiaCa = dinhNghiaSang.IdDinhNghiaCa,
+                NgayTrongTuan = (int)DateOnly.FromDateTime(DateTime.UtcNow).DayOfWeek,
+                TrangThai = true
+            },
+            new LichNoiTru
+            {
+                IdBacSi = bacSi.IdBacSi,
+                IdPhong = phong.IdPhong,
+                IdDinhNghiaCa = dinhNghiaChieu.IdDinhNghiaCa,
+                NgayTrongTuan = (int)DateOnly.FromDateTime(DateTime.UtcNow).DayOfWeek,
+                TrangThai = true
+            });
+        await db.SaveChangesAsync();
+
+        var conflictChecker = Substitute.For<ICaLamViecConflictChecker>();
+        conflictChecker.EnsureKhongXungDotAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<DateOnly>(), Arg.Any<TimeOnly>(), Arg.Any<TimeOnly>(), Arg.Any<int?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(ci =>
+            {
+                var ngay = ci.Arg<DateOnly>(2);
+                var gioBatDau = ci.Arg<TimeOnly>(3);
+                if (gioBatDau == new TimeOnly(13, 0) && ngay == DateOnly.FromDateTime(DateTime.UtcNow))
+                {
+                    throw new InvalidOperationException("Phong dang trung lich.");
+                }
+            });
+
+        var handler = new SinhCaLamViecTuLichNoiTruHandler(db, conflictChecker);
+        var result = await handler.Handle(new SinhCaLamViecTuLichNoiTruCommand(0), CancellationToken.None);
+
+        result.SoCaSinh.Should().Be(1);
+        result.SoCaBoQua.Should().Be(1);
+        result.DanhSachXungDot.Should().ContainSingle(x => x.LyDo.Contains("trùng lịch", StringComparison.OrdinalIgnoreCase) || x.LyDo.Contains("trung lich", StringComparison.OrdinalIgnoreCase));
+
+        (await db.CaLamViec.CountAsync()).Should().Be(1);
+    }
+}

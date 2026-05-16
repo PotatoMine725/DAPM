@@ -3,6 +3,7 @@ using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
 using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
 using ClinicBooking.Application.Features.Scheduling.Dtos;
 using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
+using ClinicBooking.Application.Features.Scheduling.Queries.KiemTraDoPhuBacSi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,7 @@ public class DatLichModel : PageModel
 
     public IReadOnlyList<CaLamViecPublicResponse> DanhSachCa { get; private set; } = [];
     public IReadOnlyList<DichVuResponse> DanhSachDichVu { get; private set; } = [];
+    public IReadOnlyList<NgayThieuBacSiDto> CanhBaoThieuBacSi { get; private set; } = [];
     public DateOnly NgayChon { get; private set; }
     public string ChuyenKhoaHienTai => string.IsNullOrWhiteSpace(TenChuyenKhoaDaChon) ? "Nội tổng quát" : TenChuyenKhoaDaChon;
     public string TenDichVuDaChon => string.IsNullOrWhiteSpace(TenDichVu) ? "—" : TenDichVu;
@@ -30,6 +32,7 @@ public class DatLichModel : PageModel
     [BindProperty] public string? GhiChu { get; set; }
     [BindProperty] public int? IdCaLamViec { get; set; }
     [BindProperty] public string? Otp { get; set; }
+    [BindProperty] public int IdChuyenKhoa { get; set; } = 1;
 
     public string? TenChuyenKhoaDaChon { get; private set; }
     public string? TenDichVu { get; private set; }
@@ -87,6 +90,7 @@ public class DatLichModel : PageModel
         DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(
             SoTrang: 1,
             KichThuocTrang: 50,
+            IdChuyenKhoa: IdChuyenKhoa,
             TuNgay: ngay,
             DenNgay: ngay,
             ConTrong: true));
@@ -95,5 +99,7 @@ public class DatLichModel : PageModel
             SoTrang: 1,
             KichThuocTrang: 100,
             HienThi: true));
+
+        CanhBaoThieuBacSi = await _mediator.Send(new KiemTraDoPhuBacSiQuery(IdChuyenKhoa, ngay, ngay));
     }
 }

@@ -1,0 +1,101 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.NghiPhepModel
+@{
+    ViewData["Title"] = "Duyệt nghỉ phép";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Duyệt nghỉ phép</h1>
+        <div class="page-subtitle">Xử lý các đơn nghỉ phép bác sĩ gửi lên hệ thống.</div>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid--responsive" style="margin-bottom: var(--space-5);">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);"><i class="ph ph-hourglass"></i></div>
+        <div><div class="stat-value">@Model.SoDonChoDuyet</div><div class="stat-label">Đơn chờ duyệt</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);"><i class="ph ph-calendar-x"></i></div>
+        <div><div class="stat-value">@Model.SoNgayNghiThangNay</div><div class="stat-label">Ngày nghỉ tháng này</div></div>
+    </div>
+</div>
+
+<div class="card section-stack">
+    <div class="card-header">
+        <span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 16h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M4 5h16v15H4z" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Danh sách đơn chờ duyệt</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>Bác sĩ</th>
+            <th>Ca làm việc</th>
+            <th>Loại</th>
+            <th>Lý do</th>
+            <th>Ngày nộp</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var don in Model.DanhSach)
+        {
+            <tr>
+                <td>
+                    <strong>@don.HoTenBacSi</strong>
+                    <div class="text-muted" style="font-size:12px;">@don.TenChuyenKhoa</div>
+                </td>
+                <td>
+                    @don.NgayLamViec.ToString("dd/MM/yyyy")<br />
+                    @don.GioBatDau.ToString("HH:mm") - @don.GioKetThuc.ToString("HH:mm")
+                </td>
+                <td>@don.LoaiNghiPhep</td>
+                <td>@don.LyDo</td>
+                <td>@don.NgayGuiDon.ToString("dd/MM/yyyy HH:mm")</td>
+                <td class="table-actions">
+                    <form method="post" asp-page-handler="Approve" class="inline-form">
+                        <input type="hidden" name="idDonNghiPhep" value="@don.IdDonNghiPhep" />
+                        <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Duyệt đơn này?');">Duyệt</button>
+                    </form>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(@don.IdDonNghiPhep)">Từ chối</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="reject-modal" style="display:none;">
+    <div class="modal-box modal-box--lg">
+        <div class="modal-header">
+            <span class="modal-title">Từ chối đơn nghỉ phép</span>
+            <button class="modal-close" type="button" onclick="closeRejectModal()">✕</button>
+        </div>
+        <form method="post" asp-page-handler="Reject">
+            <input type="hidden" name="idDonNghiPhep" id="reject-id" />
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="lyDoTuChoi">Lý do từ chối</label>
+                    <textarea class="form-input" id="lyDoTuChoi" name="lyDoTuChoi" rows="4" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Hủy</button>
+                <button type="submit" class="btn btn-danger">Từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function openRejectModal(id) {
+    document.getElementById('reject-id').value = id;
+    document.getElementById('reject-modal').style.display = 'flex';
+}
+function closeRejectModal() {
+    document.getElementById('reject-modal').style.display = 'none';
+}
+</script>
+}

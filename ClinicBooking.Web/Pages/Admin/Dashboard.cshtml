@@ -5,36 +5,56 @@
 }
 
 <div class="page-header">
-    <h1 class="page-title">Bảng điều khiển Admin</h1>
-    <span style="font-size:13px; color:var(--color-text-secondary);">
-        <i class="ph ph-shield-check"></i> Vai trò: quản trị viên
-    </span>
+    <div>
+        <h1 class="page-title">Bảng điều khiển Admin</h1>
+        <div class="page-subtitle">Theo dõi cảnh báo vận hành và điều hướng nhanh các khu vực quản trị.</div>
+    </div>
 </div>
 
-<div class="card" style="border-left: 4px solid var(--color-warning-text);">
-    <div class="card-header">
-        <span class="card-title">
-            <i class="ph ph-warning-circle"></i>
-            Giao diện admin đang được phát triển
-        </span>
-    </div>
-    <div style="padding: 16px 20px; line-height: 1.6;">
-        <p>
-            Module <strong>Quản trị hệ thống</strong> (do thành viên Module 4 phụ trách) hiện chưa có UI hoàn chỉnh.
-            Trang này là placeholder để tài khoản admin có landing page riêng, không trùng với lễ tân.
-        </p>
-        <p>Các chức năng dự kiến:</p>
-        <ul style="padding-left: 20px;">
-            <li>Duyệt ca làm việc của bác sĩ</li>
-            <li>Quản lý tài khoản nhân viên</li>
-            <li>Quản lý chuyên khoa, dịch vụ, phòng</li>
-            <li>Báo cáo thống kê doanh thu, lượt khám</li>
-            <li>Cấu hình hệ thống (mẫu thông báo, giới hạn đặt lịch)</li>
-        </ul>
-        <p style="margin-top: 16px;">
-            Tham chiếu: <code>docs/phan-chia-module-va-huong-dan-du-an.md</code> — Module 4.
-        </p>
-    </div>
+<div class="card section-stack" style="margin-bottom: var(--space-4);">
+    <div class="card-header"><span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 9v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.54 21h16.92a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> Cảnh báo thiếu bác sĩ 7 ngày tới</span></div>
+    @if (!Model.CanhBaoTheoChuyenKhoa.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-6);">
+            <div class="empty-state-icon"><i class="ph ph-check-circle"></i></div>
+            <p>Không có ngày thiếu bác sĩ trong 7 ngày tới.</p>
+        </div>
+    }
+    else
+    {
+        foreach (var ck in Model.CanhBaoTheoChuyenKhoa)
+        {
+            var severityClass = ck.NgayThieu.Count >= 5 ? "badge-danger" : ck.NgayThieu.Count >= 3 ? "badge-warning" : "badge-success";
+            <div class="card" style="border:1px solid var(--color-border-subtle); box-shadow:none; margin-bottom: var(--space-3);">
+                <div class="card-header">
+                    <span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M10 3h4v2h-4z" stroke="currentColor" stroke-width="2"/><path d="M9 5h6v4H9z" stroke="currentColor" stroke-width="2"/><path d="M7 9h10v11H7z" stroke="currentColor" stroke-width="2"/><path d="M10 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> @ck.TenChuyenKhoa <span class="badge @severityClass" style="margin-left:8px;">@ck.NgayThieu.Count ngày thiếu</span></span>
+                    <a class="btn btn-sm btn-secondary" href="/Admin/QuanLyCaLamViec?chuyenKhoa=@ck.IdChuyenKhoa">Xem ca</a>
+                </div>
+                @if (!ck.NgayThieu.Any())
+                {
+                    <div class="empty-state" style="padding: var(--space-4);">
+                        <p>Không có cảnh báo trong 7 ngày tới.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="data-table">
+                        <thead><tr><th>Ngày</th><th>Ca chờ duyệt</th><th>Trạng thái</th></tr></thead>
+                        <tbody>
+                        @foreach (var item in ck.NgayThieu)
+                        {
+                            <tr>
+                                <td>@item.Ngay.ToString("dd/MM/yyyy")</td>
+                                <td>@item.SoCaChoDuyet</td>
+                                <td>@(item.HoanToanTrong ? "Hoàn toàn trống" : "Có ca chờ duyệt")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        }
+    }
 </div>
 
 <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-top: 20px;">

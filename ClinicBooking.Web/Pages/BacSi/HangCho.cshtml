@@ -12,7 +12,7 @@
         <form method="post" asp-page-handler="GoiKeTiep">
             <input type="hidden" name="idCaLamViec" value="@Model.IdCaLamViec" />
             <button type="submit" class="btn btn-primary">
-                <i class="ph ph-bell-ringing"></i> Gọi bệnh nhân tiếp theo
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 3a4 4 0 0 0-4 4v4c0 .8-.3 1.6-.8 2.2L6 15h12l-1.2-1.8c-.5-.6-.8-1.4-.8-2.2V7a4 4 0 0 0-4-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Gọi bệnh nhân tiếp theo
             </button>
         </form>
     }
@@ -25,7 +25,7 @@
         <input type="number" class="form-input" name="idCaLamViec"
                value="@Model.IdCaLamViec" placeholder="Nhập ID ca..." style="width:160px;" />
         <button type="submit" class="btn btn-secondary">
-            <i class="ph ph-magnifying-glass"></i> Xem hàng chờ
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Xem hàng chờ
         </button>
     </form>
 </div>
@@ -36,7 +36,7 @@
     <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
         <div class="stat-card">
             <div class="stat-icon" style="background:var(--color-neutral-bg); color:var(--color-text-secondary);">
-                <i class="ph ph-clock"></i>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
             </div>
             <div>
                 <div class="stat-value">@Model.SoChoKham</div>

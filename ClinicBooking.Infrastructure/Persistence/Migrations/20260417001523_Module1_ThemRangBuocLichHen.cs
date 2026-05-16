@@ -48,8 +48,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                 table: "LichHen",
                 type: "rowversion",
                 rowVersion: true,
-                nullable: false,
-                defaultValue: new byte[0]);
+                nullable: false);
 
             migrationBuilder.AlterColumn<string>(
                 name: "TrangThai",

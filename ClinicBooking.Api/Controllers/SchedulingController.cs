@@ -5,6 +5,8 @@ using ClinicBooking.Application.Features.Scheduling.Commands.DuyetCaLamViec;
 using ClinicBooking.Application.Features.Scheduling.Commands.TaoCaLamViec;
 using ClinicBooking.Application.Features.Scheduling.Commands.XoaCaLamViec;
 using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
+using ClinicBooking.Application.Features.Scheduling.Queries.LayChiTietCaLamViecCongKhai;
+using ClinicBooking.Application.Features.Scheduling.Queries.KiemTraDoPhuBacSi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +52,16 @@ public sealed class SchedulingController : ControllerBase
             cancellationToken);
 
         return Ok(result.Select(x => x.TuDto()).ToList());
+    }
+
+    [HttpGet("{idCaLamViec:int}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(CaLamViecPublicDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CaLamViecPublicDto>> LayChiTietCaLamViec(int idCaLamViec, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new LayChiTietCaLamViecCongKhaiQuery(idCaLamViec), cancellationToken);
+        return result is null ? NotFound() : Ok(result.TuDto());
     }
 
     [HttpPost]

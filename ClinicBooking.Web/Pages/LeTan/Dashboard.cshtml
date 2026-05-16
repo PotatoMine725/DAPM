@@ -1,103 +1,98 @@
 @page
 @model ClinicBooking.Web.Pages.LeTan.DashboardModel
-@using ClinicBooking.Domain.Enums
 @{
-    ViewData["Title"] = "Tổng quan";
+    ViewData["Title"] = "Bảng điều khiển Lễ tân";
 }
 
 <div class="page-header">
-    <h1 class="page-title">Tổng quan hệ thống</h1>
-    <span style="font-size:13px; color:var(--color-text-secondary);">
-        <i class="ph ph-calendar"></i> @Model.NgayHienTai.ToString("dddd, dd/MM/yyyy")
-    </span>
-</div>
-
-<!-- Stats -->
-<div class="stats-grid" style="grid-template-columns: repeat(3,1fr);">
-    <div class="stat-card">
-        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);">
-            <i class="ph ph-calendar-check"></i>
-        </div>
-        <div>
-            <div class="stat-value">@Model.TongLichHen</div>
-            <div class="stat-label">Tổng lịch hẹn hôm nay</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);">
-            <i class="ph ph-clock-countdown"></i>
-        </div>
-        <div>
-            <div class="stat-value">@Model.SoChoXacNhan</div>
-            <div class="stat-label">Chờ xác nhận</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
-            <i class="ph ph-users-three"></i>
-        </div>
-        <div>
-            <div class="stat-value">@Model.SoDaXacNhan</div>
-            <div class="stat-label">Đã xác nhận, chờ khám</div>
-        </div>
+    <div>
+        <h1 class="page-title">Bảng điều khiển lễ tân</h1>
+        <div class="page-subtitle">Theo dõi lịch hẹn hôm nay và cảnh báo thiếu bác sĩ theo chuyên khoa.</div>
     </div>
 </div>
 
-<!-- Lịch hẹn cần xử lý hôm nay -->
-<div class="card">
-    <div class="card-header">
-        <span class="card-title">Lịch hẹn hôm nay — cần xử lý</span>
-        <a href="/LeTan/QuanLyLichHen" class="btn btn-secondary btn-sm">Xem tất cả</a>
-    </div>
-
-    @if (!Model.LichHenHomNay.Any())
+<div class="card section-stack" style="margin-bottom: var(--space-4);">
+    <div class="card-header"><span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M12 9v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.54 21h16.92a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> Cảnh báo thiếu bác sĩ 7 ngày tới</span></div>
+    @if (!Model.CanhBaoTheoChuyenKhoa.Any())
     {
-        <div class="empty-state">
-            <div class="empty-state-icon"><i class="ph ph-calendar-blank"></i></div>
-            <p>Không có lịch hẹn nào hôm nay.</p>
+        <div class="empty-state" style="padding: var(--space-6);">
+            <div class="empty-state-icon"><i class="ph ph-check-circle"></i></div>
+            <p>Không có ngày thiếu bác sĩ trong 7 ngày tới.</p>
         </div>
     }
     else
     {
+        foreach (var ck in Model.CanhBaoTheoChuyenKhoa)
+        {
+            var severityClass = ck.NgayThieu.Count >= 5 ? "badge-danger" : ck.NgayThieu.Count >= 3 ? "badge-warning" : "badge-success";
+            <div class="card" style="border:1px solid var(--color-border-subtle); box-shadow:none; margin-bottom: var(--space-3);">
+                <div class="card-header">
+                    <span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M10 3h4v2h-4z" stroke="currentColor" stroke-width="2"/><path d="M9 5h6v4H9z" stroke="currentColor" stroke-width="2"/><path d="M7 9h10v11H7z" stroke="currentColor" stroke-width="2"/><path d="M10 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> @ck.TenChuyenKhoa <span class="badge @severityClass" style="margin-left:8px;">@ck.NgayThieu.Count ngày thiếu</span></span>
+                    <a class="btn btn-sm btn-secondary" href="/LeTan/QuanLyLichHen?chuyenKhoa=@ck.IdChuyenKhoa">Xem lịch hẹn</a>
+                </div>
+                @if (!ck.NgayThieu.Any())
+                {
+                    <div class="empty-state" style="padding: var(--space-4);">
+                        <p>Không có cảnh báo trong 7 ngày tới.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="data-table">
+                        <thead><tr><th>Ngày</th><th>Ca chờ duyệt</th><th>Trạng thái</th></tr></thead>
+                        <tbody>
+                        @foreach (var item in ck.NgayThieu)
+                        {
+                            <tr>
+                                <td>@item.Ngay.ToString("dd/MM/yyyy")</td>
+                                <td>@item.SoCaChoDuyet</td>
+                                <td>@(item.HoanToanTrong ? "Hoàn toàn trống" : "Có ca chờ duyệt")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        }
+    }
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);"><i class="ph ph-calendar"></i></div><div><div class="stat-value">@Model.TongLichHen</div><div class="stat-label">Tổng lịch hẹn</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);"><i class="ph ph-hourglass"></i></div><div><div class="stat-value">@Model.SoChoXacNhan</div><div class="stat-label">Chờ xác nhận</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);"><i class="ph ph-check-circle"></i></div><div><div class="stat-value">@Model.SoDaXacNhan</div><div class="stat-label">Đã xác nhận</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-calendar-blank"></i> Lịch hẹn hôm nay</span>
+    </div>
+    <div class="table-responsive">
         <table class="data-table">
             <thead>
-                <tr>
-                    <th>Mã LH</th>
-                    <th>Bệnh nhân</th>
-                    <th>Dịch vụ</th>
-                    <th>Giờ</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
+            <tr>
+                <th>Mã</th>
+                <th>Bệnh nhân</th>
+                <th>Giờ hẹn</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
             </thead>
             <tbody>
-                @foreach (var lh in Model.LichHenHomNay.Take(10))
-                {
-                    <tr>
-                        <td><span class="table-code">@lh.MaLichHen</span></td>
-                        <td>@lh.HoTenBenhNhan</td>
-                        <td>@lh.TenDichVu</td>
-                        <td>@lh.GioBatDau.ToString("HH:mm")</td>
-                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
-                        <td class="table-actions">
-                            @if (lh.TrangThai == TrangThaiLichHen.ChoXacNhan)
-                            {
-                                <form method="post" asp-page-handler="XacNhan" style="display:inline;">
-                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
-                                    <button type="submit" class="btn btn-sm btn-secondary">Xác nhận</button>
-                                </form>
-                            }
-                            @if (lh.TrangThai == TrangThaiLichHen.DaXacNhan)
-                            {
-                                <form method="post" asp-page-handler="CheckIn" style="display:inline;">
-                                    <input type="hidden" name="idLichHen" value="@lh.IdLichHen" />
-                                    <button type="submit" class="btn btn-sm btn-primary">Check-in</button>
-                                </form>
-                            }
-                        </td>
-                    </tr>
-                }
+            @foreach (var lichHen in Model.LichHenHomNay)
+            {
+                <tr>
+                    <td>@lichHen.MaLichHen</td>
+                    <td>@lichHen.HoTenBenhNhan</td>
+                    <td>@lichHen.GioHen.ToString("HH:mm")</td>
+                    <td>@lichHen.TrangThai</td>
+                    <td class="table-actions">
+                        <form method="post" asp-page-handler="XacNhan" class="inline-form"><input type="hidden" name="idLichHen" value="@lichHen.IdLichHen" /><button class="btn btn-sm btn-primary" type="submit">Xác nhận</button></form>
+                        <form method="post" asp-page-handler="CheckIn" class="inline-form"><input type="hidden" name="idLichHen" value="@lichHen.IdLichHen" /><button class="btn btn-sm btn-secondary" type="submit">Check-in</button></form>
+                    </td>
+                </tr>
+            }
             </tbody>
         </table>
-    }
+    </div>
 </div>
