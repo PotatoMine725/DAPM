@@ -1,0 +1,627 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.ThongKeModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thống kê - MedAdmin";
+    ViewData["PageName"] = "thongke";
+    ViewData["PageTitle"] = "Thống kê bệnh nhân";
+}
+
+<div class="section-title">Thống kê bệnh nhân</div>
+<div class="section-sub">Phân tích dữ liệu khám chữa bệnh và báo cáo hoạt động</div>
+
+<!-- Date Range Tabs -->
+<div class="date-range-tabs" style="margin-bottom: 24px;">
+    <div class="dr-tab" onclick="setDateRange('today', this)">Hôm nay</div>
+    <div class="dr-tab" onclick="setDateRange('week', this)">7 ngày</div>
+    <div class="dr-tab active" onclick="setDateRange('month', this)">30 ngày</div>
+    <div class="dr-tab" onclick="setDateRange('quarter', this)">3 tháng</div>
+    <div class="dr-tab" onclick="setDateRange('year', this)">1 năm</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="kpi-trend up">
+                <i class="fa-solid fa-arrow-up"></i> 12%
+            </div>
+        </div>
+        <div class="kpi-val">1,247</div>
+        <div class="kpi-label">Tổng bệnh nhân</div>
+        <div class="kpi-compare">So với kỳ trước: +134</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <div class="kpi-icon" style="background: var(--success-bg); color: var(--success);">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="kpi-trend up">
+                <i class="fa-solid fa-arrow-up"></i> 8%
+            </div>
+        </div>
+        <div class="kpi-val">3,892</div>
+        <div class="kpi-label">Lịch hẹn hoàn thành</div>
+        <div class="kpi-compare">So với kỳ trước: +289</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <div class="kpi-icon" style="background: var(--warning-bg); color: var(--warning);">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="kpi-trend down">
+                <i class="fa-solid fa-arrow-down"></i> 3%
+            </div>
+        </div>
+        <div class="kpi-val">18.5</div>
+        <div class="kpi-label">Thời gian chờ trung bình (phút)</div>
+        <div class="kpi-compare">So với kỳ trước: -0.6 phút</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <div class="kpi-icon" style="background: var(--danger-bg); color: var(--danger);">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+            <div class="kpi-trend neutral">
+                <i class="fa-solid fa-minus"></i> 0%
+            </div>
+        </div>
+        <div class="kpi-val">127</div>
+        <div class="kpi-label">Lịch hẹn bị hủy</div>
+        <div class="kpi-compare">So với kỳ trước: +5</div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+    <!-- Bar Chart - Patient Visits -->
+    <div class="card">
+        <div class="chart-wrap">
+            <div class="chart-title">Lượt khám theo ngày</div>
+            <div class="chart-sub">Số bệnh nhân đến khám trong 30 ngày qua</div>
+            <div class="bar-chart" id="visits-chart">
+                <div class="bc-col">
+                    <div class="bc-val">142</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 70%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T2</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">158</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 78%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T3</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">195</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 96%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T4</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">178</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 88%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T5</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">203</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 100%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T6</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">165</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 81%; background: var(--primary);"></div>
+                    </div>
+                    <div class="bc-lbl">T7</div>
+                </div>
+                <div class="bc-col">
+                    <div class="bc-val">89</div>
+                    <div class="bc-bar-wrap">
+                        <div class="bc-bar" style="height: 44%; background: var(--primary-light);"></div>
+                    </div>
+                    <div class="bc-lbl">CN</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donut Chart - Department Distribution -->
+    <div class="card">
+        <div class="chart-wrap">
+            <div class="chart-title">Phân bổ theo chuyên khoa</div>
+            <div class="chart-sub">Tỷ lệ bệnh nhân theo từng chuyên khoa</div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div class="donut-chart" style="width: 140px; height: 140px;">
+                    <canvas id="department-chart" width="140" height="140"></canvas>
+                    <div class="donut-center">
+                        <div class="dc-val">4</div>
+                        <div class="dc-lbl">Chuyên khoa</div>
+                    </div>
+                </div>
+                <div class="donut-legend">
+                    <div class="dl-item">
+                        <div class="dl-dot" style="background: #1a5fa8;"></div>
+                        <div class="dl-label">Tim mạch</div>
+                        <div class="dl-val">342</div>
+                        <div class="dl-pct">27.4%</div>
+                    </div>
+                    <div class="dl-item">
+                        <div class="dl-dot" style="background: #2e7d32;"></div>
+                        <div class="dl-label">Nhi khoa</div>
+                        <div class="dl-val">298</div>
+                        <div class="dl-pct">23.9%</div>
+                    </div>
+                    <div class="dl-item">
+                        <div class="dl-dot" style="background: #e65100;"></div>
+                        <div class="dl-label">Nội tổng quát</div>
+                        <div class="dl-val">412</div>
+                        <div class="dl-pct">33.1%</div>
+                    </div>
+                    <div class="dl-item">
+                        <div class="dl-dot" style="background: #7c3aed;"></div>
+                        <div class="dl-label">Sản</div>
+                        <div class="dl-val">195</div>
+                        <div class="dl-pct">15.6%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Charts -->
+<div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+    <!-- Horizontal Bar - Doctor Performance -->
+    <div class="card">
+        <div class="chart-wrap">
+            <div class="chart-title">Hiệu suất bác sĩ</div>
+            <div class="chart-sub">Số bệnh nhân khám thành công theo bác sĩ</div>
+            <div class="hbar">
+                <div class="hbar-item">
+                    <div class="hbar-label">BS. Nguyễn Văn A</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 92%; background: var(--success);"></div>
+                    </div>
+                    <div class="hbar-val">142</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">BS. Trần Minh Khoa</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 78%; background: var(--primary);"></div>
+                    </div>
+                    <div class="hbar-val">121</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">BS. Phạm Thu Hà</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 65%; background: var(--warning);"></div>
+                    </div>
+                    <div class="hbar-val">98</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">BS. Lê Thanh Tâm</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 58%; background: var(--primary-mid);"></div>
+                    </div>
+                    <div class="hbar-val">87</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">BS. Nguyễn Hải Long</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 45%; background: var(--neutral-bg);"></div>
+                    </div>
+                    <div class="hbar-val">67</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Services -->
+    <div class="card">
+        <div class="chart-wrap">
+            <div class="chart-title">Dịch vụ phổ biến</div>
+            <div class="chart-sub">Top 5 dịch vụ được sử dụng nhiều nhất</div>
+            <div class="hbar">
+                <div class="hbar-item">
+                    <div class="hbar-label">Khám tổng quát</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 88%; background: var(--primary);"></div>
+                    </div>
+                    <div class="hbar-val">412</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">Siêu âm tim</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 72%; background: var(--success);"></div>
+                    </div>
+                    <div class="hbar-val">342</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">ECG</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 65%; background: var(--warning);"></div>
+                    </div>
+                    <div class="hbar-val">298</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">X-quang</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 52%; background: var(--primary-mid);"></div>
+                    </div>
+                    <div class="hbar-val">195</div>
+                </div>
+                <div class="hbar-item">
+                    <div class="hbar-label">Điện não đồ</div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width: 38%; background: var(--neutral-bg);"></div>
+                    </div>
+                    <div class="hbar-val">127</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.section-sub {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+/* ===== CHART CONTAINERS ===== */
+.chart-wrap {
+    position: relative;
+    padding: 20px 24px 12px;
+}
+
+.chart-title {
+    font-family: 'Lexend', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.chart-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* ===== BAR CHART ===== */
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 180px;
+}
+
+.bc-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    position: relative;
+}
+
+.bc-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 100%;
+    position: relative;
+}
+
+.bc-bar {
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+    transition: .7s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.bc-bar:hover {
+    filter: brightness(.92);
+}
+
+.bc-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.bc-lbl {
+    font-size: 11px;
+    color: var(--text-disabled);
+    white-space: nowrap;
+}
+
+/* ===== DONUT CHART ===== */
+.donut-chart {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-center {
+    position: absolute;
+    text-align: center;
+}
+
+.donut-center .dc-val {
+    font-family: 'Lexend', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.donut-center .dc-lbl {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* ===== LEGEND ITEMS ===== */
+.donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.dl-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.dl-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.dl-label {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.dl-val {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.dl-pct {
+    font-size: 12px;
+    color: var(--text-disabled);
+}
+
+/* ===== HORIZONTAL BAR ===== */
+.hbar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hbar-item {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+    grid-template-columns: 140px 1fr 50px;
+}
+
+.hbar-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.hbar-track {
+    height: 10px;
+    background: var(--subtle);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.hbar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: .8s ease;
+}
+
+.hbar-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ===== KPI CARDS ===== */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.kpi-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.kpi-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.kpi-trend.up {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.kpi-trend.down {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.kpi-trend.neutral {
+    background: var(--neutral-bg);
+    color: var(--text-secondary);
+}
+
+.kpi-val {
+    font-family: 'Lexend', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.kpi-label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+}
+
+.kpi-compare {
+    font-size: 12px;
+    color: var(--text-disabled);
+    margin-top: 8px;
+}
+
+/* ===== DATE RANGE ===== */
+.date-range-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--page-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.dr-tab {
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: .18s;
+}
+
+.dr-tab.active {
+    background: var(--white);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+</style>
+
+<script>
+function setDateRange(range, element) {
+    // Update active tab
+    document.querySelectorAll('.dr-tab').forEach(tab => tab.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Reload data based on range
+    showToast(`Đang tải dữ liệu cho khoảng thời gian: ${range}`, 'info');
+    
+    // Simulate data loading
+    setTimeout(() => {
+        showToast('Dữ liệu đã được cập nhật', 'success');
+    }, 1000);
+}
+
+// Initialize donut chart
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('department-chart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        drawDonutChart(ctx, 140, 140);
+    }
+});
+
+function drawDonutChart(ctx, width, height) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = 50;
+    const innerRadius = 30;
+    
+    const data = [
+        { value: 27.4, color: '#1a5fa8' },
+        { value: 23.9, color: '#2e7d32' },
+        { value: 33.1, color: '#e65100' },
+        { value: 15.6, color: '#7c3aed' }
+    ];
+    
+    let currentAngle = -Math.PI / 2;
+    
+    data.forEach(segment => {
+        const sliceAngle = (segment.value / 100) * 2 * Math.PI;
+        
+        // Draw outer arc
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = segment.color;
+        ctx.fill();
+        
+        currentAngle += sliceAngle;
+    });
+}
+</script>

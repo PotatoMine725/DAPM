@@ -1,5 +1,6 @@
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Features.Auth.Commands.DangKy;
+using ClinicBooking.Application.Features.Auth.Queries.KiemTraGhostTheoSdt;
 using ClinicBooking.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -78,6 +79,13 @@ public class DangKyModel : PageModel
 
         try
         {
+            // Nếu SDT thuộc ghost account → redirect sang liên kết hồ sơ thay vì throw ConflictException
+            var ghostCheck = await _mediator.Send(new KiemTraGhostTheoSdtQuery(Input.SoDienThoai.Trim()));
+            if (ghostCheck.IsGhost)
+            {
+                return RedirectToPage("/Auth/LienKetHoSo", new { sdt = Input.SoDienThoai.Trim() });
+            }
+
             await _mediator.Send(new DangKyCommand(
                 Input.TenDangNhap.Trim(),
                 Input.Email.Trim(),

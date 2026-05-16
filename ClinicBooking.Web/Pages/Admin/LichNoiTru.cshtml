@@ -1,0 +1,265 @@
+@page
+@using ClinicBooking.Domain.Enums
+@model ClinicBooking.Web.Pages.Admin.LichNoiTruModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Lịch bác sĩ nội trú - MedAdmin";
+    ViewData["PageName"] = "lichnoitru";
+    ViewData["PageTitle"] = "Lịch bác sĩ nội trú";
+
+    string[] tenThu = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+}
+
+<div class="section-title">Thiết lập lịch bác sĩ nội trú</div>
+<div class="section-sub">Cấu hình mẫu lịch tuần cho bác sĩ nội trú — hệ thống tự sinh ca làm việc hàng tuần</div>
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
+<!-- Info Alert + Sinh ca action -->
+<div style="background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--primary)">
+    <i class="fa-solid fa-circle-info fa-lg"></i>
+    <div style="flex:1">Mẫu lịch dùng để <strong>tự sinh ca làm việc</strong> cho bác sĩ nội trú. Bấm nút bên phải để sinh ca cho N ngày tới — ca đã tồn tại sẽ bị bỏ qua.</div>
+    <form method="post" asp-page-handler="SinhCa" asp-route-idBacSi="@Model.IdBacSiDangChon" style="display:flex;gap:8px;align-items:center">
+        <input type="number" asp-for="SoNgaySinh" min="1" max="60" style="width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:6px" />
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-bolt"></i> Sinh ca</button>
+    </form>
+</div>
+
+<!-- 2 Column Layout -->
+<div class="layout-2col">
+    <!-- Left: Doctor list -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Bác sĩ nội trú (@Model.DanhSachBacSi.Count)</div>
+        </div>
+        <div class="card-body-pad" style="display:flex;flex-direction:column;gap:4px">
+            <div class="search-box" style="width:100%;margin-bottom:8px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Tìm bác sĩ..." id="search-doctors">
+            </div>
+
+            @if (Model.DanhSachBacSi.Count == 0)
+            {
+                <div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:13px">
+                    Chưa có bác sĩ nội trú nào. Tạo bác sĩ tại <a href="/Admin/BacSi">Quản lý bác sĩ</a>.
+                </div>
+            }
+
+            @foreach (var bs in Model.DanhSachBacSi)
+            {
+                var isActive = bs.IdBacSi == Model.IdBacSiDangChon;
+                var initial = string.IsNullOrEmpty(bs.HoTen) ? "?" : bs.HoTen[..1].ToUpper();
+                <a href="?idBacSi=@bs.IdBacSi" class="bs-list-item @(isActive ? "active" : "")" data-search="@bs.HoTen @bs.TenChuyenKhoa">
+                    <div class="bs-ava" style="background:var(--primary)">@initial</div>
+                    <div>
+                        <div style="font-size:13.5px;font-weight:600">BS. @bs.HoTen</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary)">@bs.TenChuyenKhoa</div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Right: Schedule list -->
+    <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <div class="card-title">
+                    Mẫu lịch tuần
+                    @if (Model.BacSiDangChon is not null)
+                    {
+                        <span> — BS. @Model.BacSiDangChon.HoTen</span>
+                    }
+                </div>
+                <div class="card-sub">@(Model.BacSiDangChon?.TenChuyenKhoa ?? "Chọn bác sĩ ở cột trái")</div>
+            </div>
+            @if (Model.BacSiDangChon is not null)
+            {
+                <button class="btn btn-primary btn-sm" type="button" onclick="moModalTaoMau()">
+                    <i class="fa-solid fa-plus"></i> Thêm mẫu lịch
+                </button>
+            }
+        </div>
+        <div class="card-body">
+            @if (Model.BacSiDangChon is null)
+            {
+                <div style="padding:40px;text-align:center;color:var(--text-secondary)">Hãy chọn một bác sĩ ở cột bên trái.</div>
+            }
+            else if (Model.DanhSachLich.Count == 0)
+            {
+                <div style="padding:40px;text-align:center;color:var(--text-secondary)">
+                    <i class="fa-solid fa-calendar-xmark fa-2x" style="margin-bottom:12px;opacity:0.4"></i>
+                    <div>Bác sĩ này chưa có mẫu lịch nào. Bấm "Thêm mẫu lịch" để tạo mới.</div>
+                </div>
+            }
+            else
+            {
+                <table class="schedule-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left">Thứ</th>
+                            <th style="text-align:left">Ca</th>
+                            <th style="text-align:left">Giờ</th>
+                            <th style="text-align:left">Phòng</th>
+                            <th style="text-align:left">Áp dụng từ</th>
+                            <th style="text-align:left">Kết thúc</th>
+                            <th style="width:80px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var l in Model.DanhSachLich)
+                        {
+                            <tr>
+                                <td style="text-align:left"><strong>@tenThu[l.NgayTrongTuan]</strong></td>
+                                <td style="text-align:left">@l.TenCa</td>
+                                <td style="text-align:left">@l.GioBatDau.ToString("HH:mm")–@l.GioKetThuc.ToString("HH:mm")</td>
+                                <td style="text-align:left">@l.MaPhong - @l.TenPhong</td>
+                                <td style="text-align:left">@l.NgayApDung.ToString("dd/MM/yyyy")</td>
+                                <td style="text-align:left">@(l.NgayKetThuc?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                <td>
+                                    <form method="post" asp-page-handler="VoHieu" asp-route-idBacSi="@Model.IdBacSiDangChon"
+                                          onsubmit="return confirm('Vô hiệu mẫu lịch này? Ca đã sinh trước đó vẫn giữ.');">
+                                        <input type="hidden" asp-for="IdLichVoHieu" value="@l.IdLichNoiTru" />
+                                        <button type="submit" class="btn btn-ghost btn-sm" title="Vô hiệu">
+                                            <i class="fa-solid fa-ban" style="color:var(--danger)"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Tạo mẫu lịch -->
+@if (Model.BacSiDangChon is not null)
+{
+    <div id="modal-tao-mau" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+        <div class="modal-content" style="background:#fff;border-radius:var(--radius);padding:24px;max-width:520px;width:90%;max-height:90vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                <h3 style="margin:0;font-size:18px;font-weight:700">Thêm mẫu lịch tuần</h3>
+                <button type="button" onclick="dongModalTaoMau()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+            </div>
+            <form method="post" asp-page-handler="TaoMau">
+                <input type="hidden" asp-for="IdBacSiInput" value="@Model.BacSiDangChon.IdBacSi" />
+
+                <div style="margin-bottom:14px">
+                    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Bác sĩ</label>
+                    <input type="text" value="BS. @Model.BacSiDangChon.HoTen — @Model.BacSiDangChon.TenChuyenKhoa" disabled
+                           style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--background-light)" />
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Ca <span style="color:var(--danger)">*</span></label>
+                        <select asp-for="IdDinhNghiaCaInput" required style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px">
+                            <option value="">-- Chọn ca --</option>
+                            @foreach (var ca in Model.DanhSachDinhNghiaCa)
+                            {
+                                <option value="@ca.IdDinhNghiaCa">@ca.TenCa (@ca.GioBatDauMacDinh.ToString("HH:mm")–@ca.GioKetThucMacDinh.ToString("HH:mm"))</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Phòng <span style="color:var(--danger)">*</span></label>
+                        <select asp-for="IdPhongInput" required style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px">
+                            <option value="">-- Chọn phòng --</option>
+                            @foreach (var p in Model.DanhSachPhong)
+                            {
+                                <option value="@p.IdPhong">@p.MaPhong - @p.TenPhong</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:14px">
+                    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Thứ trong tuần <span style="color:var(--danger)">*</span></label>
+                    <select asp-for="NgayTrongTuanInput" required style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px">
+                        <option value="1">Thứ 2</option>
+                        <option value="2">Thứ 3</option>
+                        <option value="3">Thứ 4</option>
+                        <option value="4">Thứ 5</option>
+                        <option value="5">Thứ 6</option>
+                        <option value="6">Thứ 7</option>
+                        <option value="0">Chủ nhật</option>
+                    </select>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Áp dụng từ <span style="color:var(--danger)">*</span></label>
+                        <input type="date" asp-for="NgayApDungInput" required value="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")"
+                               style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px" />
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Kết thúc (tùy chọn)</label>
+                        <input type="date" asp-for="NgayKetThucInput"
+                               style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px" />
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;justify-content:flex-end">
+                    <button type="button" class="btn btn-ghost" onclick="dongModalTaoMau()">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Lưu mẫu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<style>
+.section-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.section-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+.layout-2col { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+.bs-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: .15s;
+    border: 1.5px solid transparent; text-decoration: none; color: inherit;
+}
+.bs-list-item:hover { background: var(--primary-light); }
+.bs-list-item.active { background: var(--primary-light); border-color: var(--primary-mid); color: var(--primary); }
+.bs-list-item .bs-ava {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.search-box { position: relative; }
+.search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-disabled); font-size: 13px; }
+.search-box input { padding-left: 36px; width: 100%; }
+.schedule-table { border-collapse: collapse; }
+.schedule-table th, .schedule-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+.schedule-table thead th { font-size: 12px; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; }
+.modal-overlay.show { display: flex !important; }
+</style>
+
+<script>
+function moModalTaoMau() {
+    const m = document.getElementById('modal-tao-mau');
+    if (m) m.classList.add('show');
+}
+function dongModalTaoMau() {
+    const m = document.getElementById('modal-tao-mau');
+    if (m) m.classList.remove('show');
+}
+
+document.getElementById('search-doctors')?.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.bs-list-item').forEach(item => {
+        const text = (item.getAttribute('data-search') || '').toLowerCase();
+        item.style.display = text.includes(q) ? '' : 'none';
+    });
+});
+</script>

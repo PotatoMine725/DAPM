@@ -1,0 +1,264 @@
+@page
+@model ClinicBooking.Web.Pages.Auth.LienKetHoSoModel
+@{
+    Layout = "~/Pages/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Liên kết hồ sơ vãng lai";
+}
+
+<style>
+    .portal-auth-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(320px, 1.05fr) minmax(360px, 0.95fr);
+        gap: 24px;
+        padding: 24px;
+        background: linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+    }
+
+    .portal-auth-hero,
+    .portal-auth-panel {
+        background: #fff;
+        border: 1px solid rgba(26, 95, 168, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 16px 40px rgba(26, 95, 168, 0.08);
+        overflow: hidden;
+    }
+
+    .portal-auth-hero {
+        padding: 44px;
+        background: linear-gradient(145deg, #1a5fa8 0%, #2f79c7 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .portal-auth-brand { display: flex; gap: 14px; align-items: center; }
+    .portal-auth-brand-mark {
+        width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+        background: rgba(255,255,255,0.15); font-size: 26px;
+    }
+    .portal-auth-brand-name { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+    .portal-auth-kicker {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+        background: rgba(255,255,255,0.15); width: fit-content; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .portal-auth-hero h1 { margin: 14px 0 16px; font-size: clamp(1.6rem, 3vw, 2.6rem); line-height: 1.15; }
+    .portal-auth-hero p { line-height: 1.7; max-width: 62ch; margin: 0; }
+
+    .portal-auth-steps { display: grid; gap: 14px; }
+    .portal-auth-step {
+        background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 18px; padding: 16px; display: flex; gap: 14px; align-items: flex-start;
+    }
+    .step-num {
+        width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.25);
+        display: grid; place-items: center; font-weight: 800; font-size: 14px; flex-shrink: 0;
+    }
+    .step-body strong { display: block; margin-bottom: 4px; }
+    .step-body span { font-size: 13px; opacity: 0.85; line-height: 1.5; }
+
+    .portal-auth-panel { padding: 32px; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+    .portal-auth-form { display: grid; gap: 16px; }
+    .portal-auth-note { border-radius: 16px; padding: 14px 16px; background: #e6f1fb; color: #155190; line-height: 1.6; }
+    .portal-auth-note.error { background: #fdecec; color: #9c2f2f; }
+    .portal-auth-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .portal-auth-action { flex: 1 1 180px; }
+    .form-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+    .step-indicator { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+    .step-dot {
+        width: 10px; height: 10px; border-radius: 50%; background: #d1dff0;
+        transition: background 0.2s;
+    }
+    .step-dot.active { background: #1a5fa8; }
+    .step-dot.done { background: #22c55e; }
+
+    .divider-text {
+        display: flex; align-items: center; gap: 10px; color: #94a3b8; font-size: 13px;
+    }
+    .divider-text::before, .divider-text::after {
+        content: ''; flex: 1; height: 1px; background: #e2e8f0;
+    }
+
+    @@media (max-width: 1080px) { .portal-auth-shell { grid-template-columns: 1fr; } }
+    @@media (max-width: 720px) {
+        .portal-auth-shell { padding: 14px; }
+        .portal-auth-hero, .portal-auth-panel { padding: 20px; border-radius: 20px; }
+        .form-grid-2 { grid-template-columns: 1fr; }
+        .portal-auth-actions { flex-direction: column; }
+    }
+</style>
+
+<div class="portal-auth-shell">
+    <section class="portal-auth-hero">
+        <div>
+            <div class="portal-auth-brand">
+                <div class="portal-auth-brand-mark"><i class="ph-fill ph-stethoscope"></i></div>
+                <div>
+                    <div class="portal-auth-kicker">Hệ thống đặt lịch Medibook</div>
+                    <div class="portal-auth-brand-name">Phòng khám Medicare</div>
+                </div>
+            </div>
+
+            <h1>Đã từng khám tại đây? Lấy lại quyền quản lý hồ sơ.</h1>
+            <p>
+                Nếu lễ tân đã đặt lịch hộ bạn, hồ sơ của bạn đã có sẵn trong hệ thống.
+                Chỉ cần xác minh qua 2 bước để kích hoạt tài khoản và đăng nhập ngay.
+            </p>
+        </div>
+
+        <div class="portal-auth-steps">
+            <div class="portal-auth-step">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <strong>Xác minh số điện thoại</strong>
+                    <span>Nhập SĐT đã dùng khi đặt lịch tại quầy. Mã OTP sẽ được gửi đến số này.</span>
+                </div>
+            </div>
+            <div class="portal-auth-step">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <strong>Xác minh danh tính &amp; đặt mật khẩu</strong>
+                    <span>Nhập CCCD hoặc (ngày sinh + họ tên) để xác nhận, sau đó đặt thông tin đăng nhập mới.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portal-auth-panel">
+        <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 4px;">Liên kết hồ sơ vãng lai</h2>
+            <div class="step-indicator">
+                <div class="step-dot @(Model.Buoc >= 1 ? (Model.Buoc > 1 ? "done" : "active") : "")"></div>
+                <div style="flex:1; height:2px; background:#e2e8f0; border-radius:999px;">
+                    <div style="height:100%; background:#22c55e; border-radius:999px; width:@(Model.Buoc > 1 ? "100%" : "0%"); transition:width 0.3s;"></div>
+                </div>
+                <div class="step-dot @(Model.Buoc >= 2 ? "active" : "")"></div>
+            </div>
+            <p style="color:#64748b; font-size:13px; margin:4px 0 0;">Bước @Model.Buoc / 2</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="portal-auth-note error">@Model.ErrorMessage</div>
+        }
+
+        @if (Model.Buoc == 1)
+        {
+            <form method="post" asp-page-handler="GuiOtp" class="portal-auth-form">
+                <div class="portal-auth-note">
+                    Nhập số điện thoại đã dùng khi đặt lịch và email để nhận mã OTP xác minh.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="SoDienThoai">
+                        Số điện thoại
+                    </label>
+                    <input class="form-input" type="tel" id="SoDienThoai"
+                           asp-for="SoDienThoai"
+                           placeholder="VD: 0901234567"
+                           autocomplete="tel" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="EmailNhan">
+                        Email nhận mã OTP <span class="required-mark">*</span>
+                    </label>
+                    <input class="form-input" type="email" id="EmailNhan"
+                           asp-for="EmailNhan"
+                           placeholder="VD: ten@email.com"
+                           autocomplete="email" />
+                </div>
+
+                <div class="portal-auth-actions">
+                    <button type="submit" class="btn btn-primary portal-auth-action">Gửi mã OTP</button>
+                    <a href="/Auth/DangNhap" class="btn btn-ghost portal-auth-action" style="text-align:center;">Quay lại đăng nhập</a>
+                </div>
+            </form>
+        }
+        else
+        {
+            <form method="post" asp-page-handler="KichHoat" class="portal-auth-form">
+                <div class="portal-auth-note">
+                    OTP đã được gửi đến <strong>@TempData.Peek("WalkIn_EmailNhan")</strong>.
+                    Nhập mã OTP và thông tin để xác minh danh tính.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="MaOtp">Mã OTP <span class="required-mark">*</span></label>
+                    <input class="form-input" type="text" id="MaOtp"
+                           asp-for="MaOtp"
+                           placeholder="Nhập 6 chữ số"
+                           maxlength="6" autocomplete="one-time-code"
+                           style="letter-spacing: 0.25em; font-size: 1.1rem;" />
+                </div>
+
+                <div class="divider-text">Xác minh danh tính — chọn một trong hai</div>
+
+                <div class="form-group">
+                    <label class="form-label" for="Cccd">CCCD / CMND</label>
+                    <input class="form-input" type="text" id="Cccd"
+                           asp-for="Cccd"
+                           placeholder="Nếu đã cung cấp khi đặt lịch tại quầy"
+                           maxlength="20" />
+                </div>
+
+                <div class="divider-text">hoặc</div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="HoTen">Họ và tên</label>
+                        <input class="form-input" type="text" id="HoTen"
+                               asp-for="HoTen"
+                               placeholder="VD: Nguyễn Văn A" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="NgaySinh">Ngày sinh</label>
+                        <input class="form-input" type="date" id="NgaySinh"
+                               asp-for="NgaySinh" />
+                    </div>
+                </div>
+
+                <div class="divider-text">Đặt thông tin đăng nhập mới</div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="TenDangNhap">Tên đăng nhập <span class="required-mark">*</span></label>
+                        <input class="form-input" type="text" id="TenDangNhap"
+                               asp-for="TenDangNhap"
+                               placeholder="Tối thiểu 3 ký tự"
+                               autocomplete="username" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="Email">Email <span class="required-mark">*</span></label>
+                        <input class="form-input" type="email" id="Email"
+                               asp-for="Email"
+                               placeholder="VD: abc@email.com"
+                               autocomplete="email" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="MatKhau">Mật khẩu <span class="required-mark">*</span></label>
+                        <input class="form-input" type="password" id="MatKhau"
+                               asp-for="MatKhau"
+                               placeholder="Tối thiểu 6 ký tự"
+                               autocomplete="new-password" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="XacNhanMatKhau">Nhập lại mật khẩu <span class="required-mark">*</span></label>
+                        <input class="form-input" type="password" id="XacNhanMatKhau"
+                               asp-for="XacNhanMatKhau"
+                               placeholder="Nhập lại mật khẩu"
+                               autocomplete="new-password" />
+                    </div>
+                </div>
+
+                <div class="portal-auth-actions">
+                    <button type="submit" class="btn btn-primary portal-auth-action">Kích hoạt tài khoản</button>
+                    <a href="/Auth/LienKetHoSo" class="btn btn-ghost portal-auth-action" style="text-align:center;">Bắt đầu lại</a>
+                </div>
+            </form>
+        }
+    </section>
+</div>

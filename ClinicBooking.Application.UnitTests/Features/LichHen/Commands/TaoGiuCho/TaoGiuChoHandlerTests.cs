@@ -93,4 +93,38 @@ public sealed class TaoGiuChoHandlerTests
 
         await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
     }
+
+    [Fact]
+    public async Task Handle_HaiGiuChoDongThoi_ChiMotNguoiDatDuoc()
+    {
+        using var factory = new TestDbContextFactory();
+        using var db = factory.CreateContext();
+        var tk1 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
+        var bn1 = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk1.IdTaiKhoan);
+        var tk2 = TestDataSeeder.SeedTaiKhoan(db, VaiTro.BenhNhan);
+        var bn2 = TestDataSeeder.SeedBenhNhan(db, idTaiKhoan: tk2.IdTaiKhoan);
+        var ca = TestDataSeeder.SeedCaLamViec(db);
+        var thongTin = ThongTinOk(ca.IdCaLamViec);
+
+        var (u1, c1, s1) = CreateDeps(VaiTro.LeTan);
+        var (u2, c2, s2) = CreateDeps(VaiTro.LeTan);
+        s1.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
+        s2.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
+        s1.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        s2.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
+        s1.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
+        s2.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
+
+        var h1 = new TaoGiuChoHandler(db, u1, c1, s1, DefaultOptions());
+        var h2 = new TaoGiuChoHandler(db, u2, c2, s2, DefaultOptions());
+
+        var t1 = h1.Handle(new TaoGiuChoCommand(ca.IdCaLamViec, bn1.IdBenhNhan), CancellationToken.None);
+        var t2 = h2.Handle(new TaoGiuChoCommand(ca.IdCaLamViec, bn2.IdBenhNhan), CancellationToken.None);
+        await Task.WhenAll(t1.ContinueWith(_ => { }), t2.ContinueWith(_ => { }));
+
+        var results = new[] { t1, t2 };
+        results.Count(t => t.IsCompletedSuccessfully).Should().Be(1);
+        results.Count(t => t.IsFaulted).Should().Be(1);
+        (await db.GiuCho.AsNoTracking().CountAsync()).Should().Be(1);
+    }
 }

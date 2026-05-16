@@ -4,6 +4,7 @@ using ClinicBooking.Application.Features.ToaThuoc.Commands.HuyToaThuoc;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
+using FluentAssertions;
 using NSubstitute;
 
 namespace ClinicBooking.Application.UnitTests.Features.ToaThuoc.Commands.HuyToaThuoc;
@@ -11,36 +12,60 @@ namespace ClinicBooking.Application.UnitTests.Features.ToaThuoc.Commands.HuyToaT
 public class HuyToaThuocHandlerTests : IAsyncLifetime
 {
     private TestDbContextFactory _dbContextFactory = null!;
-    private HuyToaThuocHandler _handler = null!;
     private ICurrentUserService _currentUserService = null!;
 
     public async Task InitializeAsync()
     {
         _dbContextFactory = new TestDbContextFactory();
         _currentUserService = Substitute.For<ICurrentUserService>();
-        var context = _dbContextFactory.CreateDbContext();
-        _handler = new HuyToaThuocHandler(context, _currentUserService);
+        await Task.CompletedTask;
     }
 
-    public async Task DisposeAsync()
+    public Task DisposeAsync()
     {
         _dbContextFactory.Dispose();
+        return Task.CompletedTask;
+    }
+
+    private static async Task<(ClinicBooking.Infrastructure.Persistence.AppDbContext ctx, int idBacSiTaiKhoan, int idBacSi, Domain.Entities.ToaThuoc toaThuoc, Domain.Entities.HoSoKham hoSoKham)>
+        SeedAsync(TestDbContextFactory factory)
+    {
+        var ctx = factory.CreateContext();
+        var now = DateTime.UtcNow;
+        var seed = await HoSoKhamTestDataSeeder.TaoAsync(ctx, now);
+
+        var thuoc = new Domain.Entities.Thuoc { TenThuoc = "Thuoc Test" };
+        ctx.Thuoc.Add(thuoc);
+        await ctx.SaveChangesAsync();
+
+        var hoSoKham = new Domain.Entities.HoSoKham
+        {
+            IdLichHen = seed.IdLichHen,
+            IdBacSi = seed.IdBacSi,
+            NgayKham = now,
+            NgayTao = now
+        };
+        ctx.HoSoKham.Add(hoSoKham);
+        await ctx.SaveChangesAsync();
+
+        var toaThuoc = new Domain.Entities.ToaThuoc
+        {
+            IdHoSoKham = hoSoKham.IdHoSoKham,
+            IdThuoc = thuoc.IdThuoc
+        };
+        ctx.ToaThuoc.Add(toaThuoc);
+        await ctx.SaveChangesAsync();
+
+        return (ctx, seed.IdTaiKhoanBacSi, seed.IdBacSi, toaThuoc, hoSoKham);
     }
 
     [Fact]
     public async Task Handle_ValidInput_DeletesToaThuoc()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
-        await context.SaveChangesAsync();
+        var (context, idBacSiTaiKhoan, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
-        var toaThuoc = context.ToaThuoc.First();
-        var hoSoKham = context.HoSoKham.First();
-        var bacSi = context.BacSi.First();
-
-        _currentUserService.IdTaiKhoan.Returns(bacSi.IdTaiKhoan);
+        _currentUserService.IdTaiKhoan.Returns(idBacSiTaiKhoan);
         _currentUserService.VaiTro.Returns(VaiTro.BacSi);
 
         var handler = new HuyToaThuocHandler(context, _currentUserService);
@@ -51,14 +76,14 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
 
         // Assert
         var deletedToa = context.ToaThuoc.FirstOrDefault(x => x.IdToaThuoc == toaThuoc.IdToaThuoc);
-        deletedToa.Should().BeNull(); // Hard-delete
+        deletedToa.Should().BeNull();
     }
 
     [Fact]
     public async Task Handle_ToaThuocNotFound_ThrowsNotFoundException()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
+        var context = _dbContextFactory.CreateContext();
         _currentUserService.IdTaiKhoan.Returns(1);
         _currentUserService.VaiTro.Returns(VaiTro.BacSi);
 
@@ -74,15 +99,8 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_UnauthorizedBacSi_ThrowsForbiddenException()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
-        await context.SaveChangesAsync();
+        var (context, _, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
-        var toaThuoc = context.ToaThuoc.First();
-        var hoSoKham = context.HoSoKham.First();
-
-        // Khác bác sĩ tạo hồ sơ
         _currentUserService.IdTaiKhoan.Returns(999);
         _currentUserService.VaiTro.Returns(VaiTro.BacSi);
 
@@ -98,25 +116,19 @@ public class HuyToaThuocHandlerTests : IAsyncLifetime
     public async Task Handle_AdminUser_CanDeleteAnyToa()
     {
         // Arrange
-        var context = _dbContextFactory.CreateDbContext();
-        var seeder = new HoSoKhamTestDataSeeder();
-        seeder.SeedTestData(context);
-        await context.SaveChangesAsync();
+        var (context, _, _, toaThuoc, hoSoKham) = await SeedAsync(_dbContextFactory);
 
-        var toaThuoc = context.ToaThuoc.First();
-
-        // Admin có quyền
         _currentUserService.IdTaiKhoan.Returns(1);
         _currentUserService.VaiTro.Returns(VaiTro.Admin);
 
         var handler = new HuyToaThuocHandler(context, _currentUserService);
-        var command = new HuyToaThuocCommand(toaThuoc.IdHoSoKham, toaThuoc.IdToaThuoc);
+        var command = new HuyToaThuocCommand(hoSoKham.IdHoSoKham, toaThuoc.IdToaThuoc);
 
         // Act
         await handler.Handle(command, CancellationToken.None);
 
         // Assert
         var deletedToa = context.ToaThuoc.FirstOrDefault(x => x.IdToaThuoc == toaThuoc.IdToaThuoc);
-        deletedToa.Should().BeNull(); // Hard-delete
+        deletedToa.Should().BeNull();
     }
 }

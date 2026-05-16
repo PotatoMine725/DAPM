@@ -1,0 +1,159 @@
+@page
+@using System.Text.Json
+@model ClinicBooking.Web.Pages.Admin.ChuyenKhoaModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý chuyên khoa - MedAdmin";
+    ViewData["PageName"] = "chuyenkhoa";
+    ViewData["PageTitle"] = "Quản lý chuyên khoa";
+}
+
+<div class="section-title">Quản lý chuyên khoa</div>
+<div class="section-sub">Danh mục chuyên khoa, slot mặc định và khung giờ mở đặt lịch</div>
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Danh sách chuyên khoa (@Model.DanhSach.Count)</div>
+        <button class="btn btn-primary" onclick="moModalTao()"><i class="fa-solid fa-plus"></i> Thêm chuyên khoa mới</button>
+    </div>
+
+    <form method="get" class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tìm theo tên chuyên khoa..."></div>
+        <select class="form-control" style="width:200px" name="hienThi" onchange="this.form.submit()">
+            <option value="">Tất cả</option>
+            <option value="true" selected="@(Model.HienThiLoc == true ? "selected" : null)">Hiển thị</option>
+            <option value="false" selected="@(Model.HienThiLoc == false ? "selected" : null)">Ẩn</option>
+        </select>
+        <button type="submit" class="btn btn-ghost btn-sm">Lọc</button>
+    </form>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Tên chuyên khoa</th><th>Mô tả</th><th>Slot (phút)</th><th>Giờ mở</th><th>Giờ đóng</th><th>Hiển thị</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody>
+            @if (Model.DanhSach.Count == 0)
+            {
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary)">Chưa có chuyên khoa nào.</td></tr>
+            }
+            @foreach (var ck in Model.DanhSach)
+            {
+                <tr>
+                    <td><strong>@ck.TenChuyenKhoa</strong></td>
+                    <td style="font-size:12px;color:var(--text-secondary);max-width:280px">@ck.MoTa</td>
+                    <td>@ck.ThoiGianSlotMacDinh</td>
+                    <td>@(ck.GioMoDatLich?.ToString("HH:mm") ?? "—")</td>
+                    <td>@(ck.GioDongDatLich?.ToString("HH:mm") ?? "—")</td>
+                    <td>
+                        @if (ck.HienThi)
+                        {
+                            <span class="badge badge-success">Có</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-warning">Ẩn</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="action-btns" style="display:flex;gap:6px">
+                            <button class="btn btn-ghost btn-sm" title="Sửa" onclick='moModalSua(@Html.Raw(JsonSerializer.Serialize(ck)))'><i class="fa-solid fa-pen"></i></button>
+                            <form method="post" asp-page-handler="Xoa" style="display:inline" onsubmit="return confirm('Xoá chuyên khoa @ck.TenChuyenKhoa?');">
+                                <input type="hidden" name="IdChuyenKhoaXoa" value="@ck.IdChuyenKhoa" />
+                                <button type="submit" class="btn btn-ghost btn-sm" title="Xoá" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tạo -->
+<div class="modal-overlay" id="modal-add-ck">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-stethoscope" style="color:var(--primary);margin-right:8px"></i>Thêm chuyên khoa</div>
+      <div class="modal-close" onclick="closeModal('modal-add-ck')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <form method="post" asp-page-handler="Tao">
+      <div class="modal-body">
+        <div class="form-group"><label>Tên chuyên khoa *</label><input type="text" class="form-control" name="TenChuyenKhoa" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" maxlength="500"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="form-group"><label>Slot mặc định (phút) *</label><input type="number" class="form-control" name="ThoiGianSlotMacDinh" value="20" min="5" max="120" required></div>
+            <div class="form-group"><label>Giờ mở</label><input type="time" class="form-control" name="GioMoDatLich"></div>
+            <div class="form-group"><label>Giờ đóng</label><input type="time" class="form-control" name="GioDongDatLich"></div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" value="true" checked /> Hiển thị cho bệnh nhân</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-ck')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal-overlay" id="modal-edit-ck">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-pen" style="color:var(--primary);margin-right:8px"></i>Sửa chuyên khoa</div>
+      <div class="modal-close" onclick="closeModal('modal-edit-ck')"><i class="fa-solid fa-times"></i></div>
+    </div>
+    <form method="post" asp-page-handler="CapNhat">
+      <input type="hidden" name="IdChuyenKhoaSua" id="ck-id" />
+      <div class="modal-body">
+        <div class="form-group"><label>Tên chuyên khoa *</label><input type="text" class="form-control" name="TenChuyenKhoa" id="ck-ten" required maxlength="150"></div>
+        <div class="form-group"><label>Mô tả</label><textarea class="form-control" name="MoTa" id="ck-mota" maxlength="500"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="form-group"><label>Slot (phút) *</label><input type="number" class="form-control" name="ThoiGianSlotMacDinh" id="ck-slot" min="5" max="120" required></div>
+            <div class="form-group"><label>Giờ mở</label><input type="time" class="form-control" name="GioMoDatLich" id="ck-giomo"></div>
+            <div class="form-group"><label>Giờ đóng</label><input type="time" class="form-control" name="GioDongDatLich" id="ck-giodong"></div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="HienThi" id="ck-hien" value="true" /> Hiển thị cho bệnh nhân</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-ck')">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function moModalTao() {
+    document.querySelector('#modal-add-ck form').reset();
+    openModal('modal-add-ck');
+}
+function moModalSua(ck) {
+    document.getElementById('ck-id').value = ck.idChuyenKhoa;
+    document.getElementById('ck-ten').value = ck.tenChuyenKhoa || '';
+    document.getElementById('ck-mota').value = ck.moTa || '';
+    document.getElementById('ck-slot').value = ck.thoiGianSlotMacDinh ?? 20;
+    document.getElementById('ck-giomo').value = ck.gioMoDatLich || '';
+    document.getElementById('ck-giodong').value = ck.gioDongDatLich || '';
+    document.getElementById('ck-hien').checked = !!ck.hienThi;
+    openModal('modal-edit-ck');
+}
+</script>

@@ -341,8 +341,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham va dieu tri cac benh ly ve tim va mach mau",
-                            TenChuyenKhoa = "Tim Mach",
+                            MoTa = "Khám và điều trị các bệnh lý về tim và mạch máu",
+                            TenChuyenKhoa = "Tim Mạch",
                             ThoiGianSlotMacDinh = 20
                         },
                         new
@@ -351,7 +351,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham va dieu tri cho tre em duoi 16 tuoi",
+                            MoTa = "Khám và điều trị cho trẻ em dưới 16 tuổi",
                             TenChuyenKhoa = "Nhi Khoa",
                             ThoiGianSlotMacDinh = 15
                         },
@@ -361,8 +361,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham tong quat cac benh ly noi khoa",
-                            TenChuyenKhoa = "Noi Tong Quat",
+                            MoTa = "Khám tổng quát các bệnh lý nội khoa",
+                            TenChuyenKhoa = "Nội Tổng Quát",
                             ThoiGianSlotMacDinh = 20
                         },
                         new
@@ -371,8 +371,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham va dieu tri cac benh ly ngoai khoa",
-                            TenChuyenKhoa = "Ngoai Tong Quat",
+                            MoTa = "Khám và điều trị các bệnh lý ngoại khoa",
+                            TenChuyenKhoa = "Ngoại Tổng Quát",
                             ThoiGianSlotMacDinh = 30
                         },
                         new
@@ -381,8 +381,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham va dieu tri cac benh ly tai, mui, hong",
-                            TenChuyenKhoa = "Tai Mui Hong",
+                            MoTa = "Khám và điều trị các bệnh lý tai, mũi, họng",
+                            TenChuyenKhoa = "Tai Mũi Họng",
                             ThoiGianSlotMacDinh = 15
                         },
                         new
@@ -391,8 +391,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             GioDongDatLich = new TimeOnly(17, 0, 0),
                             GioMoDatLich = new TimeOnly(7, 0, 0),
                             HienThi = true,
-                            MoTa = "Kham va dieu tri cac benh ly ve da",
-                            TenChuyenKhoa = "Da Lieu",
+                            MoTa = "Khám và điều trị các bệnh lý về da",
+                            TenChuyenKhoa = "Da Liễu",
                             ThoiGianSlotMacDinh = 20
                         });
                 });
@@ -438,9 +438,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 1,
                             HienThi = true,
                             IdChuyenKhoa = 1,
-                            MoTa = "Kham lam sang tim mach tong quat",
+                            MoTa = "Khám lâm sàng tim mạch tổng quát",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Tim Mach Tong Quat",
+                            TenDichVu = "Khám Tim Mạch Tổng Quát",
                             ThoiGianUocTinh = 20
                         },
                         new
@@ -448,9 +448,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 2,
                             HienThi = true,
                             IdChuyenKhoa = 1,
-                            MoTa = "Do dien tim 12 chuyen dao",
+                            MoTa = "Đo điện tim 12 chuyển đạo",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Dien Tim (ECG)",
+                            TenDichVu = "Điện Tim (ECG)",
                             ThoiGianUocTinh = 15
                         },
                         new
@@ -458,9 +458,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 3,
                             HienThi = true,
                             IdChuyenKhoa = 1,
-                            MoTa = "Sieu am tim qua thanh nguc",
+                            MoTa = "Siêu âm tim qua thành ngực",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Sieu Am Tim",
+                            TenDichVu = "Siêu Âm Tim",
                             ThoiGianUocTinh = 30
                         },
                         new
@@ -468,9 +468,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 4,
                             HienThi = true,
                             IdChuyenKhoa = 2,
-                            MoTa = "Kham tong quat cho tre em",
+                            MoTa = "Khám tổng quát cho trẻ em",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Nhi Tong Quat",
+                            TenDichVu = "Khám Nhi Tổng Quát",
                             ThoiGianUocTinh = 15
                         },
                         new
@@ -478,9 +478,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 5,
                             HienThi = true,
                             IdChuyenKhoa = 2,
-                            MoTa = "Tiem vaccine theo lich",
+                            MoTa = "Tiêm vaccine theo lịch",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Tiem Chung",
+                            TenDichVu = "Tiêm Chủng",
                             ThoiGianUocTinh = 10
                         },
                         new
@@ -488,9 +488,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 6,
                             HienThi = true,
                             IdChuyenKhoa = 3,
-                            MoTa = "Kham tong quat cac benh ly noi khoa",
+                            MoTa = "Khám tổng quát các bệnh lý nội khoa",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Noi Tong Quat",
+                            TenDichVu = "Khám Nội Tổng Quát",
                             ThoiGianUocTinh = 20
                         },
                         new
@@ -498,9 +498,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 7,
                             HienThi = true,
                             IdChuyenKhoa = 4,
-                            MoTa = "Kham lam sang ngoai khoa",
+                            MoTa = "Khám lâm sàng ngoại khoa",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Ngoai Tong Quat",
+                            TenDichVu = "Khám Ngoại Tổng Quát",
                             ThoiGianUocTinh = 20
                         },
                         new
@@ -508,9 +508,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 8,
                             HienThi = true,
                             IdChuyenKhoa = 4,
-                            MoTa = "Tieu phau cac ca don gian",
+                            MoTa = "Tiểu phẫu các ca đơn giản",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Tieu Phau",
+                            TenDichVu = "Tiểu Phẫu",
                             ThoiGianUocTinh = 45
                         },
                         new
@@ -518,9 +518,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 9,
                             HienThi = true,
                             IdChuyenKhoa = 5,
-                            MoTa = "Kham lam sang tai, mui, hong",
+                            MoTa = "Khám lâm sàng tai, mũi, họng",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Tai Mui Hong",
+                            TenDichVu = "Khám Tai Mũi Họng",
                             ThoiGianUocTinh = 15
                         },
                         new
@@ -528,9 +528,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 10,
                             HienThi = true,
                             IdChuyenKhoa = 5,
-                            MoTa = "Noi soi chan doan tai, mui, hong",
+                            MoTa = "Nội soi chẩn đoán tai, mũi, họng",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Noi Soi Tai Mui Hong",
+                            TenDichVu = "Nội Soi Tai Mũi Họng",
                             ThoiGianUocTinh = 30
                         },
                         new
@@ -538,9 +538,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 11,
                             HienThi = true,
                             IdChuyenKhoa = 6,
-                            MoTa = "Kham cac benh ly ve da",
+                            MoTa = "Khám các bệnh lý về da",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Kham Da Lieu",
+                            TenDichVu = "Khám Da Liễu",
                             ThoiGianUocTinh = 20
                         },
                         new
@@ -548,9 +548,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDichVu = 12,
                             HienThi = true,
                             IdChuyenKhoa = 6,
-                            MoTa = "Soi da chan doan bang dermoscope",
+                            MoTa = "Soi da chẩn đoán bằng dermoscope",
                             NgayTao = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TenDichVu = "Soi Da Bang Dermoscope",
+                            TenDichVu = "Soi Da Bằng Dermoscope",
                             ThoiGianUocTinh = 20
                         });
                 });
@@ -594,7 +594,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDinhNghiaCa = 1,
                             GioBatDauMacDinh = new TimeOnly(7, 0, 0),
                             GioKetThucMacDinh = new TimeOnly(12, 0, 0),
-                            MoTa = "Ca sang: 07:00 - 12:00",
+                            MoTa = "Ca sáng: 07:00 - 12:00",
                             TenCa = "sang",
                             TrangThai = true
                         },
@@ -603,7 +603,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDinhNghiaCa = 2,
                             GioBatDauMacDinh = new TimeOnly(13, 0, 0),
                             GioKetThucMacDinh = new TimeOnly(17, 0, 0),
-                            MoTa = "Ca chieu: 13:00 - 17:00",
+                            MoTa = "Ca chiều: 13:00 - 17:00",
                             TenCa = "chieu",
                             TrangThai = true
                         },
@@ -612,7 +612,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDinhNghiaCa = 3,
                             GioBatDauMacDinh = new TimeOnly(17, 0, 0),
                             GioKetThucMacDinh = new TimeOnly(21, 0, 0),
-                            MoTa = "Ca toi: 17:00 - 21:00",
+                            MoTa = "Ca tối: 17:00 - 21:00",
                             TenCa = "toi",
                             TrangThai = true
                         },
@@ -621,7 +621,7 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdDinhNghiaCa = 4,
                             GioBatDauMacDinh = new TimeOnly(7, 0, 0),
                             GioKetThucMacDinh = new TimeOnly(17, 0, 0),
-                            MoTa = "Ca gop sang + chieu: 07:00 - 17:00",
+                            MoTa = "Ca gộp sáng + chiều: 07:00 - 17:00",
                             TenCa = "sang_chieu",
                             TrangThai = true
                         });
@@ -1067,56 +1067,56 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdMau = 1,
                             KenhGui = "Email",
                             LoaiThongBao = "XacNhanLich",
-                            NoiDungMau = "Xin chao {ten_benh_nhan}, lich hen cua ban ma {ma_lich_hen} vao ngay {ngay_kham} da duoc xac nhan. Vui long den truoc gio hen 15 phut.",
-                            TieuDeMau = "Xac nhan lich hen {ma_lich_hen}"
+                            NoiDungMau = "Xin chào {ten_benh_nhan}, lịch hẹn của bạn mã {ma_lich_hen} vào ngày {ngay_kham} đã được xác nhận. Vui lòng đến trước giờ hẹn 15 phút.",
+                            TieuDeMau = "Xác nhận lịch hẹn {ma_lich_hen}"
                         },
                         new
                         {
                             IdMau = 2,
                             KenhGui = "Email",
                             LoaiThongBao = "Nhac1Ngay",
-                            NoiDungMau = "Xin chao {ten_benh_nhan}, ban co lich hen kham vao ngay mai {ngay_kham} luc {gio_kham}. Ma lich hen: {ma_lich_hen}.",
-                            TieuDeMau = "Nhac lich kham ngay mai"
+                            NoiDungMau = "Xin chào {ten_benh_nhan}, bạn có lịch hẹn khám vào ngày mai {ngay_kham} lúc {gio_kham}. Mã lịch hẹn: {ma_lich_hen}.",
+                            TieuDeMau = "Nhắc lịch khám ngày mai"
                         },
                         new
                         {
                             IdMau = 3,
                             KenhGui = "Sms",
                             LoaiThongBao = "Nhac2Gio",
-                            NoiDungMau = "{ten_benh_nhan}, ban co lich kham luc {gio_kham} hom nay. Ma: {ma_lich_hen}.",
-                            TieuDeMau = "Nhac lich kham 2 gio toi"
+                            NoiDungMau = "{ten_benh_nhan}, bạn có lịch khám lúc {gio_kham} hôm nay. Mã: {ma_lich_hen}.",
+                            TieuDeMau = "Nhắc lịch khám 2 giờ tới"
                         },
                         new
                         {
                             IdMau = 4,
                             KenhGui = "Email",
                             LoaiThongBao = "HuyLich",
-                            NoiDungMau = "Xin chao {ten_benh_nhan}, lich hen {ma_lich_hen} vao ngay {ngay_kham} da duoc huy. Ly do: {ly_do}.",
-                            TieuDeMau = "Huy lich hen {ma_lich_hen}"
+                            NoiDungMau = "Xin chào {ten_benh_nhan}, lịch hẹn {ma_lich_hen} vào ngày {ngay_kham} đã được hủy. Lý do: {ly_do}.",
+                            TieuDeMau = "Hủy lịch hẹn {ma_lich_hen}"
                         },
                         new
                         {
                             IdMau = 5,
                             KenhGui = "TrongApp",
                             LoaiThongBao = "CheckIn",
-                            NoiDungMau = "Ban da check-in thanh cong. So thu tu cua ban la {so_thu_tu}. Vui long cho goi ten.",
-                            TieuDeMau = "Check-in thanh cong"
+                            NoiDungMau = "Bạn đã check-in thành công. Số thứ tự của bạn là {so_thu_tu}. Vui lòng chờ gọi tên.",
+                            TieuDeMau = "Check-in thành công"
                         },
                         new
                         {
                             IdMau = 6,
                             KenhGui = "TrongApp",
                             LoaiThongBao = "DuyetCa",
-                            NoiDungMau = "Ca lam viec ngay {ngay_lam_viec} cua ban da duoc admin duyet.",
-                            TieuDeMau = "Ca lam viec da duoc duyet"
+                            NoiDungMau = "Ca làm việc ngày {ngay_lam_viec} của bạn đã được admin duyệt.",
+                            TieuDeMau = "Ca làm việc đã được duyệt"
                         },
                         new
                         {
                             IdMau = 7,
                             KenhGui = "TrongApp",
                             LoaiThongBao = "TuChoiCa",
-                            NoiDungMau = "Ca lam viec ngay {ngay_lam_viec} cua ban da bi admin tu choi. Ly do: {ly_do}.",
-                            TieuDeMau = "Ca lam viec bi tu choi"
+                            NoiDungMau = "Ca làm việc ngày {ngay_lam_viec} của bạn đã bị admin từ chối. Lý do: {ly_do}.",
+                            TieuDeMau = "Ca làm việc bị từ chối"
                         });
                 });
 
@@ -1208,8 +1208,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 1,
                             MaPhong = "P101",
                             SucChua = 10,
-                            TenPhong = "Phong Kham 101",
-                            TrangBi = "Giuong kham, may do huyet ap, ong nghe",
+                            TenPhong = "Phòng Khám 101",
+                            TrangBi = "Giường khám, máy đo huyết áp, ống nghe",
                             TrangThai = true
                         },
                         new
@@ -1217,8 +1217,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 2,
                             MaPhong = "P102",
                             SucChua = 10,
-                            TenPhong = "Phong Kham 102",
-                            TrangBi = "Giuong kham, may do huyet ap, ong nghe",
+                            TenPhong = "Phòng Khám 102",
+                            TrangBi = "Giường khám, máy đo huyết áp, ống nghe",
                             TrangThai = true
                         },
                         new
@@ -1226,8 +1226,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 3,
                             MaPhong = "P201",
                             SucChua = 8,
-                            TenPhong = "Phong Kham Nhi 201",
-                            TrangBi = "Giuong kham tre em, can do chuyen dung",
+                            TenPhong = "Phòng Khám Nhi 201",
+                            TrangBi = "Giường khám trẻ em, cân đo chuyên dụng",
                             TrangThai = true
                         },
                         new
@@ -1235,8 +1235,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 4,
                             MaPhong = "P202",
                             SucChua = 8,
-                            TenPhong = "Phong Kham 202",
-                            TrangBi = "Giuong kham, may do huyet ap",
+                            TenPhong = "Phòng Khám 202",
+                            TrangBi = "Giường khám, máy đo huyết áp",
                             TrangThai = true
                         },
                         new
@@ -1244,8 +1244,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 5,
                             MaPhong = "P301",
                             SucChua = 5,
-                            TenPhong = "Phong Sieu Am",
-                            TrangBi = "May sieu am 4D",
+                            TenPhong = "Phòng Siêu Âm",
+                            TrangBi = "Máy siêu âm 4D",
                             TrangThai = true
                         },
                         new
@@ -1253,8 +1253,8 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                             IdPhong = 6,
                             MaPhong = "P302",
                             SucChua = 5,
-                            TenPhong = "Phong X-quang",
-                            TrangBi = "May X-quang ky thuat so",
+                            TenPhong = "Phòng X-Quang",
+                            TrangBi = "Máy X-quang kỹ thuật số",
                             TrangThai = true
                         });
                 });
@@ -1498,48 +1498,48 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                         new
                         {
                             IdThuoc = 1,
-                            DonVi = "Vien",
-                            GhiChu = "Giam dau, ha sot",
+                            DonVi = "Viên",
+                            GhiChu = "Giảm đau, hạ sốt",
                             HoatChat = "Paracetamol",
                             TenThuoc = "Paracetamol 500mg"
                         },
                         new
                         {
                             IdThuoc = 2,
-                            DonVi = "Vien",
-                            GhiChu = "Khang sinh nhom Beta-lactam",
+                            DonVi = "Viên",
+                            GhiChu = "Kháng sinh nhóm Beta-lactam",
                             HoatChat = "Amoxicillin",
                             TenThuoc = "Amoxicillin 500mg"
                         },
                         new
                         {
                             IdThuoc = 3,
-                            DonVi = "Vien",
-                            GhiChu = "Khang viem, giam dau NSAID",
+                            DonVi = "Viên",
+                            GhiChu = "Kháng viêm, giảm đau NSAID",
                             HoatChat = "Ibuprofen",
                             TenThuoc = "Ibuprofen 400mg"
                         },
                         new
                         {
                             IdThuoc = 4,
-                            DonVi = "Vien",
-                            GhiChu = "Uc che bom proton, dieu tri viem loet da day",
+                            DonVi = "Viên",
+                            GhiChu = "Ức chế bơm proton, điều trị viêm loét dạ dày",
                             HoatChat = "Omeprazole",
                             TenThuoc = "Omeprazole 20mg"
                         },
                         new
                         {
                             IdThuoc = 5,
-                            DonVi = "Vien",
-                            GhiChu = "Khang histamin H1, di ung",
+                            DonVi = "Viên",
+                            GhiChu = "Kháng histamin H1, dị ứng",
                             HoatChat = "Cetirizine",
                             TenThuoc = "Cetirizine 10mg"
                         },
                         new
                         {
                             IdThuoc = 6,
-                            DonVi = "Vien",
-                            GhiChu = "Bo sung vitamin C",
+                            DonVi = "Viên",
+                            GhiChu = "Bổ sung vitamin C",
                             HoatChat = "Ascorbic Acid",
                             TenThuoc = "Vitamin C 500mg"
                         },
@@ -1547,15 +1547,15 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                         {
                             IdThuoc = 7,
                             DonVi = "Chai",
-                            GhiChu = "Rua mat, rua mui",
+                            GhiChu = "Rửa mắt, rửa mũi",
                             HoatChat = "NaCl 0.9%",
-                            TenThuoc = "Nuoc Muoi Sinh Ly 0.9%"
+                            TenThuoc = "Nước Muối Sinh Lý 0.9%"
                         },
                         new
                         {
                             IdThuoc = 8,
-                            DonVi = "Vien",
-                            GhiChu = "Khang histamin H1 the he 2",
+                            DonVi = "Viên",
+                            GhiChu = "Kháng histamin H1 thế hệ 2",
                             HoatChat = "Loratadine",
                             TenThuoc = "Loratadine 10mg"
                         });

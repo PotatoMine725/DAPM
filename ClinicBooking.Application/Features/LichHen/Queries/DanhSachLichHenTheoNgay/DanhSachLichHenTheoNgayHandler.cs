@@ -35,7 +35,8 @@ public class DanhSachLichHenTheoNgayHandler
                 x.SoSlot,
                 x.DichVu.TenDichVu,
                 x.TrangThai,
-                x.NgayTao))
+                x.NgayTao,
+                x.HangCho != null))
             .ToListAsync(cancellationToken);
     }
 }

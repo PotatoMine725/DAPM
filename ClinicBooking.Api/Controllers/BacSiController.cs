@@ -7,7 +7,11 @@ using ClinicBooking.Application.Features.BacSi.Commands.XoaBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.DanhSachBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.HoSoBacSi;
 using ClinicBooking.Application.Features.BacSi.Queries.LayHoSoCuaToi;
+using ClinicBooking.Application.Features.BacSi.Queries.LayLichLamViecCuaToi;
 using ClinicBooking.Application.Features.Doctors.Queries.DanhSachBacSiCongKhai;
+using ClinicBooking.Application.Features.Scheduling.Commands.DangKyCaLamViec;
+using ClinicBooking.Application.Features.Scheduling.Commands.TaoCaLamViec;
+using ClinicBooking.Api.Contracts.Scheduling;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +29,6 @@ public class BacSiController : ControllerBase
         _mediator = mediator;
     }
 
-    // Admin and le_tan can create doctor profiles.
     [HttpPost]
     [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
@@ -35,7 +38,6 @@ public class BacSiController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, id);
     }
 
-    // Only bac_si can read their own self-service profile.
     [HttpGet("ho-so-cua-toi")]
     [Authorize(Roles = VaiTroConstants.BacSi)]
     [ProducesResponseType(typeof(BacSiProfileDto), StatusCodes.Status200OK)]
@@ -45,7 +47,6 @@ public class BacSiController : ControllerBase
         return Ok(result.TuProfileDto());
     }
 
-    // Admin and le_tan can browse doctor directory.
     [HttpGet]
     [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan}")]
     [ProducesResponseType(typeof(IReadOnlyList<BacSiDto>), StatusCodes.Status200OK)]
@@ -60,7 +61,6 @@ public class BacSiController : ControllerBase
         return Ok(result.Select(x => x.TuDto()).ToList());
     }
 
-    // Admin and le_tan can inspect an internal doctor profile by id.
     [HttpGet("ho-so/{idBacSi:int}")]
     [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan}")]
     [ProducesResponseType(typeof(BacSiDto), StatusCodes.Status200OK)]
@@ -70,7 +70,6 @@ public class BacSiController : ControllerBase
         return Ok(result.TuDto());
     }
 
-    // Admin and le_tan can update doctor profiles.
     [HttpPut("{idBacSi:int}")]
     [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -80,7 +79,6 @@ public class BacSiController : ControllerBase
         return NoContent();
     }
 
-    // Admin and le_tan can soft-deactivate doctor profiles.
     [HttpDelete("{idBacSi:int}")]
     [Authorize(Roles = $"{VaiTroConstants.Admin},{VaiTroConstants.LeTan}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -90,27 +88,20 @@ public class BacSiController : ControllerBase
         return NoContent();
     }
 
-    // Public: patient portal can browse active doctors without authentication.
-    [HttpGet("cong-khai")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(IReadOnlyList<BacSiPublicDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<BacSiPublicDto>>> DanhSachBacSiCongKhai(
-        [FromQuery] int soTrang = 1,
-        [FromQuery] int kichThuocTrang = 20,
-        [FromQuery] int? idChuyenKhoa = null,
-        [FromQuery] string? tuKhoa = null,
-        [FromQuery] bool? dangLamViec = null,
+    [HttpGet("lich-lam-viec")]
+    [Authorize(Roles = VaiTroConstants.BacSi)]
+    [ProducesResponseType(typeof(IReadOnlyList<CaLamViecPublicDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<CaLamViecPublicDto>>> LayLichLamViecCuaToi(
+        [FromQuery] DateOnly? tuNgay = null,
+        [FromQuery] DateOnly? denNgay = null,
+        [FromQuery] int soTuan = 0,
+        [FromQuery] int soThang = 0,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(
-            new DanhSachBacSiCongKhaiQuery(
-                SoTrang: soTrang,
-                KichThuocTrang: kichThuocTrang,
-                IdChuyenKhoa: idChuyenKhoa,
-                TuKhoa: tuKhoa,
-                DangLamViec: dangLamViec),
-            cancellationToken);
-
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var from = tuNgay ?? today;
+        var to = denNgay ?? (soThang > 0 ? from.AddMonths(soThang) : from.AddDays(Math.Max(1, soTuan) * 7));
+        var result = await _mediator.Send(new LayLichLamViecCuaToiQuery(from, to), cancellationToken);
         return Ok(result.Select(x => x.TuDto()).ToList());
     }
 }

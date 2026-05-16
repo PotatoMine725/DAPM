@@ -1,0 +1,241 @@
+@page
+@model ClinicBooking.Web.Pages.Admin.DuyetCaModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Duyệt ca làm việc - MedAdmin";
+    ViewData["PageName"] = "duyetca";
+    ViewData["PageTitle"] = "Duyệt ca làm việc";
+}
+
+<div class="section-title">Duyệt ca bác sĩ hợp đồng</div>
+<div class="section-sub">Xem xét và phê duyệt yêu cầu đăng ký ca làm việc từ bác sĩ hợp đồng</div>
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
+<!-- Summary bar -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+    <div style="background:var(--warning-bg);border:1px solid #f5ddb0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(230,81,0,.15);display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-clock"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--warning)">@Model.ThongKe.SoChoDuyet</div><div style="font-size:12px;color:var(--text-secondary)">Chờ duyệt</div></div>
+    </div>
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(46,125,50,.15);display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-check"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--success)">@Model.ThongKe.SoDaDuyet</div><div style="font-size:12px;color:var(--text-secondary)">Đã duyệt tháng này</div></div>
+    </div>
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:rgba(198,40,40,.15);display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-times"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700;color:var(--danger)">@Model.ThongKe.SoTuChoi</div><div style="font-size:12px;color:var(--text-secondary)">Đã từ chối tháng này</div></div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary)"><i class="fa-solid fa-file-contract"></i></div>
+        <div><div style="font-family:'Lexend';font-size:22px;font-weight:700">@Model.ThongKe.SoBacSiHopDong</div><div style="font-size:12px;color:var(--text-secondary)">Bác sĩ hợp đồng</div></div>
+    </div>
+</div>
+
+<!-- Pending list -->
+<div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+        <div>
+            <div class="card-title">Danh sách chờ duyệt (@Model.DanhSachChoDuyet.Count)</div>
+            <div class="card-sub">Sắp xếp theo thứ tự gửi yêu cầu</div>
+        </div>
+    </div>
+
+    @if (Model.DanhSachChoDuyet.Count == 0)
+    {
+        <div style="padding:40px;text-align:center;color:var(--text-secondary)">
+            <i class="fa-solid fa-circle-check fa-2x" style="margin-bottom:12px;color:var(--success);opacity:0.6"></i>
+            <div>Không có ca nào đang chờ duyệt.</div>
+        </div>
+    }
+    else
+    {
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th style="text-align:left">Bác sĩ</th>
+                    <th style="text-align:left">Chuyên khoa</th>
+                    <th style="text-align:left">Ngày làm</th>
+                    <th style="text-align:left">Ca</th>
+                    <th style="text-align:left">Giờ</th>
+                    <th style="text-align:left">Phòng</th>
+                    <th style="text-align:left">Gửi lúc</th>
+                    <th style="text-align:left;width:160px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ca in Model.DanhSachChoDuyet)
+                {
+                    var initial = string.IsNullOrEmpty(ca.HoTenBacSi) ? "?" : ca.HoTenBacSi[..1].ToUpper();
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:9px">
+                                <div class="avatar-circle avatar-sm" style="background:#0891b2">@initial</div>
+                                <strong>BS. @ca.HoTenBacSi</strong>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-primary">@ca.TenChuyenKhoa</span></td>
+                        <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge badge-primary">@ca.TenCa</span></td>
+                        <td style="font-size:12.5px">@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm")</td>
+                        <td>@ca.MaPhong</td>
+                        <td style="font-size:12px;color:var(--text-secondary)">@ca.NgayTao.ToString("dd/MM HH:mm")</td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <button class="btn btn-primary btn-sm" type="button"
+                                        onclick="moModalDuyet(@ca.IdCaLamViec, '@ca.HoTenBacSi', '@ca.TenChuyenKhoa', '@ca.NgayLamViec.ToString("dd/MM/yyyy")', '@ca.TenCa', '@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm")', '@ca.MaPhong', '@ca.SoSlotToiDa slot')">
+                                    <i class="fa-solid fa-check"></i> Duyệt
+                                </button>
+                                <button class="btn btn-danger btn-sm" type="button"
+                                        onclick="moModalTuChoi(@ca.IdCaLamViec, '@ca.HoTenBacSi')">
+                                    <i class="fa-solid fa-times"></i> Từ chối
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<!-- Recent processed -->
+@if (Model.DanhSachDaXuLy.Count > 0)
+{
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Xử lý gần đây</div>
+                <div class="card-sub">10 ca duyệt + 10 ca từ chối mới nhất</div>
+            </div>
+        </div>
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th style="text-align:left">Bác sĩ</th>
+                    <th style="text-align:left">Ngày làm</th>
+                    <th style="text-align:left">Ca</th>
+                    <th style="text-align:left">Trạng thái</th>
+                    <th style="text-align:left">Lý do từ chối</th>
+                    <th style="text-align:left">Duyệt lúc</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ca in Model.DanhSachDaXuLy)
+                {
+                    var isApproved = ca.TrangThaiDuyet == "DaDuyet";
+                    <tr>
+                        <td><strong>BS. @ca.HoTenBacSi</strong></td>
+                        <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                        <td>@ca.TenCa (@ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm"))</td>
+                        <td>
+                            @if (isApproved)
+                            {
+                                <span class="badge badge-success">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Đã từ chối</span>
+                            }
+                        </td>
+                        <td style="color:var(--text-secondary);font-size:13px">@(ca.LyDoTuChoi ?? "—")</td>
+                        <td style="color:var(--text-secondary);font-size:12px">@(ca.NgayDuyet?.ToString("dd/MM HH:mm") ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Modal Duyệt -->
+<div id="modal-duyet" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);padding:24px;max-width:480px;width:90%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Xác nhận duyệt ca</h3>
+            <button type="button" onclick="dongModal('modal-duyet')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <div style="background:var(--background-light);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13.5px">
+            <div style="margin-bottom:6px"><strong>Bác sĩ:</strong> <span id="d-bs">—</span></div>
+            <div style="margin-bottom:6px"><strong>Chuyên khoa:</strong> <span id="d-ck">—</span></div>
+            <div style="margin-bottom:6px"><strong>Ngày làm:</strong> <span id="d-ngay">—</span></div>
+            <div style="margin-bottom:6px"><strong>Ca:</strong> <span id="d-ca">—</span> · <span id="d-gio">—</span></div>
+            <div style="margin-bottom:6px"><strong>Phòng:</strong> <span id="d-phong">—</span></div>
+            <div><strong>Số slot:</strong> <span id="d-slot">—</span></div>
+        </div>
+        <form method="post" asp-page-handler="Duyet">
+            <input type="hidden" id="d-id" asp-for="IdCaLamViecChon" />
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-duyet')">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Xác nhận duyệt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Từ chối -->
+<div id="modal-tu-choi" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);padding:24px;max-width:480px;width:90%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Từ chối ca: <span id="t-bs">—</span></h3>
+            <button type="button" onclick="dongModal('modal-tu-choi')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="TuChoi">
+            <input type="hidden" id="t-id" asp-for="IdCaLamViecChon" />
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Lý do từ chối <span style="color:var(--danger)">*</span></label>
+            <textarea asp-for="LyDoTuChoi" required rows="4" placeholder="VD: Trùng ca với BS khác tại phòng này"
+                      style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;resize:vertical;font-family:inherit"></textarea>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-tu-choi')">Hủy</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-times"></i> Xác nhận từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.modal-overlay.show { display: flex !important; }
+.section-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.section-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+.card table th, .card table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.card table thead th { font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; }
+.avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+.avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); }
+</style>
+
+<script>
+function moModalDuyet(id, bs, ck, ngay, ca, gio, phong, slot) {
+    document.getElementById('d-id').value = id;
+    document.getElementById('d-bs').textContent = 'BS. ' + bs;
+    document.getElementById('d-ck').textContent = ck;
+    document.getElementById('d-ngay').textContent = ngay;
+    document.getElementById('d-ca').textContent = ca;
+    document.getElementById('d-gio').textContent = gio;
+    document.getElementById('d-phong').textContent = phong;
+    document.getElementById('d-slot').textContent = slot;
+    document.getElementById('modal-duyet').classList.add('show');
+}
+function moModalTuChoi(id, bs) {
+    document.getElementById('t-id').value = id;
+    document.getElementById('t-bs').textContent = 'BS. ' + bs;
+    document.getElementById('modal-tu-choi').classList.add('show');
+}
+function dongModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('show');
+}
+</script>

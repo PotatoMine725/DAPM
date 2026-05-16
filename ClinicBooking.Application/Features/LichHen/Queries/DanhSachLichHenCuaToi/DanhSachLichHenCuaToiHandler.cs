@@ -56,7 +56,8 @@ public class DanhSachLichHenCuaToiHandler : IRequestHandler<DanhSachLichHenCuaTo
                 x.SoSlot,
                 x.DichVu.TenDichVu,
                 x.TrangThai,
-                x.NgayTao))
+                x.NgayTao,
+                x.HangCho != null))
             .ToListAsync(cancellationToken);
 
         return new DanhSachLichHenResponse(ketQua, tongSo, request.SoTrang, request.KichThuocTrang);

@@ -39,7 +39,7 @@ public class HuyToaThuocHandler : IRequestHandler<HuyToaThuocCommand>
         var currentUserId = _currentUserService.IdTaiKhoan;
         var currentUserRole = _currentUserService.VaiTro;
         
-        if (currentUserRole != VaiTro.Admin && hoSoKham.IdBacSi != currentUserId)
+        if (currentUserRole != VaiTro.Admin && hoSoKham.BacSi.IdTaiKhoan != currentUserId)
             throw new ForbiddenException("Ban khong co quyen xoa toa thuoc nay.");
 
         // Hard-delete (vì entity không có BiXoa, NgayXoa)

@@ -13,8 +13,9 @@ public class DangXuatModel : PageModel
         return RedirectToPage("/Auth/DangNhap");
     }
 
-    public IActionResult OnGet()
+    public async Task<IActionResult> OnGet()
     {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToPage("/Auth/DangNhap");
     }
 }

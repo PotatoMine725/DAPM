@@ -1,0 +1,160 @@
+@page
+@model ClinicBooking.Web.Pages.BacSi.DashboardModel
+@using ClinicBooking.Domain.Enums
+@using ClinicBooking.Web.Helpers
+@{
+    ViewData["Title"] = "Tổng quan";
+    var tenBacSi = Model.HoSo?.HoTen ?? "Bác sĩ";
+    var loai = Model.HoSo?.LoaiHopDong;
+    var today = DateOnly.FromDateTime(DateTime.UtcNow);
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Xin chào, @tenBacSi</h1>
+        <div class="page-subtitle">
+            @today.ToString("dddd, dd/MM/yyyy") ·
+            @if (loai == LoaiHopDong.NoiTru)
+            {
+                <span class="badge badge-info">Bác sĩ Nội trú</span>
+            }
+            else if (loai == LoaiHopDong.HopDong)
+            {
+                <span class="badge badge-warning">Bác sĩ Hợp đồng</span>
+            }
+        </div>
+    </div>
+    <div style="display:flex; gap: var(--space-2);">
+        @if (loai == LoaiHopDong.HopDong)
+        {
+            <a class="btn btn-primary" href="/BacSi/YeuCauTaoCa">
+                <i class="ph ph-calendar-plus"></i> Đăng ký lịch
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-secondary" href="/BacSi/LichLamViec">
+                <i class="ph ph-calendar-dots"></i> Xem lịch làm việc
+            </a>
+        }
+        <a class="btn btn-primary" href="/BacSi/HangCho">
+            <i class="ph ph-clipboard-text"></i> Hàng chờ của tôi
+        </a>
+    </div>
+</div>
+
+<!-- Stat cards -->
+<div class="stats-grid" style="grid-template-columns: repeat(4,1fr); margin-bottom: var(--space-4);">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);">
+            <i class="ph ph-calendar-check"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.TongLichHen</div>
+            <div class="stat-label">Lịch hẹn hôm nay</div>
+            <div class="stat-sub">@Model.SoChoXacNhan chờ xác nhận</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7; color:#d97706;">
+            <i class="ph ph-clock"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.SoDaCheckIn</div>
+            <div class="stat-label">Đã check-in</div>
+            <div class="stat-sub">đang chờ khám</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);">
+            <i class="ph ph-stethoscope"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.SoDangKham</div>
+            <div class="stat-label">Đang khám</div>
+            <div class="stat-sub">ca hiện tại</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);">
+            <i class="ph ph-check-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">@Model.SoHoanThanh</div>
+            <div class="stat-label">Đã hoàn thành</div>
+            <div class="stat-sub">hôm nay</div>
+        </div>
+    </div>
+</div>
+
+<!-- Lịch hẹn hôm nay -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-calendar-check"></i> Lịch hẹn hôm nay</span>
+        <a class="btn btn-sm btn-secondary" href="/BacSi/DanhSachLichHen">
+            Xem tất cả <i class="ph ph-arrow-right"></i>
+        </a>
+    </div>
+
+    @if (!Model.LichHenHomNay.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-calendar-blank"></i></div>
+            <p>Không có lịch hẹn nào hôm nay.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã LH</th>
+                    <th>Bệnh nhân</th>
+                    <th>Giờ bắt đầu</th>
+                    <th>Dịch vụ</th>
+                    <th>Trạng thái</th>
+                    <th>Check-in</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lh in Model.LichHenHomNay)
+                {
+                    var rowClass = lh.TrangThai switch {
+                        TrangThaiLichHen.DangKham  => "ds-row-dang",
+                        TrangThaiLichHen.HoanThanh => "ds-row-done",
+                        _ => ""
+                    };
+                    <tr class="@rowClass">
+                        <td><span class="table-code">@lh.MaLichHen</span></td>
+                        <td style="font-weight:500;">@lh.HoTenBenhNhan</td>
+                        <td>@lh.GioBatDau.ToString(@"HH\:mm")</td>
+                        <td>@lh.TenDichVu</td>
+                        <td>@Html.Raw(BadgeHelper.TrangThaiLichHen(lh.TrangThai))</td>
+                        <td>
+                            @if (lh.DaCheckIn)
+                            {
+                                <span class="badge badge-success"><i class="ph ph-check"></i> Đã check-in</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-neutral">Chưa check-in</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+<style>
+.stat-card { transition: transform 0.15s, box-shadow 0.15s; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+
+.ds-row-dang td { background: #fff7ed; border-left: 3px solid #f97316; }
+.ds-row-done td { opacity: 0.7; }
+.data-table tbody tr { transition: background 0.12s; }
+.data-table tbody tr:hover td { background: var(--color-primary-light, #e8f0fb) !important; }
+</style>
+}

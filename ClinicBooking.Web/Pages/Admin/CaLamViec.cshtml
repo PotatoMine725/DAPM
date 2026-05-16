@@ -1,0 +1,312 @@
+@page
+@using ClinicBooking.Domain.Enums
+@model ClinicBooking.Web.Pages.Admin.CaLamViecModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý ca làm việc - MedAdmin";
+    ViewData["PageName"] = "calamviec";
+    ViewData["PageTitle"] = "Quản lý ca làm việc";
+}
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
+<!-- Search and Filters -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Danh sách ca làm việc (@Model.DanhSach.Count)</div>
+        <button class="btn btn-primary" onclick="moModalTao()">
+            <i class="fa-solid fa-plus"></i> Tạo ca làm việc mới
+        </button>
+    </div>
+
+    <form method="get" class="toolbar" style="gap:12px;flex-wrap:wrap">
+        <select name="idBacSi" class="form-control" style="width:220px" onchange="this.form.submit()">
+            <option value="">Tất cả bác sĩ</option>
+            @foreach (var bs in Model.DanhSachBacSi)
+            {
+                var sel = Model.IdBacSiLoc == bs.IdBacSi ? "selected" : null;
+                <option value="@bs.IdBacSi" selected="@sel">BS. @bs.HoTen (@bs.TenChuyenKhoa)</option>
+            }
+        </select>
+
+        <select name="idPhong" class="form-control" style="width:180px" onchange="this.form.submit()">
+            <option value="">Tất cả phòng</option>
+            @foreach (var p in Model.DanhSachPhong)
+            {
+                var sel = Model.IdPhongLoc == p.IdPhong ? "selected" : null;
+                <option value="@p.IdPhong" selected="@sel">@p.MaPhong - @p.TenPhong</option>
+            }
+        </select>
+
+        <select name="idChuyenKhoa" class="form-control" style="width:180px" onchange="this.form.submit()">
+            <option value="">Tất cả chuyên khoa</option>
+            @foreach (var ck in Model.DanhSachChuyenKhoa)
+            {
+                var sel = Model.IdChuyenKhoaLoc == ck.IdChuyenKhoa ? "selected" : null;
+                <option value="@ck.IdChuyenKhoa" selected="@sel">@ck.TenChuyenKhoa</option>
+            }
+        </select>
+
+        <select name="trangThai" class="form-control" style="width:160px" onchange="this.form.submit()">
+            <option value="">Tất cả trạng thái</option>
+            @foreach (var tt in Enum.GetValues<TrangThaiDuyetCa>())
+            {
+                var sel = Model.TrangThaiLoc == tt ? "selected" : null;
+                <option value="@tt" selected="@sel">@tt</option>
+            }
+        </select>
+
+        <input type="date" name="tuNgay" class="form-control" style="width:150px" value="@(Model.TuNgayLoc?.ToString("yyyy-MM-dd"))" onchange="this.form.submit()" />
+        <input type="date" name="denNgay" class="form-control" style="width:150px" value="@(Model.DenNgayLoc?.ToString("yyyy-MM-dd"))" onchange="this.form.submit()" />
+
+        <a href="/Admin/CaLamViec" class="btn btn-ghost btn-sm" title="Xoá bộ lọc"><i class="fa-solid fa-rotate-left"></i></a>
+    </form>
+</div>
+
+<!-- Shifts Table -->
+<div class="card">
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Bác sĩ</th>
+                    <th>Phòng</th>
+                    <th>Ca</th>
+                    <th>Thời gian</th>
+                    <th>Slot</th>
+                    <th>Trạng thái</th>
+                    <th>Nguồn</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.DanhSach.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:32px;color:var(--text-secondary)">
+                            Không có ca làm việc nào khớp bộ lọc.
+                        </td>
+                    </tr>
+                }
+                @foreach (var ca in Model.DanhSach)
+                {
+                    var initial = string.IsNullOrEmpty(ca.HoTenBacSi) ? "?" : ca.HoTenBacSi[..1].ToUpper();
+                    var (badgeClass, badgeText) = ca.TrangThaiDuyet switch
+                    {
+                        "DaDuyet" => ("badge badge-success", "Đã duyệt"),
+                        "ChoDuyet" => ("badge badge-warning", "Chờ duyệt"),
+                        "DaHuy" => ("badge badge-danger", "Đã huỷ"),
+                        "HoanThanh" => ("badge", "Hoàn thành"),
+                        _ => ("badge", ca.TrangThaiDuyet)
+                    };
+                    var pct = ca.SoSlotToiDa > 0 ? (ca.SoSlotDaDat * 100 / ca.SoSlotToiDa) : 0;
+                    <tr>
+                        <td><code style="font-size:12px;">#@ca.IdCaLamViec</code></td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px">
+                                <div class="avatar-circle avatar-sm" style="background:var(--primary)">@initial</div>
+                                <div>
+                                    <div style="font-weight:600;">BS. @ca.HoTenBacSi</div>
+                                    <div style="font-size:12px;color:var(--text-secondary);">@ca.TenChuyenKhoa</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@ca.MaPhong</td>
+                        <td>@ca.TenCa</td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;">@ca.NgayLamViec.ToString("dd/MM/yyyy")</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">@ca.GioBatDau.ToString("HH:mm") - @ca.GioKetThuc.ToString("HH:mm")</div>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="font-weight:600;">@ca.SoSlotDaDat/@ca.SoSlotToiDa</span>
+                                <div style="width:60px;height:4px;background:var(--subtle);border-radius:2px;overflow:hidden;">
+                                    <div style="width:@(pct)%;height:100%;background:var(--success);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="@badgeClass">@badgeText</span></td>
+                        <td>
+                            <div style="font-size:13px;">@ca.NguonTaoCa</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">@ca.NgayTao.ToString("dd/MM HH:mm")</div>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="Xoa" style="display:inline" onsubmit="return confirm('Xoá ca #@ca.IdCaLamViec?');">
+                                <input type="hidden" name="IdCaXoa" value="@ca.IdCaLamViec" />
+                                <button type="submit" class="btn btn-ghost btn-sm" title="Xoá ca" style="color:var(--danger)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Shift Modal -->
+<div class="modal-overlay" id="modal-create-shift">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Tạo ca làm việc mới</div>
+            <div class="modal-close" onclick="closeModal('modal-create-shift')"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <form method="post" asp-page-handler="Tao">
+            <div class="modal-body">
+                <div class="section-title">Thông tin ca làm việc</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Bác sĩ *</label>
+                        <select class="form-control" asp-for="IdBacSiInput" required>
+                            <option value="">Chọn bác sĩ</option>
+                            @foreach (var bs in Model.DanhSachBacSi)
+                            {
+                                <option value="@bs.IdBacSi" data-chuyenkhoa="@bs.IdChuyenKhoa">BS. @bs.HoTen (@bs.TenChuyenKhoa)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phòng khám *</label>
+                        <select class="form-control" asp-for="IdPhongInput" required>
+                            <option value="">Chọn phòng</option>
+                            @foreach (var p in Model.DanhSachPhong)
+                            {
+                                <option value="@p.IdPhong">@p.MaPhong - @p.TenPhong</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Ngày làm việc *</label>
+                        <input type="date" class="form-control" asp-for="NgayLamViecInput" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chuyên khoa *</label>
+                        <select class="form-control" asp-for="IdChuyenKhoaInput" required>
+                            <option value="">Chọn chuyên khoa</option>
+                            @foreach (var ck in Model.DanhSachChuyenKhoa)
+                            {
+                                <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Định nghĩa ca *</label>
+                        <select class="form-control" asp-for="IdDinhNghiaCaInput" required>
+                            <option value="">Chọn ca</option>
+                            @foreach (var dn in Model.DanhSachDinhNghiaCa)
+                            {
+                                <option value="@dn.IdDinhNghiaCa"
+                                        data-gio-bat-dau="@dn.GioBatDauMacDinh.ToString("HH:mm")"
+                                        data-gio-ket-thuc="@dn.GioKetThucMacDinh.ToString("HH:mm")">
+                                    @dn.TenCa (@dn.GioBatDauMacDinh.ToString("HH:mm")-@dn.GioKetThucMacDinh.ToString("HH:mm"))
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Thời gian mỗi slot (phút) *</label>
+                        <input type="number" class="form-control" asp-for="ThoiGianSlotInput" min="10" max="60" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Giờ bắt đầu *</label>
+                        <input type="time" class="form-control" asp-for="GioBatDauInput" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giờ kết thúc *</label>
+                        <input type="time" class="form-control" asp-for="GioKetThucInput" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Số slot tối đa *</label>
+                        <input type="number" class="form-control" asp-for="SoSlotToiDaInput" min="1" max="50" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <div style="font-size:12px;color:var(--text-secondary);padding:8px 0">
+                            Ca tạo bởi admin mặc định <strong>Chờ duyệt</strong>. Sử dụng trang <a href="/Admin/DuyetCa">Duyệt ca</a> để duyệt.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-create-shift')">Hủy</button>
+                <button type="submit" class="btn btn-primary">Tạo ca làm việc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 24px 0 16px 0;
+    border-bottom: 1px dashed var(--primary-light);
+    padding-bottom: 8px;
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+</style>
+
+<script>
+function moModalTao() {
+    const form = document.querySelector('#modal-create-shift form');
+    form.reset();
+    const dateInput = form.querySelector('input[name="NgayLamViecInput"]');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    openModal('modal-create-shift');
+}
+
+// Auto-fill chuyenkhoa + giờ khi chọn bác sĩ / định nghĩa ca
+document.querySelector('select[name="IdBacSiInput"]')?.addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const ck = opt?.dataset.chuyenkhoa;
+    const ckSelect = document.querySelector('select[name="IdChuyenKhoaInput"]');
+    if (ck && ckSelect) ckSelect.value = ck;
+});
+
+document.querySelector('select[name="IdDinhNghiaCaInput"]')?.addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const bd = opt?.dataset.gioBatDau;
+    const kt = opt?.dataset.gioKetThuc;
+    const inBd = document.querySelector('input[name="GioBatDauInput"]');
+    const inKt = document.querySelector('input[name="GioKetThucInput"]');
+    if (bd && inBd && !inBd.value) inBd.value = bd;
+    if (kt && inKt && !inKt.value) inKt.value = kt;
+});
+</script>

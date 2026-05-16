@@ -14,6 +14,7 @@ using ClinicBooking.Infrastructure.Services.Scheduling;
 using ClinicBooking.Infrastructure.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +28,9 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection")));
+                configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureWarnings(w => w.Ignore(
+                Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
@@ -37,6 +40,8 @@ public static class DependencyInjection
             configuration.GetSection(AdminSeederSettings.SectionName));
         services.Configure<OtpOptions>(
             configuration.GetSection(OtpOptions.SectionName));
+        services.Configure<EmailSettings>(
+            configuration.GetSection(EmailSettings.SectionName));
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -52,10 +57,13 @@ public static class DependencyInjection
             configuration.GetSection(LichHenOptions.SectionName));
 
         services.AddScoped<ICaLamViecQueryService, CaLamViecQueryService>();
-        services.AddScoped<IOtpService, OtpServiceStub>();
-
-        // TODO: Thay NotificationServiceStub bang impl Module 4 khi code duoc day len
-        services.AddScoped<INotificationService, NotificationServiceStub>();
+        
+        services.AddMemoryCache();
+        
+        // Module 4: Email & Notification services
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
 

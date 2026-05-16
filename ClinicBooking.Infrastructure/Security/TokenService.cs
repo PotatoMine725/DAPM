@@ -23,7 +23,7 @@ public class TokenService : ITokenService
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public AccessTokenResult TaoAccessToken(TaiKhoan taiKhoan)
+    public AccessTokenResult TaoAccessToken(TaiKhoan taiKhoan, IEnumerable<Claim>? claimsThem = null)
     {
         var now = _dateTimeProvider.UtcNow;
         var hetHan = now.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes);
@@ -36,6 +36,9 @@ public class TokenService : ITokenService
             new(JwtRegisteredClaimNames.Email, taiKhoan.Email),
             new(ClaimTypes.Role, taiKhoan.VaiTro.ToRoleClaim())
         };
+
+        if (claimsThem is not null)
+            claims.AddRange(claimsThem);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

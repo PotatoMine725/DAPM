@@ -1,0 +1,343 @@
+@page
+@using ClinicBooking.Domain.Enums
+@model ClinicBooking.Web.Pages.Admin.BacSiModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý bác sĩ - MedAdmin";
+    ViewData["PageName"] = "bacsi";
+    ViewData["PageTitle"] = "Quản lý bác sĩ";
+}
+
+@if (TempData["SuccessMessage"] is string successMsg)
+{
+    <div style="background:var(--success-bg);border:1px solid #b7e0a0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--success);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-check"></i><div>@successMsg</div>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string errorMsg)
+{
+    <div style="background:var(--danger-bg);border:1px solid #f5c6c6;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-circle-exclamation"></i><div>@errorMsg</div>
+    </div>
+}
+
+<!-- Search and Filters -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Danh sách bác sĩ (@Model.DanhSach.Count)</div>
+        <button class="btn btn-primary" type="button" onclick="moModal('modal-create-doctor')">
+            <i class="fa-solid fa-plus"></i> Thêm bác sĩ mới
+        </button>
+    </div>
+
+    <form method="get" class="toolbar" style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px">
+        <div class="search-box" style="position:relative;flex:1;min-width:240px">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-disabled);font-size:13px"></i>
+            <input type="text" class="form-control" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tìm theo tên, email, SĐT, username..." style="padding-left:36px;width:100%">
+        </div>
+        <select class="form-control" name="idChuyenKhoa" style="width:200px">
+            <option value="">Tất cả chuyên khoa</option>
+            @foreach (var ck in Model.DanhSachChuyenKhoa)
+            {
+                <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoaLoc == ck.IdChuyenKhoa)">@ck.TenChuyenKhoa</option>
+            }
+        </select>
+        <select class="form-control" name="loaiHopDong" style="width:160px">
+            <option value="">Tất cả loại HĐ</option>
+            <option value="NoiTru" selected="@(Model.LoaiHopDongLoc == LoaiHopDong.NoiTru)">Nội trú</option>
+            <option value="HopDong" selected="@(Model.LoaiHopDongLoc == LoaiHopDong.HopDong)">Hợp đồng</option>
+        </select>
+        <select class="form-control" name="trangThai" style="width:160px">
+            <option value="">Tất cả trạng thái</option>
+            <option value="DangLam" selected="@(Model.TrangThaiLoc == TrangThaiBacSi.DangLam)">Đang làm</option>
+            <option value="TamNghi" selected="@(Model.TrangThaiLoc == TrangThaiBacSi.TamNghi)">Tạm nghỉ</option>
+            <option value="NghiViec" selected="@(Model.TrangThaiLoc == TrangThaiBacSi.NghiViec)">Nghỉ việc</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Lọc</button>
+        <a href="?" class="btn btn-ghost btn-sm"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+    </form>
+</div>
+
+<!-- Doctors Table -->
+<div class="card" style="margin-top:16px">
+    <div class="card-body" style="padding:0">
+        @if (Model.DanhSach.Count == 0)
+        {
+            <div style="padding:40px;text-align:center;color:var(--text-secondary)">
+                <i class="fa-solid fa-user-doctor fa-2x" style="margin-bottom:12px;opacity:0.4"></i>
+                <div>Chưa có bác sĩ nào.</div>
+            </div>
+        }
+        else
+        {
+            <table style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="text-align:left">ID</th>
+                        <th style="text-align:left">Bác sĩ</th>
+                        <th style="text-align:left">Chuyên khoa</th>
+                        <th style="text-align:left">Liên hệ</th>
+                        <th style="text-align:left">Loại HĐ</th>
+                        <th style="text-align:left">Trạng thái</th>
+                        <th style="text-align:left">Ngày tạo</th>
+                        <th style="text-align:left;width:130px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var bs in Model.DanhSach)
+                    {
+                        var initial = string.IsNullOrEmpty(bs.HoTen) ? "?" : bs.HoTen[..1].ToUpper();
+                        var trangThaiClass = bs.TrangThai switch { "DangLam" => "badge-success", "TamNghi" => "badge-warning", _ => "badge-danger" };
+                        var trangThaiLabel = bs.TrangThai switch { "DangLam" => "Đang làm", "TamNghi" => "Tạm nghỉ", _ => "Nghỉ việc" };
+                        var loaiHdLabel = bs.LoaiHopDong == "NoiTru" ? "Nội trú" : "Hợp đồng";
+                        var loaiHdClass = bs.LoaiHopDong == "NoiTru" ? "badge-primary" : "badge-warning";
+                        <tr>
+                            <td><code style="font-size:12px">#@bs.IdBacSi</code></td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:12px">
+                                    <div class="avatar-circle avatar-sm" style="background:var(--primary)">@initial</div>
+                                    <div>
+                                        <div style="font-weight:600">BS. @bs.HoTen</div>
+                                        <div style="font-size:12px;color:var(--text-secondary)">@bs.TenDangNhap</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@bs.TenChuyenKhoa</td>
+                            <td>
+                                <div style="font-size:13px">@bs.Email</div>
+                                <div style="font-size:12px;color:var(--text-secondary)">@bs.SoDienThoai</div>
+                            </td>
+                            <td><span class="badge @loaiHdClass">@loaiHdLabel</span></td>
+                            <td><span class="badge @trangThaiClass">@trangThaiLabel</span></td>
+                            <td>@bs.NgayTao.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div style="display:flex;gap:4px">
+                                    <button type="button" class="btn btn-ghost btn-sm" title="Chỉnh sửa"
+                                            onclick='moModalSua(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(bs)))'>
+                                        <i class="fa-solid fa-edit"></i>
+                                    </button>
+                                    @if (bs.TrangThai == "DangLam")
+                                    {
+                                        <form method="post" asp-page-handler="DoiTrangThai" asp-route-idBacSi="@bs.IdBacSi" asp-route-trangThai="TamNghi" style="display:inline"
+                                              onsubmit="return confirm('Đặt BS. @bs.HoTen tạm nghỉ?')">
+                                            <button type="submit" class="btn btn-ghost btn-sm" title="Tạm nghỉ" style="color:var(--warning)">
+                                                <i class="fa-solid fa-pause"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-page-handler="DoiTrangThai" asp-route-idBacSi="@bs.IdBacSi" asp-route-trangThai="DangLam" style="display:inline">
+                                            <button type="submit" class="btn btn-ghost btn-sm" title="Cho đi làm" style="color:var(--success)">
+                                                <i class="fa-solid fa-play"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Modal Tạo BS -->
+<div class="modal-overlay" id="modal-create-doctor" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);max-width:640px;width:90%;max-height:90vh;display:flex;flex-direction:column">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Thêm bác sĩ mới</h3>
+            <button type="button" onclick="dongModal('modal-create-doctor')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="Tao" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+            <div style="padding:20px 24px;overflow-y:auto;flex:1">
+                <div class="mod-section">Thông tin cá nhân</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên *</label>
+                        <input class="form-control" asp-for="HoTen" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên đăng nhập *</label>
+                        <input class="form-control" asp-for="TenDangNhap" required minlength="3" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input class="form-control" type="email" asp-for="Email" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại *</label>
+                        <input class="form-control" type="tel" asp-for="SoDienThoai" required pattern="0[0-9]{9}" placeholder="0987654321" />
+                    </div>
+                </div>
+
+                <div class="mod-section">Thông tin chuyên môn</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Chuyên khoa *</label>
+                        <select class="form-control" asp-for="IdChuyenKhoaInput" required>
+                            <option value="">-- Chọn --</option>
+                            @foreach (var ck in Model.DanhSachChuyenKhoa)
+                            {
+                                <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Loại hợp đồng *</label>
+                        <select class="form-control" asp-for="LoaiHopDongInput" required>
+                            <option value="NoiTru">Nội trú</option>
+                            <option value="HopDong">Hợp đồng</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Bằng cấp</label>
+                        <input class="form-control" asp-for="BangCap" placeholder="VD: Tiến sĩ Y khoa" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Năm kinh nghiệm</label>
+                        <input class="form-control" type="number" asp-for="NamKinhNghiem" min="0" max="60" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tiểu sử</label>
+                    <textarea class="form-control" asp-for="TieuSu" rows="3" placeholder="Mô tả ngắn về bác sĩ"></textarea>
+                </div>
+
+                <div class="mod-section">Tài khoản</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu *</label>
+                        <input class="form-control" type="password" asp-for="MatKhau" required minlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Xác nhận mật khẩu *</label>
+                        <input class="form-control" type="password" asp-for="XacNhanMatKhau" required minlength="6" />
+                    </div>
+                </div>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-create-doctor')">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm bác sĩ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Sửa BS -->
+<div class="modal-overlay" id="modal-edit-doctor" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:var(--radius);max-width:640px;width:90%;max-height:90vh;display:flex;flex-direction:column">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font-size:18px;font-weight:700">Sửa thông tin bác sĩ</h3>
+            <button type="button" onclick="dongModal('modal-edit-doctor')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-secondary)">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="CapNhat" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+            <input type="hidden" id="e-id" asp-for="IdBacSiSua" />
+            <div style="padding:20px 24px;overflow-y:auto;flex:1">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên *</label>
+                        <input class="form-control" id="e-hoten" asp-for="HoTen" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái *</label>
+                        <select class="form-control" id="e-trangthai" asp-for="TrangThaiInput">
+                            <option value="DangLam">Đang làm</option>
+                            <option value="TamNghi">Tạm nghỉ</option>
+                            <option value="NghiViec">Nghỉ việc</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" id="e-email" asp-for="Email" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại</label>
+                        <input class="form-control" type="tel" id="e-sdt" asp-for="SoDienThoai" pattern="0[0-9]{9}" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Chuyên khoa *</label>
+                        <select class="form-control" id="e-ck" asp-for="IdChuyenKhoaInput" required>
+                            @foreach (var ck in Model.DanhSachChuyenKhoa)
+                            {
+                                <option value="@ck.IdChuyenKhoa">@ck.TenChuyenKhoa</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Loại hợp đồng *</label>
+                        <select class="form-control" id="e-loaihd" asp-for="LoaiHopDongInput">
+                            <option value="NoiTru">Nội trú</option>
+                            <option value="HopDong">Hợp đồng</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Bằng cấp</label>
+                        <input class="form-control" id="e-bangcap" asp-for="BangCap" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Năm kinh nghiệm</label>
+                        <input class="form-control" type="number" id="e-nam" asp-for="NamKinhNghiem" min="0" max="60" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tiểu sử</label>
+                    <textarea class="form-control" id="e-tieusu" asp-for="TieuSu" rows="3"></textarea>
+                </div>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
+                <button type="button" class="btn btn-ghost" onclick="dongModal('modal-edit-doctor')">Hủy</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.modal-overlay.show { display: flex !important; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.form-control { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 14px; width: 100%; }
+.mod-section { font-size: 14px; font-weight: 600; color: var(--primary); margin: 12px 0 12px 0; padding-bottom: 6px; border-bottom: 1px dashed var(--primary-light); }
+.mod-section:first-child { margin-top: 0; }
+.card table th, .card table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.card table thead th { font-size: 11.5px; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; background: var(--background-light); }
+.avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+.avatar-sm { width: 30px; height: 30px; font-size: 12px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); }
+</style>
+
+<script>
+function moModal(id) { document.getElementById(id)?.classList.add('show'); }
+function dongModal(id) { document.getElementById(id)?.classList.remove('show'); }
+
+function moModalSua(bs) {
+    document.getElementById('e-id').value = bs.idBacSi;
+    document.getElementById('e-hoten').value = bs.hoTen || '';
+    document.getElementById('e-email').value = bs.email || '';
+    document.getElementById('e-sdt').value = bs.soDienThoai || '';
+    document.getElementById('e-ck').value = bs.idChuyenKhoa;
+    document.getElementById('e-loaihd').value = bs.loaiHopDong;
+    document.getElementById('e-trangthai').value = bs.trangThai;
+    document.getElementById('e-bangcap').value = bs.bangCap || '';
+    document.getElementById('e-nam').value = bs.namKinhNghiem || '';
+    document.getElementById('e-tieusu').value = bs.tieuSu || '';
+    moModal('modal-edit-doctor');
+}
+</script>

@@ -1,0 +1,156 @@
+@page "/Admin/QuanLyCaLamViec"
+@model ClinicBooking.Web.Pages.LeTan.QuanLyCaLamViecModel
+@using ClinicBooking.Domain.Enums
+@using ClinicBooking.Web.Helpers
+@{
+    ViewData["Title"] = "Quản lý ca làm việc";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý ca làm việc</h1>
+        <div class="page-subtitle">Duyệt, xóa và theo dõi các ca làm việc của bác sĩ.</div>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid--responsive" style="margin-bottom: var(--space-5);">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-primary-light); color:var(--color-primary);"><i class="ph ph-calendar"></i></div>
+        <div><div class="stat-value">@Model.TongSoCa</div><div class="stat-label">Tổng ca</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-success-bg); color:var(--color-success-text);"><i class="ph ph-check-circle"></i></div>
+        <div><div class="stat-value">@Model.SoCaDaDuyet</div><div class="stat-label">Đã duyệt</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-warning-bg); color:var(--color-warning-text);"><i class="ph ph-clock"></i></div>
+        <div><div class="stat-value">@Model.SoCaChoDuyet</div><div class="stat-label">Chờ duyệt</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--color-active-bg); color:var(--color-active-text);"><i class="ph ph-circle-dashed"></i></div>
+        <div><div class="stat-value">@Model.SoCaConTrong</div><div class="stat-label">Còn trống</div></div>
+    </div>
+</div>
+
+<div class="card section-stack" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <form method="get" class="filter-bar">
+        <div class="form-group" style="margin:0; min-width:220px;">
+            <label class="form-label" for="idChuyenKhoa">Chuyên khoa</label>
+            <select class="form-select" id="idChuyenKhoa" name="idChuyenKhoa">
+                <option value="">-- Tất cả --</option>
+                @foreach (var ck in Model.DanhSachChuyenKhoa)
+                {
+                    <option value="@ck.IdChuyenKhoa" selected="@(Model.IdChuyenKhoaLoc == ck.IdChuyenKhoa ? "selected" : null)">@ck.TenChuyenKhoa</option>
+                }
+            </select>
+        </div>
+        <div class="form-group" style="margin:0; min-width:220px;">
+            <label class="form-label" for="idPhong">Phòng</label>
+            <select class="form-select" id="idPhong" name="idPhong">
+                <option value="">-- Tất cả --</option>
+                @foreach (var p in Model.DanhSachPhong)
+                {
+                    <option value="@p.IdPhong" selected="@(Model.IdPhongLoc == p.IdPhong ? "selected" : null)">@p.MaPhong</option>
+                }
+            </select>
+        </div>
+        <div class="form-group" style="margin:0; min-width:160px;">
+            <label class="form-label" for="tuNgay">Từ ngày</label>
+            <input class="form-input" id="tuNgay" name="tuNgay" type="date" value="@(Model.TuNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+        </div>
+        <div class="form-group" style="margin:0; min-width:160px;">
+            <label class="form-label" for="denNgay">Đến ngày</label>
+            <input class="form-input" id="denNgay" name="denNgay" type="date" value="@(Model.DenNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+        </div>
+        <div class="form-group" style="margin:0; min-width:160px;">
+            <label class="form-label" for="conTrong">Còn trống</label>
+            <select class="form-select" id="conTrong" name="conTrong">
+                <option value="">-- Tất cả --</option>
+                <option value="true" selected="@(Model.ConTrongLoc == true ? "selected" : null)">Có</option>
+                <option value="false" selected="@(Model.ConTrongLoc == false ? "selected" : null)">Không</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary"><i class="ph ph-funnel"></i> Lọc</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="ph ph-clipboard-text"></i> Danh sách ca làm việc</span>
+    </div>
+
+    @if (!Model.DanhSach.Any())
+    {
+        <div class="empty-state" style="padding: var(--space-8);">
+            <div class="empty-state-icon"><i class="ph ph-calendar-x"></i></div>
+            <p>Không có ca làm việc nào phù hợp.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Ngày</th>
+                <th>Bác sĩ</th>
+                <th>Chuyên khoa</th>
+                <th>Phòng</th>
+                <th>Giờ</th>
+                <th>Trạng thái</th>
+                <th>Còn trống</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var ca in Model.DanhSach)
+            {
+                <tr>
+                    <td>@ca.NgayLamViec.ToString("dd/MM/yyyy")</td>
+                    <td>@ca.HoTenBacSi</td>
+                    <td>@ca.TenChuyenKhoa</td>
+                    <td>@ca.MaPhong</td>
+                    <td>@ca.GioBatDau.ToString("HH:mm") - @ca.GioKetThuc.ToString("HH:mm")</td>
+                    <td>
+                        @if (ca.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet.ToString())
+                        {
+                            @Html.Raw("<span class=\"badge badge-success\">Đã duyệt</span>")
+                        }
+                        else if (ca.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet.ToString())
+                        {
+                            @Html.Raw("<span class=\"badge badge-warning\">Chờ duyệt</span>")
+                        }
+                        else
+                        {
+                            @Html.Raw("<span class=\"badge badge-danger\">Đã huỷ</span>")
+                        }
+                    </td>
+                    <td>@(ca.ConTrong ? "Có" : "Hết")</td>
+                    <td class="table-actions">
+                        <form method="post" asp-page-handler="Duyet" class="inline-form">
+                            <input type="hidden" name="idCaLamViec" value="@ca.IdCaLamViec" />
+                            <input type="hidden" name="chapNhan" value="true" />
+                            <input type="hidden" name="idChuyenKhoa" value="@(Model.IdChuyenKhoaLoc?.ToString() ?? string.Empty)" />
+                            <input type="hidden" name="idPhong" value="@(Model.IdPhongLoc?.ToString() ?? string.Empty)" />
+                            <input type="hidden" name="tuNgay" value="@(Model.TuNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+                            <input type="hidden" name="denNgay" value="@(Model.DenNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+                            <input type="hidden" name="conTrong" value="@(Model.ConTrongLoc?.ToString().ToLowerInvariant() ?? string.Empty)" />
+                            <button class="btn btn-sm btn-primary" type="submit">Duyệt</button>
+                        </form>
+                        <form method="post" asp-page-handler="Xoa" class="inline-form" onsubmit="return confirm('Xóa ca làm việc này?');">
+                            <input type="hidden" name="idCaLamViec" value="@ca.IdCaLamViec" />
+                            <input type="hidden" name="idChuyenKhoa" value="@(Model.IdChuyenKhoaLoc?.ToString() ?? string.Empty)" />
+                            <input type="hidden" name="idPhong" value="@(Model.IdPhongLoc?.ToString() ?? string.Empty)" />
+                            <input type="hidden" name="tuNgay" value="@(Model.TuNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+                            <input type="hidden" name="denNgay" value="@(Model.DenNgayLoc?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+                            <input type="hidden" name="conTrong" value="@(Model.ConTrongLoc?.ToString().ToLowerInvariant() ?? string.Empty)" />
+                            <button class="btn btn-sm btn-danger" type="submit">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
