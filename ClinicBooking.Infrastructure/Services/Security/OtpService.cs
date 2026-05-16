@@ -6,6 +6,7 @@ using ClinicBooking.Application.Common.Options;
 using ClinicBooking.Domain.Entities;
 using ClinicBooking.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,17 +18,20 @@ public sealed class OtpService : IOtpService
     private readonly IEmailService _emailService;
     private readonly ILogger<OtpService> _logger;
     private readonly OtpOptions _options;
+    private readonly IHostEnvironment _env;
 
     public OtpService(
         IAppDbContext db,
         IEmailService emailService,
         ILogger<OtpService> logger,
-        IOptions<OtpOptions> options)
+        IOptions<OtpOptions> options,
+        IHostEnvironment env)
     {
         _db = db;
         _emailService = emailService;
         _logger = logger;
         _options = options.Value;
+        _env = env;
     }
 
     public async Task<string> TaoVaGuiOtpDatLichAsync(
@@ -143,9 +147,13 @@ public sealed class OtpService : IOtpService
     {
         if (string.IsNullOrWhiteSpace(emailDich))
         {
-            _logger.LogWarning(
-                "[OTP-DEV] TaiKhoan #{Id} khong co email hop le. Ma OTP (dev only): {Otp}",
-                idTaiKhoan, otp);
+            if (_env.IsDevelopment())
+                _logger.LogWarning(
+                    "[OTP-DEV] TaiKhoan #{Id} khong co email hop le. Ma OTP (dev only): {Otp}",
+                    idTaiKhoan, otp);
+            else
+                _logger.LogWarning(
+                    "[OTP] TaiKhoan #{Id} khong co email hop le, khong the gui OTP.", idTaiKhoan);
             return;
         }
 
@@ -162,10 +170,13 @@ public sealed class OtpService : IOtpService
         }
         catch (Exception ex)
         {
-            // Fallback: OTP đã lưu DB, log ra console để dev/TA vẫn demo được
-            _logger.LogWarning(ex,
-                "[OTP-DEV] Gui email that bai cho TaiKhoan #{Id}. Ma OTP (dev only): {Otp}",
-                idTaiKhoan, otp);
+            if (_env.IsDevelopment())
+                _logger.LogWarning(ex,
+                    "[OTP-DEV] Gui email that bai cho TaiKhoan #{Id}. Ma OTP (dev only): {Otp}",
+                    idTaiKhoan, otp);
+            else
+                _logger.LogError(ex,
+                    "[OTP] Gui email that bai cho TaiKhoan #{Id}.", idTaiKhoan);
         }
     }
 
