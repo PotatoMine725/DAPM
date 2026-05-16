@@ -229,10 +229,13 @@ Dùng `InMemoryDb` fixture có sẵn (`TestAppDbContextFactory`).
 ### 5.1. Branch
 
 ```
-git checkout -b feature/module4/admin-accounts-wire   # nhánh ra từ develop
+git fetch origin
+git checkout -b feature/module4/admin-accounts-wire origin/develop
 ```
 
 > **Không nhánh ra từ `feature/module1/portal-sat-demo`** — Module 1 branch sẽ merge develop trước. Khi Module 1 PR đã merge, Module 4 rebase nếu cần.
+
+> **Tham khảo code mẫu:** Module 1 đã mở PR vào `develop` với 6 trang admin đã wire (`Admin/BacSi`, `Admin/CaLamViec`, `Admin/DuyetCa`, `Admin/LichNoiTru`, `Admin/Phong`, `Admin/ChuyenKhoa`, `Admin/DichVu`). Khi PR đó merge, pull `develop` rồi đọc `Admin/BacSi.cshtml(.cs)` làm pattern chính cho `Admin/Accounts`. Nếu cần xem sớm: checkout `feature/module1/portal-sat-demo`.
 
 ### 5.2. Commit message convention
 
