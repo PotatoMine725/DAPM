@@ -55,6 +55,26 @@ secrets.json
 appsettings.*.local.json
 appsettings.local.json
 
+# Machine-specific launch settings and IDE configurations
+**/Properties/launchSettings.json
+**/launchSettings.json
+
+# Visual Studio Code user settings
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# JetBrains Rider user settings and run configurations
+.idea/runConfigurations/
+.idea/*.user
+.idea/workspace.xml
+.idea/tasks.xml
+*.sln.DotSettings.user
+
+# Visual Studio project user settings
+*.csproj.user
+*.vcxproj.user
+
 # Frontend/build caches if added later
 node_modules/
 dist/
