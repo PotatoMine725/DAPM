@@ -62,3 +62,10 @@ build/
 
 .fake
 .gitnexus
+
+# Project-specific local artifacts
+*.csproj.lscache
+code-review-graph/
+.rtk/
+.mcp.json
+nul
