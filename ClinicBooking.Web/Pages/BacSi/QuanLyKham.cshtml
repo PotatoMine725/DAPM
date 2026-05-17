@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model ClinicBooking.Web.Pages.BacSi.QuanLyKhamModel
 @{
     ViewData["Title"] = "Quản lý khám";
@@ -29,49 +29,28 @@
     @if (Model.IdLichHenMoi.HasValue && Model.HoSoHienTai is null)
     {
         <div style="margin-top:var(--space-3); padding:var(--space-3) var(--space-4); background:var(--color-active-bg); border:1px solid var(--color-active-text); border-radius:8px; color:var(--color-active-text); font-size:14px;">
-            <i class="ph ph-info"></i> Bệnh nhân từ hàng chờ — lịch hẹn ID <strong>@Model.IdLichHenMoi</strong>. Điền thông tin và bấm "Tạo hồ sơ".
+            <i class="ph ph-info"></i> Bệnh nhân từ hàng chờ với lịch hẹn ID <strong>@Model.IdLichHenMoi</strong>.
         </div>
     }
 </div>
 
 <div class="module3-two-col">
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title qk-section-header qk-section--create" style="margin-bottom:var(--space-3);">
-            <i class="ph ph-file-plus"></i> Tạo hồ sơ khám
-        </h2>
+        <h2 class="card-title qk-section-header qk-section--create" style="margin-bottom:var(--space-3);"><i class="ph ph-file-plus"></i> Tạo hồ sơ khám</h2>
         <form method="post" asp-page-handler="TaoHoSo" class="module3-form">
-            <div>
-                <label class="form-label">ID lịch hẹn</label>
-                <input class="form-input" asp-for="HoSo.IdLichHen" type="number" min="1" required />
-            </div>
-            <div>
-                <label class="form-label">Chẩn đoán</label>
-                <textarea class="form-input" asp-for="HoSo.ChanDoan" rows="3" maxlength="1000"></textarea>
-            </div>
-            <div>
-                <label class="form-label">Kết quả khám</label>
-                <textarea class="form-input" asp-for="HoSo.KetQuaKham" rows="3" maxlength="1000"></textarea>
-            </div>
-            <div>
-                <label class="form-label">Ghi chú</label>
-                <textarea class="form-input" asp-for="HoSo.GhiChu" rows="2" maxlength="1000"></textarea>
-            </div>
-            <button class="btn btn-primary" type="submit">
-                <i class="ph ph-floppy-disk"></i> Tạo hồ sơ
-            </button>
+            <div><label class="form-label">ID lịch hẹn</label><input class="form-input" asp-for="HoSo.IdLichHen" type="number" min="1" required /></div>
+            <div><label class="form-label">Chẩn đoán</label><textarea class="form-input" asp-for="HoSo.ChanDoan" rows="3" maxlength="1000"></textarea></div>
+            <div><label class="form-label">Kết quả khám</label><textarea class="form-input" asp-for="HoSo.KetQuaKham" rows="3" maxlength="1000"></textarea></div>
+            <div><label class="form-label">Ghi chú</label><textarea class="form-input" asp-for="HoSo.GhiChu" rows="2" maxlength="1000"></textarea></div>
+            <button class="btn btn-primary" type="submit"><i class="ph ph-floppy-disk"></i> Tạo hồ sơ</button>
         </form>
     </div>
 
     <div class="card" style="padding:var(--space-4);">
-        <h2 class="card-title qk-section-header qk-section--view" style="margin-bottom:var(--space-3);">
-            <i class="ph ph-clipboard-text"></i> Hồ sơ hiện tại
-        </h2>
+        <h2 class="card-title qk-section-header qk-section--view" style="margin-bottom:var(--space-3);"><i class="ph ph-clipboard-text"></i> Hồ sơ hiện tại</h2>
         @if (Model.HoSoHienTai is null)
         {
-            <div class="empty-state" style="padding:var(--space-6);">
-                <div class="empty-state-icon"><i class="ph ph-file-magnifying-glass"></i></div>
-                <p>Nhập ID hồ sơ để xem và cập nhật.</p>
-            </div>
+            <div class="empty-state" style="padding:var(--space-6);"><div class="empty-state-icon"><i class="ph ph-file-magnifying-glass"></i></div><p>Nhập ID hồ sơ để xem và cập nhật.</p></div>
         }
         else
         {
@@ -81,23 +60,36 @@
                 <div><span>Bác sĩ</span><strong>@Model.HoSoHienTai.HoTenBacSi</strong></div>
             </div>
 
+            <div style="margin-top:var(--space-3);">
+                <h3 class="card-title" style="margin-bottom:var(--space-2);">Lịch sử khám gần nhất của bệnh nhân</h3>
+                @if (!Model.LichSuKhamGanDay.Any())
+                {
+                    <div class="text-muted">Chưa có lịch sử khám.</div>
+                }
+                else
+                {
+                    <div class="module3-history">
+                        @foreach (var hs in Model.LichSuKhamGanDay)
+                        {
+                            <div class="module3-history-item">
+                                <div style="display:flex; justify-content:space-between; gap:var(--space-2);">
+                                    <strong>@hs.NgayKham.ToString("dd/MM/yyyy HH:mm")</strong>
+                                    <span class="text-muted">@hs.HoTenBacSi</span>
+                                </div>
+                                <div class="text-muted" style="font-size:13px; margin-top:4px;">@(string.IsNullOrWhiteSpace(hs.ChanDoan) ? "Chưa có chẩn đoán." : hs.ChanDoan)</div>
+                                <div style="margin-top:4px;"><a href="/BacSi/QuanLyKham?idHoSoKham=@hs.IdHoSoKham">Mở hồ sơ #@hs.IdHoSoKham</a></div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
             <form method="post" asp-page-handler="CapNhatHoSo" class="module3-form" style="margin-top:var(--space-4);">
                 <input type="hidden" name="HoSo.IdHoSoKham" value="@Model.HoSoHienTai.IdHoSoKham" />
-                <div>
-                    <label class="form-label">Chẩn đoán</label>
-                    <textarea class="form-input" name="HoSo.ChanDoan" rows="3">@Model.HoSoHienTai.ChanDoan</textarea>
-                </div>
-                <div>
-                    <label class="form-label">Kết quả khám</label>
-                    <textarea class="form-input" name="HoSo.KetQuaKham" rows="3">@Model.HoSoHienTai.KetQuaKham</textarea>
-                </div>
-                <div>
-                    <label class="form-label">Ghi chú</label>
-                    <textarea class="form-input" name="HoSo.GhiChu" rows="2">@Model.HoSoHienTai.GhiChu</textarea>
-                </div>
-                <button class="btn btn-primary" type="submit">
-                    <i class="ph ph-pencil-simple"></i> Cập nhật hồ sơ
-                </button>
+                <div><label class="form-label">Chẩn đoán</label><textarea class="form-input" name="HoSo.ChanDoan" rows="3">@Model.HoSoHienTai.ChanDoan</textarea></div>
+                <div><label class="form-label">Kết quả khám</label><textarea class="form-input" name="HoSo.KetQuaKham" rows="3">@Model.HoSoHienTai.KetQuaKham</textarea></div>
+                <div><label class="form-label">Ghi chú</label><textarea class="form-input" name="HoSo.GhiChu" rows="2">@Model.HoSoHienTai.GhiChu</textarea></div>
+                <button class="btn btn-primary" type="submit"><i class="ph ph-pencil-simple"></i> Cập nhật hồ sơ</button>
             </form>
         }
     </div>
@@ -106,31 +98,15 @@
 @if (Model.HoSoHienTai is not null)
 {
     <div class="card" style="margin-top:var(--space-4); padding:var(--space-4);">
-        <h2 class="card-title qk-section-header qk-section--toa" style="margin-bottom:var(--space-3);">
-            <i class="ph ph-pill"></i> Kê toa thuốc
-        </h2>
+        <h2 class="card-title qk-section-header qk-section--toa" style="margin-bottom:var(--space-3);"><i class="ph ph-pill"></i> Kê toa thuốc</h2>
         @if (Model.ToaHienTai.Any())
         {
             <table class="data-table" style="margin-bottom:var(--space-4);">
-                <thead>
-                    <tr>
-                        <th>Thuốc</th>
-                        <th>Liều lượng</th>
-                        <th>Cách dùng</th>
-                        <th>Số ngày</th>
-                        <th>Ghi chú</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Thuốc</th><th>Liều lượng</th><th>Cách dùng</th><th>Số ngày</th><th>Ghi chú</th></tr></thead>
                 <tbody>
                 @foreach (var toa in Model.ToaHienTai)
                 {
-                    <tr>
-                        <td>@toa.TenThuoc</td>
-                        <td>@toa.LieuLuong</td>
-                        <td>@toa.CachDung</td>
-                        <td>@toa.SoNgayDung</td>
-                        <td>@toa.GhiChu</td>
-                    </tr>
+                    <tr><td>@toa.TenThuoc</td><td>@toa.LieuLuong</td><td>@toa.CachDung</td><td>@toa.SoNgayDung</td><td>@toa.GhiChu</td></tr>
                 }
                 </tbody>
             </table>
@@ -158,14 +134,7 @@
                 }
             </div>
             <div style="display:flex; gap:var(--space-2); margin-top:var(--space-3); align-items:center;">
-                <button class="btn btn-primary" type="submit">
-                    <i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cập nhật toa" : "Kê toa")
-                </button>
-                <span title="Chức năng kê đơn chi tiết sẽ có ở Module 3">
-                    <button type="button" class="btn btn-secondary" disabled style="opacity:.5; cursor:not-allowed;">
-                        <i class="ph ph-note-pencil"></i> Kê đơn chi tiết (Module 3)
-                    </button>
-                </span>
+                <button class="btn btn-primary" type="submit"><i class="ph ph-pill"></i> @(Model.ToaHienTai.Any() ? "Cập nhật toa" : "Kê toa")</button>
             </div>
         </form>
     </div>
@@ -173,56 +142,23 @@
 
 @section Scripts {
 <style>
-    .module3-two-col {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: var(--space-4);
-    }
-    .module3-form {
-        display: grid;
-        gap: var(--space-3);
-    }
-    .module3-summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--space-3);
-    }
-    .module3-summary div {
-        border: 1px solid var(--color-border-light);
-        padding: var(--space-3);
-        border-radius: 8px;
-    }
-    .module3-summary span {
-        display: block;
-        color: var(--color-text-secondary);
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
-    .module3-prescription {
-        display: grid;
-        gap: var(--space-2);
-    }
-    .module3-prescription-row {
-        display: grid;
-        grid-template-columns: 2fr repeat(4, minmax(0, 1fr));
-        gap: var(--space-2);
-    }
-    @@media (max-width: 1000px) {
-        .module3-two-col { grid-template-columns: 1fr; }
-        .module3-summary { grid-template-columns: 1fr; }
-        .module3-prescription-row { grid-template-columns: 1fr; }
-    }
-
-    .qk-section-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-size: 15px;
-    }
-    .qk-section--create { background: #e8f0fb; color: #1a5fa8; border-left: 4px solid #1a5fa8; }
-    .qk-section--view   { background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a; }
-    .qk-section--toa    { background: #fff7ed; color: #92400e; border-left: 4px solid #f97316; }
+.module3-two-col { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--space-4); }
+.module3-form { display:grid; gap:var(--space-3); }
+.module3-summary { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-3); }
+.module3-summary div { border:1px solid var(--color-border-light); padding:var(--space-3); border-radius:8px; }
+.module3-summary span { display:block; color:var(--color-text-secondary); font-size:12px; margin-bottom:4px; }
+.module3-prescription { display:grid; gap:var(--space-2); }
+.module3-prescription-row { display:grid; grid-template-columns:2fr repeat(4, minmax(0, 1fr)); gap:var(--space-2); }
+.module3-history { display:grid; gap:var(--space-2); }
+.module3-history-item { border:1px solid var(--color-border-light); border-radius:8px; padding:var(--space-2) var(--space-3); }
+@@media (max-width: 1000px) {
+    .module3-two-col { grid-template-columns:1fr; }
+    .module3-summary { grid-template-columns:1fr; }
+    .module3-prescription-row { grid-template-columns:1fr; }
+}
+.qk-section-header { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; font-size:15px; }
+.qk-section--create { background:#e8f0fb; color:#1a5fa8; border-left:4px solid #1a5fa8; }
+.qk-section--view   { background:#f0fdf4; color:#166534; border-left:4px solid #16a34a; }
+.qk-section--toa    { background:#fff7ed; color:#92400e; border-left:4px solid #f97316; }
 </style>
 }

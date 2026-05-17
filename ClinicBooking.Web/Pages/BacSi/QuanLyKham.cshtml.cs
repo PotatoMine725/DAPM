@@ -3,6 +3,7 @@ using ClinicBooking.Application.Features.HoSoKham.Commands.CapNhatHoSoKham;
 using ClinicBooking.Application.Features.HoSoKham.Commands.TaoHoSoKham;
 using ClinicBooking.Application.Features.HoSoKham.Dtos;
 using ClinicBooking.Application.Features.HoSoKham.Queries.LayHoSoKhamById;
+using ClinicBooking.Application.Features.HoSoKham.Queries.LichSuKhamTheoBenhNhan;
 using ClinicBooking.Application.Features.Thuoc.Dtos;
 using ClinicBooking.Application.Features.Thuoc.Queries.DanhSachThuoc;
 using ClinicBooking.Application.Features.ToaThuoc.Commands.CapNhatToaThuoc;
@@ -38,6 +39,7 @@ public class QuanLyKhamModel : PageModel
     public HoSoKhamResponse? HoSoHienTai { get; private set; }
     public IReadOnlyList<ToaThuocResponse> ToaHienTai { get; private set; } = [];
     public IReadOnlyList<ThuocResponse> DanhSachThuoc { get; private set; } = [];
+    public IReadOnlyList<HoSoKhamTomTatResponse> LichSuKhamGanDay { get; private set; } = [];
 
     public async Task OnGetAsync()
     {
@@ -128,6 +130,7 @@ public class QuanLyKhamModel : PageModel
 
         HoSoHienTai = await _mediator.Send(new LayHoSoKhamByIdQuery(IdHoSoKham.Value));
         ToaHienTai = await _mediator.Send(new LayToaTheoHoSoKhamQuery(IdHoSoKham.Value));
+        LichSuKhamGanDay = await _mediator.Send(new LichSuKhamTheoBenhNhanQuery(HoSoHienTai.IdBenhNhan, 1, 5));
     }
 
     public sealed class HoSoKhamFormInput

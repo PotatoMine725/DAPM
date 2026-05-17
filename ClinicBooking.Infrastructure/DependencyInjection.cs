@@ -67,10 +67,11 @@ public static class DependencyInjection
         services.AddScoped<IMaLichHenGenerator, MaLichHenGenerator>();
 
         // --- Module 1: Background jobs ---
-        // TODO Wave 4: khi Module 4 (Hangfire) len, xoa 2 dong AddHostedService nay
+        // TODO Wave 4: khi Module 4 (Hangfire) len, xoa cac dong AddHostedService nay
         //              va dang ky recurring job tuong duong trong Hangfire.
         services.AddHostedService<QuetGiuChoHetHanJob>();
         services.AddHostedService<ChuyenLichHenDaQuaHanJob>();
+        services.AddHostedService<ResetSoLanHuyMuonHangThangJob>();
 
         return services;
     }

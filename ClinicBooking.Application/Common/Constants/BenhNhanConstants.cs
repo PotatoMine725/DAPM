@@ -8,8 +8,14 @@ namespace ClinicBooking.Application.Common.Constants;
 public static class BenhNhanConstants
 {
     /// <summary>Nguong toi da so lan huy lich hen trong mot thang. Neu vuot qua, benh nhan bi han che.</summary>
-    public const int NgueongSoLanHuyMuonTrongThang = 3;
+    public const int NgueongSoLanHuyMuonTrongThang = 5;
 
     /// <summary>Chu ky reset so lan huy muon (theo thang).</summary>
     public const int ChuKyResetThang = 1;
+
+    /// <summary>So ngay tam khoa dat lich khi vuot nguong huy muon.</summary>
+    public const int SoNgayHanCheDatLich = 30;
+
+    /// <summary>Nguong canh bao som truoc khi bi han che dat lich.</summary>
+    public const int NguongCanhBaoSom = 3;
 }
