@@ -2,6 +2,7 @@ using ClinicBooking.Application.Abstractions.Notifications;
 using ClinicBooking.Application.Abstractions.Persistence;
 using ClinicBooking.Application.Abstractions.Scheduling;
 using ClinicBooking.Application.Abstractions.Security;
+using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Common.Options;
 using ClinicBooking.Domain.Entities;
@@ -105,6 +106,11 @@ public class HuyLichHenHandler : IRequestHandler<HuyLichHenCommand, Unit>
             if (benhNhan is not null)
             {
                 benhNhan.SoLanHuyMuon += 1;
+                if (benhNhan.SoLanHuyMuon >= BenhNhanConstants.NgueongSoLanHuyMuonTrongThang)
+                {
+                    benhNhan.BiHanChe = true;
+                    benhNhan.NgayHetHanChe = now.AddDays(BenhNhanConstants.SoNgayHanCheDatLich);
+                }
             }
         }
 

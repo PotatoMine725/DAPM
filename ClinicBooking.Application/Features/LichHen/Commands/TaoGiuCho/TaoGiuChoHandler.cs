@@ -4,6 +4,7 @@ using ClinicBooking.Application.Abstractions.Scheduling.Dtos;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Common.Options;
+using ClinicBooking.Application.Features.BenhNhan.Queries.KiemTraQuyenDatLich;
 using ClinicBooking.Application.Features.LichHen.Dtos;
 using ClinicBooking.Domain.Enums;
 using GiuChoEntity = ClinicBooking.Domain.Entities.GiuCho;
@@ -21,19 +22,22 @@ public class TaoGiuChoHandler : IRequestHandler<TaoGiuChoCommand, GiuChoResponse
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ICaLamViecQueryService _caLamViecQueryService;
     private readonly LichHenOptions _options;
+    private readonly IMediator _mediator;
 
     public TaoGiuChoHandler(
         IAppDbContext db,
         ICurrentUserService currentUser,
         IDateTimeProvider dateTimeProvider,
         ICaLamViecQueryService caLamViecQueryService,
-        IOptions<LichHenOptions> options)
+        IOptions<LichHenOptions> options,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
         _dateTimeProvider = dateTimeProvider;
         _caLamViecQueryService = caLamViecQueryService;
         _options = options.Value;
+        _mediator = mediator;
     }
 
     public async Task<GiuChoResponse> Handle(TaoGiuChoCommand request, CancellationToken cancellationToken)
@@ -52,9 +56,11 @@ public class TaoGiuChoHandler : IRequestHandler<TaoGiuChoCommand, GiuChoResponse
             ?? throw new NotFoundException("Khong tim thay benh nhan.");
 
         var now = _dateTimeProvider.UtcNow;
-        if (benhNhan.BiHanChe && (benhNhan.NgayHetHanChe is null || benhNhan.NgayHetHanChe > now))
+        var ketQuaQuyenDat = await _mediator.Send(new KiemTraQuyenDatLichQuery(request.IdBenhNhan), cancellationToken);
+        var coOverrideLeTan = vaiTro is VaiTro.LeTan or VaiTro.Admin;
+        if (!ketQuaQuyenDat.ChoPhep && !coOverrideLeTan)
         {
-            throw new ConflictException("Tai khoan benh nhan dang bi han che.");
+            throw new ConflictException(ketQuaQuyenDat.LyDo ?? "Tai khoan benh nhan dang bi han che.");
         }
 
         var thongTinCa = await _caLamViecQueryService.LayThongTinCaAsync(request.IdCaLamViec, cancellationToken)

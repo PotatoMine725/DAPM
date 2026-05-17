@@ -3,10 +3,13 @@ using ClinicBooking.Application.Abstractions.Scheduling.Dtos;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Common.Options;
+using ClinicBooking.Application.Features.BenhNhan.Dtos;
+using ClinicBooking.Application.Features.BenhNhan.Queries.KiemTraQuyenDatLich;
 using ClinicBooking.Application.Features.LichHen.Commands.TaoGiuCho;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Enums;
 using FluentAssertions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -20,7 +23,7 @@ public sealed class TaoGiuChoHandlerTests
     private static IOptions<LichHenOptions> DefaultOptions() =>
         Options.Create(new LichHenOptions { HuyMuonTruocGio = 24, GiuChoThoiHanPhut = 15, MaLichHenPrefix = "LH" });
 
-    private static (ICurrentUserService user, IDateTimeProvider clock, ICaLamViecQueryService scheduling) CreateDeps(VaiTro vaiTro)
+    private static (ICurrentUserService user, IDateTimeProvider clock, ICaLamViecQueryService scheduling, IMediator mediator) CreateDeps(VaiTro vaiTro)
     {
         var user = Substitute.For<ICurrentUserService>();
         user.VaiTro.Returns(vaiTro);
@@ -28,7 +31,10 @@ public sealed class TaoGiuChoHandlerTests
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(FixedNow);
         var scheduling = Substitute.For<ICaLamViecQueryService>();
-        return (user, clock, scheduling);
+        var mediator = Substitute.For<IMediator>();
+        mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>())
+            .Returns(new KiemTraQuyenDatLichResult(true, null, null, null));
+        return (user, clock, scheduling, mediator);
     }
 
     private static ThongTinCaLamViecDto ThongTinOk(int idCa) => new(
@@ -43,13 +49,13 @@ public sealed class TaoGiuChoHandlerTests
         using var db = factory.CreateContext();
         var bn = TestDataSeeder.SeedBenhNhan(db);
         var ca = TestDataSeeder.SeedCaLamViec(db);
-        var (user, clock, scheduling) = CreateDeps(VaiTro.LeTan);
+        var (user, clock, scheduling, mediator) = CreateDeps(VaiTro.LeTan);
         scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinOk(ca.IdCaLamViec));
         scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
             .Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
         scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
 
-        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions());
+        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions(), mediator);
         var result = await handler.Handle(
             new TaoGiuChoCommand(ca.IdCaLamViec, bn.IdBenhNhan), CancellationToken.None);
 
@@ -65,9 +71,9 @@ public sealed class TaoGiuChoHandlerTests
         using var db = factory.CreateContext();
         var bn = TestDataSeeder.SeedBenhNhan(db);
         var ca = TestDataSeeder.SeedCaLamViec(db);
-        var (user, clock, scheduling) = CreateDeps(VaiTro.BenhNhan);
+        var (user, clock, scheduling, mediator) = CreateDeps(VaiTro.BenhNhan);
 
-        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions());
+        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions(), mediator);
         var act = async () => await handler.Handle(
             new TaoGiuChoCommand(ca.IdCaLamViec, bn.IdBenhNhan), CancellationToken.None);
 
@@ -81,13 +87,13 @@ public sealed class TaoGiuChoHandlerTests
         using var db = factory.CreateContext();
         var bn = TestDataSeeder.SeedBenhNhan(db);
         var ca = TestDataSeeder.SeedCaLamViec(db);
-        var (user, clock, scheduling) = CreateDeps(VaiTro.LeTan);
+        var (user, clock, scheduling, mediator) = CreateDeps(VaiTro.LeTan);
         scheduling.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(ThongTinOk(ca.IdCaLamViec));
         scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
             .Returns(new KetQuaKiemTraSlotDto(true, 10, 10, 0, null));
         scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
 
-        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions());
+        var handler = new TaoGiuChoHandler(db, user, clock, scheduling, DefaultOptions(), mediator);
         var act = async () => await handler.Handle(
             new TaoGiuChoCommand(ca.IdCaLamViec, bn.IdBenhNhan), CancellationToken.None);
 
@@ -106,8 +112,8 @@ public sealed class TaoGiuChoHandlerTests
         var ca = TestDataSeeder.SeedCaLamViec(db);
         var thongTin = ThongTinOk(ca.IdCaLamViec);
 
-        var (u1, c1, s1) = CreateDeps(VaiTro.LeTan);
-        var (u2, c2, s2) = CreateDeps(VaiTro.LeTan);
+        var (u1, c1, s1, m1) = CreateDeps(VaiTro.LeTan);
+        var (u2, c2, s2, m2) = CreateDeps(VaiTro.LeTan);
         s1.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
         s2.LayThongTinCaAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(thongTin);
         s1.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>()).Returns(new KetQuaKiemTraSlotDto(true, 10, 0, 0, null));
@@ -115,8 +121,8 @@ public sealed class TaoGiuChoHandlerTests
         s1.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
         s2.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
 
-        var h1 = new TaoGiuChoHandler(db, u1, c1, s1, DefaultOptions());
-        var h2 = new TaoGiuChoHandler(db, u2, c2, s2, DefaultOptions());
+        var h1 = new TaoGiuChoHandler(db, u1, c1, s1, DefaultOptions(), m1);
+        var h2 = new TaoGiuChoHandler(db, u2, c2, s2, DefaultOptions(), m2);
 
         var t1 = h1.Handle(new TaoGiuChoCommand(ca.IdCaLamViec, bn1.IdBenhNhan), CancellationToken.None);
         var t2 = h2.Handle(new TaoGiuChoCommand(ca.IdCaLamViec, bn2.IdBenhNhan), CancellationToken.None);

@@ -5,6 +5,7 @@ using ClinicBooking.Application.Abstractions.Scheduling.Dtos;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Common.Services;
+using ClinicBooking.Application.Features.BenhNhan.Queries.KiemTraQuyenDatLich;
 using ClinicBooking.Application.Features.LichHen.Dtos;
 using ClinicBooking.Domain.Enums;
 using LichHenEntity = ClinicBooking.Domain.Entities.LichHen;
@@ -22,6 +23,7 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
     private readonly ICaLamViecQueryService _caLamViecQueryService;
     private readonly INotificationService _notificationService;
     private readonly IMaLichHenGenerator _maLichHenGenerator;
+    private readonly IMediator _mediator;
 
     public TaoLichHenHandler(
         IAppDbContext db,
@@ -29,7 +31,8 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
         IDateTimeProvider dateTimeProvider,
         ICaLamViecQueryService caLamViecQueryService,
         INotificationService notificationService,
-        IMaLichHenGenerator maLichHenGenerator)
+        IMaLichHenGenerator maLichHenGenerator,
+        IMediator mediator)
     {
         _db = db;
         _currentUser = currentUser;
@@ -37,6 +40,7 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
         _caLamViecQueryService = caLamViecQueryService;
         _notificationService = notificationService;
         _maLichHenGenerator = maLichHenGenerator;
+        _mediator = mediator;
     }
 
     public async Task<LichHenResponse> Handle(TaoLichHenCommand request, CancellationToken cancellationToken)
@@ -75,9 +79,11 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             ?? throw new NotFoundException("Khong tim thay benh nhan.");
 
         var now = _dateTimeProvider.UtcNow;
-        if (benhNhan.BiHanChe && (benhNhan.NgayHetHanChe is null || benhNhan.NgayHetHanChe > now))
+        var ketQuaQuyenDat = await _mediator.Send(new KiemTraQuyenDatLichQuery(idBenhNhan), cancellationToken);
+        var coOverrideLeTan = vaiTro is VaiTro.LeTan or VaiTro.Admin;
+        if (!ketQuaQuyenDat.ChoPhep && !coOverrideLeTan)
         {
-            throw new ConflictException("Tai khoan benh nhan dang bi han che dat lich.");
+            throw new ConflictException(ketQuaQuyenDat.LyDo ?? "Tai khoan benh nhan dang bi han che dat lich.");
         }
 
         var dichVu = await _db.DichVu
@@ -109,6 +115,10 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
             slotPhuHop.TrangThaiDuyet);
 
         var ketQuaKiemTra = await _caLamViecQueryService.KiemTraSlotTrongAsync(slotPhuHop.IdCaLamViec, cancellationToken);
+        if (ketQuaKiemTra is null)
+        {
+            throw new ConflictException("Ca lam viec chua duoc duyet.");
+        }
         if (!ketQuaKiemTra.CoTheDat)
         {
             throw new ConflictException(LyDoTuChoiMessage(ketQuaKiemTra.LyDoTuChoi));
@@ -123,7 +133,7 @@ public class TaoLichHenHandler : IRequestHandler<TaoLichHenCommand, LichHenRespo
 
             if (soSlotMoi is null)
             {
-                throw new ConflictException("Ca lam viec da het slot hoac bi xung dot cap nhat.");
+                throw new ConflictException("Ca lam viec da het slot.");
             }
 
             var maLichHen = await _maLichHenGenerator.SinhMaLichHenAsync(thongTinCa.NgayLamViec, cancellationToken);
