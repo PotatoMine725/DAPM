@@ -55,6 +55,12 @@
                         <i class="ph ph-address-book"></i> Hồ sơ bệnh nhân
                     </a>
                 </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/TraCuuBenhAn") ? "active" : "")"
+                       href="/LeTan/TraCuuBenhAn">
+                        <i class="ph ph-file-magnifying-glass"></i> Tra cứu bệnh án
+                    </a>
+                </li>
             }
 
             @if (vaiTro == "admin")
@@ -82,6 +88,12 @@
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/HoSoBenhNhan") ? "active" : "")"
                        href="/LeTan/HoSoBenhNhan">
                         <i class="ph ph-address-book"></i> Hồ sơ bệnh nhân
+                    </a>
+                </li>
+                <li>
+                    <a class="sidebar-nav-item @(currentPath.StartsWith("/LeTan/TraCuuBenhAn") ? "active" : "")"
+                       href="/LeTan/TraCuuBenhAn">
+                        <i class="ph ph-file-magnifying-glass"></i> Tra cứu bệnh án
                     </a>
                 </li>
                 <li class="sidebar-section-label">Quản trị</li>

@@ -19,8 +19,8 @@ public sealed class CapNhatThuocValidator : AbstractValidator<CapNhatThuocComman
             .WithMessage("Hoat chat toi da 300 ky tu.");
 
         RuleFor(x => x.DonVi)
+            .NotEmpty().WithMessage("Don vi khong duoc de trong.")
             .MaximumLength(100)
-            .When(x => !string.IsNullOrWhiteSpace(x.DonVi))
             .WithMessage("Don vi toi da 100 ky tu.");
 
         RuleFor(x => x.GhiChu)

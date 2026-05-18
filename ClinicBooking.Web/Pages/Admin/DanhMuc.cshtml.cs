@@ -1,4 +1,4 @@
-using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatChuyenKhoa;
+﻿using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatChuyenKhoa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatDichVu;
 using ClinicBooking.Application.Features.DanhMuc.Commands.CapNhatPhong;
@@ -15,6 +15,11 @@ using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachChuyenKhoa;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDinhNghiaCa;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachPhong;
+using ClinicBooking.Application.Features.Thuoc.Commands.CapNhatThuoc;
+using ClinicBooking.Application.Features.Thuoc.Commands.TaoThuoc;
+using ClinicBooking.Application.Features.Thuoc.Commands.XoaThuoc;
+using ClinicBooking.Application.Features.Thuoc.Dtos;
+using ClinicBooking.Application.Features.Thuoc.Queries.DanhSachThuoc;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +38,7 @@ public class DanhMucModel : PageModel
     public IReadOnlyList<DichVuResponse> DichVu { get; private set; } = [];
     public IReadOnlyList<PhongResponse> Phong { get; private set; } = [];
     public IReadOnlyList<DinhNghiaCaResponse> DinhNghiaCa { get; private set; } = [];
+    public IReadOnlyList<ThuocResponse> Thuoc { get; private set; } = [];
 
     [BindProperty] public int? IdChuyenKhoa { get; set; }
     [BindProperty] public string? TenChuyenKhoa { get; set; }
@@ -60,6 +66,13 @@ public class DanhMucModel : PageModel
     [BindProperty] public TimeOnly GioKetThucMacDinh { get; set; } = new(11, 0);
     [BindProperty] public string? MoTaCa { get; set; }
     [BindProperty] public bool TrangThaiCa { get; set; } = true;
+
+    [BindProperty] public int? IdThuoc { get; set; }
+    [BindProperty] public string? TenThuoc { get; set; }
+    [BindProperty] public string? HoatChat { get; set; }
+    [BindProperty] public string? DonVi { get; set; }
+    [BindProperty] public string? GhiChuThuoc { get; set; }
+    [BindProperty(SupportsGet = true)] public string? TuKhoaThuoc { get; set; }
 
     public async Task OnGetAsync() => await TaiDuLieuAsync();
 
@@ -151,11 +164,40 @@ public class DanhMucModel : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnPostTaoThuocAsync()
+    {
+        await _mediator.Send(new TaoThuocCommand(TenThuoc ?? string.Empty, HoatChat, DonVi, GhiChuThuoc));
+        TempData["SuccessMessage"] = "Đã tạo thuốc.";
+        return RedirectToPage(new { TuKhoaThuoc });
+    }
+
+    public async Task<IActionResult> OnPostCapNhatThuocAsync()
+    {
+        if (!IdThuoc.HasValue) return RedirectToPage(new { TuKhoaThuoc });
+
+        await _mediator.Send(new CapNhatThuocCommand(
+            IdThuoc.Value,
+            TenThuoc ?? string.Empty,
+            HoatChat,
+            DonVi,
+            GhiChuThuoc));
+        TempData["SuccessMessage"] = "Đã cập nhật thuốc.";
+        return RedirectToPage(new { TuKhoaThuoc });
+    }
+
+    public async Task<IActionResult> OnPostXoaThuocAsync(int idThuoc)
+    {
+        await _mediator.Send(new XoaThuocCommand(idThuoc));
+        TempData["SuccessMessage"] = "Đã xóa thuốc.";
+        return RedirectToPage(new { TuKhoaThuoc });
+    }
+
     private async Task TaiDuLieuAsync()
     {
         ChuyenKhoa = await _mediator.Send(new DanhSachChuyenKhoaQuery(1, 200, null, null));
         DichVu = await _mediator.Send(new DanhSachDichVuQuery(1, 200, null, null, null));
         Phong = await _mediator.Send(new DanhSachPhongQuery(1, 200, null, null));
         DinhNghiaCa = await _mediator.Send(new DanhSachDinhNghiaCaQuery(1, 200, null, null));
+        Thuoc = await _mediator.Send(new DanhSachThuocQuery(1, 200, TuKhoaThuoc));
     }
 }

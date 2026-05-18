@@ -1,0 +1,139 @@
+﻿@page
+@model ClinicBooking.Web.Pages.LeTan.TraCuuBenhAnModel
+@{
+    ViewData["Title"] = "Tra cứu bệnh án";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tra cứu bệnh án</h1>
+        <div class="page-subtitle">Tìm bệnh nhân theo tên, số điện thoại, CCCD, sau đó xem hồ sơ tổng hợp.</div>
+    </div>
+</div>
+
+<div class="card" style="padding:var(--space-4); margin-bottom:var(--space-4);">
+    <form method="get" class="filter-bar" style="align-items:end;">
+        <div style="min-width:320px;">
+            <label class="form-label">Từ khóa</label>
+            <input class="form-input" type="text" name="tuKhoa" value="@Model.TuKhoa" placeholder="Tên / SĐT / CCCD" />
+        </div>
+        <button class="btn btn-secondary" type="submit"><i class="ph ph-magnifying-glass"></i> Tìm kiếm</button>
+    </form>
+</div>
+
+<div class="page-grid page-grid--2col">
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title">Kết quả tìm kiếm</span></div>
+        @if (!Model.KetQuaTimKiem.Any())
+        {
+            <div class="empty-state"><div class="empty-state-icon"><i class="ph ph-user-list"></i></div><p>Chưa có dữ liệu tìm kiếm.</p></div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead><tr><th>Họ tên</th><th>Ngày sinh</th><th>SĐT</th><th>CCCD</th><th>Mã BN</th></tr></thead>
+                <tbody>
+                @foreach (var item in Model.KetQuaTimKiem)
+                {
+                    <tr onclick="window.location='?tuKhoa=@Model.TuKhoa&idBenhNhan=@item.IdBenhNhan'" style="cursor:pointer;">
+                        <td><strong>@item.HoTen</strong></td>
+                        <td>@(item.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td>@item.SoDienThoai</td>
+                        <td>@(item.Cccd ?? "—")</td>
+                        <td>BN-@item.IdBenhNhan</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+
+    <section class="card section-stack">
+        <div class="card-header"><span class="card-title">Hồ sơ tổng hợp</span></div>
+        @if (Model.BenhNhanDuocChon is null)
+        {
+            <div class="empty-state"><div class="empty-state-icon"><i class="ph ph-folder-user"></i></div><p>Chọn một bệnh nhân để xem hồ sơ.</p></div>
+        }
+        else
+        {
+            <div class="module3-summary" style="margin-bottom:var(--space-3);">
+                <div><span>Họ tên</span><strong>@Model.BenhNhanDuocChon.HoTen</strong></div>
+                <div><span>SĐT</span><strong>@Model.BenhNhanDuocChon.SoDienThoai</strong></div>
+                <div><span>CCCD</span><strong>@(Model.BenhNhanDuocChon.Cccd ?? "—")</strong></div>
+                <div><span>Email</span><strong>@Model.BenhNhanDuocChon.Email</strong></div>
+                <div><span>Địa chỉ</span><strong>@(Model.BenhNhanDuocChon.DiaChi ?? "—")</strong></div>
+                <div><span>Số lần hủy muộn</span><strong>@Model.BenhNhanDuocChon.SoLanHuyMuon</strong></div>
+            </div>
+
+            <h3 class="card-title" style="margin:var(--space-2) 0;">Lịch sử khám</h3>
+            @if (!Model.LichSuKham.Any())
+            {
+                <div class="text-muted">Chưa có bệnh án.</div>
+            }
+            else
+            {
+                <table class="data-table" style="margin-bottom:var(--space-3);">
+                    <thead><tr><th>Ngày khám</th><th>Bác sĩ</th><th>Chẩn đoán</th><th>Mã LH</th></tr></thead>
+                    <tbody>
+                    @foreach (var hs in Model.LichSuKham)
+                    {
+                        <tr>
+                            <td>@hs.NgayKham.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@hs.HoTenBacSi</td>
+                            <td>@(string.IsNullOrWhiteSpace(hs.ChanDoan) ? "—" : hs.ChanDoan)</td>
+                            <td>@hs.MaLichHen</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+
+            <h3 class="card-title" style="margin:var(--space-2) 0;">Đơn thuốc gần đây</h3>
+            @if (!Model.ToaGanDay.Any())
+            {
+                <div class="text-muted">Chưa có đơn thuốc.</div>
+            }
+            else
+            {
+                <table class="data-table">
+                    <thead><tr><th>Ngày khám</th><th>Thuốc</th><th>Liều lượng</th><th>Cách dùng</th></tr></thead>
+                    <tbody>
+                    @foreach (var t in Model.ToaGanDay)
+                    {
+                        <tr>
+                            <td>@t.NgayKham.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.TenThuoc</td>
+                            <td>@(t.LieuLuong ?? "—")</td>
+                            <td>@(t.CachDung ?? "—")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        }
+    </section>
+</div>
+
+@section Scripts {
+<style>
+.module3-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+.module3-summary div {
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    padding: var(--space-2) var(--space-3);
+}
+.module3-summary span {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+@@media (max-width: 1000px) {
+    .module3-summary { grid-template-columns: 1fr; }
+}
+</style>
+}

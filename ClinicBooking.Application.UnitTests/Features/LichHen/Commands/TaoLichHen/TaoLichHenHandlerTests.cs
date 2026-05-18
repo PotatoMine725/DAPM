@@ -4,11 +4,14 @@ using ClinicBooking.Application.Abstractions.Scheduling.Dtos;
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Exceptions;
 using ClinicBooking.Application.Common.Services;
+using ClinicBooking.Application.Features.BenhNhan.Dtos;
+using ClinicBooking.Application.Features.BenhNhan.Queries.KiemTraQuyenDatLich;
 using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
 using ClinicBooking.Application.UnitTests.Common;
 using ClinicBooking.Domain.Enums;
 using ClinicBooking.Infrastructure.Services.Scheduling;
 using FluentAssertions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -23,7 +26,8 @@ public sealed class TaoLichHenHandlerTests
         IDateTimeProvider Clock,
         ICaLamViecQueryService Scheduling,
         INotificationService Notif,
-        IMaLichHenGenerator MaGen);
+        IMaLichHenGenerator MaGen,
+        IMediator Mediator);
 
     private static Deps CreateDeps(VaiTro vaiTro, int? idTaiKhoan = 1)
     {
@@ -35,9 +39,12 @@ public sealed class TaoLichHenHandlerTests
         var scheduling = Substitute.For<ICaLamViecQueryService>();
         var notif = Substitute.For<INotificationService>();
         var maGen = Substitute.For<IMaLichHenGenerator>();
+        var mediator = Substitute.For<IMediator>();
         maGen.SinhMaLichHenAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns("LH-20260505-000001");
-        return new Deps(user, clock, scheduling, notif, maGen);
+        mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>())
+            .Returns(new KiemTraQuyenDatLichResult(true, null, null, null));
+        return new Deps(user, clock, scheduling, notif, maGen, mediator);
     }
 
     private static ThongTinCaLamViecDto ThongTinCaOk(int idCa) => new(
@@ -71,7 +78,7 @@ public sealed class TaoLichHenHandlerTests
         d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
             .Returns((int?)1);
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var result = await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, "Dau dau"),
             CancellationToken.None);
@@ -95,7 +102,7 @@ public sealed class TaoLichHenHandlerTests
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.LeTan);
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var act = async () => await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
@@ -114,7 +121,7 @@ public sealed class TaoLichHenHandlerTests
         var dv = TestDataSeeder.SeedDichVu(db);
         var d = CreateDeps(VaiTro.BenhNhan, idTaiKhoan: tk.IdTaiKhoan);
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var act = async () => await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
@@ -142,7 +149,7 @@ public sealed class TaoLichHenHandlerTests
         d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
             .Returns((int?)1);
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var result = await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
@@ -166,7 +173,7 @@ public sealed class TaoLichHenHandlerTests
         d.Scheduling.KiemTraSlotTrongAsync(ca.IdCaLamViec, Arg.Any<CancellationToken>())
             .Returns(new KetQuaKiemTraSlotDto(false, 10, 0, 0, LyDoKhongDatDuoc.CaChuaDuyet));
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var act = async () => await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
@@ -190,12 +197,12 @@ public sealed class TaoLichHenHandlerTests
         d.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>())
             .Returns((int?)null);
 
-        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen);
+        var handler = new TaoLichHenHandler(db, d.User, d.Clock, d.Scheduling, d.Notif, d.MaGen, d.Mediator);
         var act = async () => await handler.Handle(
             new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 15), dv.IdDichVu, null, null, null, null),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot hoac bi xung dot cap nhat.");
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("Ca lam viec da het slot.");
     }
 
     [Fact]
@@ -221,8 +228,8 @@ public sealed class TaoLichHenHandlerTests
         d1.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)1);
         d2.Scheduling.IncrementSoSlotDaDatAsync(ca.IdCaLamViec, 1, Arg.Any<CancellationToken>()).Returns((int?)null);
 
-        var handler1 = new TaoLichHenHandler(db, d1.User, d1.Clock, d1.Scheduling, d1.Notif, d1.MaGen);
-        var handler2 = new TaoLichHenHandler(db, d2.User, d2.Clock, d2.Scheduling, d2.Notif, d2.MaGen);
+        var handler1 = new TaoLichHenHandler(db, d1.User, d1.Clock, d1.Scheduling, d1.Notif, d1.MaGen, d1.Mediator);
+        var handler2 = new TaoLichHenHandler(db, d2.User, d2.Clock, d2.Scheduling, d2.Notif, d2.MaGen, d2.Mediator);
 
         var task1 = handler1.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "A"), CancellationToken.None);
         var task2 = handler2.Handle(new TaoLichHenCommand(new DateOnly(2026, 5, 5), new TimeOnly(8, 0), dv.IdDichVu, null, null, null, "B"), CancellationToken.None);
