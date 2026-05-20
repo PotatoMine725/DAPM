@@ -11,14 +11,21 @@ using Testcontainers.MsSql;
 
 namespace ClinicBooking.Application.UnitTests.Features.Scheduling.Services;
 
+[Trait("Category", "RequiresDocker")]
 public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
 {
+    private readonly Xunit.Abstractions.ITestOutputHelper _output;
     private readonly MsSqlContainer? _container = DockerAvailable
         ? new MsSqlBuilder()
             .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
             .WithPassword("StrongPass!12345")
             .Build()
         : null;
+
+    public CaLamViecQueryServiceSqlServerTests(Xunit.Abstractions.ITestOutputHelper output)
+    {
+        _output = output;
+    }
 
     private static bool DockerAvailable =>
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOCKER_HOST"))
@@ -46,7 +53,9 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
     {
         if (_container is null)
         {
-            // Docker khong san sang trong moi truong nay — bo qua kiem thu SQL Server containerized.
+            _output.WriteLine(
+                "[SKIPPED] Docker khong san sang — bo qua kiem thu SQL Server containerized. " +
+                "Filter 'Category=RequiresDocker' tren CI khi co Docker de chay test nay.");
             return;
         }
 
