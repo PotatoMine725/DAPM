@@ -33,7 +33,7 @@ public sealed class TaoGiuChoHandlerTests
         var scheduling = Substitute.For<ICaLamViecQueryService>();
         var mediator = Substitute.For<IMediator>();
         mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>())
-            .Returns(new KiemTraQuyenDatLichResult(true, null, null, null));
+            .Returns(new KiemTraQuyenDatLichResult(true, null, 0, false, null, false));
         return (user, clock, scheduling, mediator);
     }
 
