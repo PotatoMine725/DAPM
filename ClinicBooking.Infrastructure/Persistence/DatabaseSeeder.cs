@@ -104,11 +104,16 @@ public class DatabaseSeeder
         await SeedTaiKhoanFixtureAsync(fixture.LeTan, VaiTro.LeTan, matKhau, cancellationToken);
         await SeedTaiKhoanFixtureAsync(fixture.Admin, VaiTro.Admin, matKhau, cancellationToken);
         await SyncCaLamViecVaLichHenDemoAsync(cancellationToken);
+        await SeedLichSuKhamDemoAsync(cancellationToken);
+        await SeedThongBaoDemoAsync(cancellationToken);
     }
 
     // CaLamViec IDs 3001-3005 la du lieu seed demo.
-    // 3001/3002 → ngay mai (today+1), 3003 → tuan sau (today+7), 3004/3005 → hom nay (today).
+    // 3001/3002 → ngay mai (today+1), 3003 → tuan sau (today+7), 3004 → hom nay (today).
+    // 3005 → 30 ngay truoc (du lieu lich su kham — dung de demo trang LichSuKham Module 3).
     private static readonly int[] SeededCaLamViecIds = [3001, 3002, 3003, 3004, 3005];
+    private const int IdCaLamViecLichSu = 3005;
+    private const int IdBacSiDemo = 2001;
 
     // LichHen co MaLichHen bat dau bang "DEMO-" la du lieu demo, bi xoa va tao lai moi startup.
     // LichHen IDs 4001/4002 la du lieu migration cu, cung bi xoa.
@@ -178,9 +183,10 @@ public class DatabaseSeeder
         {
             ca.NgayLamViec = ca.IdCaLamViec switch
             {
-                3004 or 3005 => today,           // hom nay
-                3003         => today.AddDays(7), // tuan sau
-                _            => today.AddDays(1)  // ngay mai (3001, 3002)
+                3004 => today,                      // hom nay
+                3003 => today.AddDays(7),           // tuan sau
+                3005 => today.AddDays(-30),         // 30 ngay truoc — du lieu lich su kham
+                _    => today.AddDays(1)            // ngay mai (3001, 3002)
             };
             ca.SoSlotDaDat = 0;
         }
@@ -275,6 +281,164 @@ public class DatabaseSeeder
         _logger.LogWarning(
             "[DevFixture] Da seed 4 LichHen demo: 3x ca {Ca1} (hom nay), 1x ca {Ca2} (ngay mai).",
             3004, 3001);
+    }
+
+    /// <summary>
+    /// Seed mot LichHen "HoanThanh" trong qua khu (30 ngay truoc) kem HoSoKham + 2 ToaThuoc
+    /// de demo trang Lich su kham (Module 3). Su dung CaLamViec 3005 (da co tu migration,
+    /// duoc refresh ve today-30 trong SyncCaLamViecVaLichHenDemoAsync).
+    /// Idempotent — buoc 1 cua SyncCaLamViec da xoa moi LichHen cua 3005, nen day chi tao moi.
+    /// </summary>
+    private async Task SeedLichSuKhamDemoAsync(CancellationToken cancellationToken)
+    {
+        var now = _dateTimeProvider.UtcNow;
+        var ngayKhamCu = now.AddDays(-30);
+
+        // CaLamViec 3005 phai ton tai (tu migration SeedCaLamViecHomNay). Neu khong co, bo qua.
+        var ca = await _db.CaLamViec.FirstOrDefaultAsync(c => c.IdCaLamViec == IdCaLamViecLichSu, cancellationToken);
+        if (ca is null)
+        {
+            _logger.LogWarning("[DevFixture] CaLamViec {Id} khong ton tai — bo qua seed lich su kham.", IdCaLamViecLichSu);
+            return;
+        }
+
+        // --- Tao LichHen HoanThanh + HoSoKham + 2 ToaThuoc ---
+        var lichHen = new LichHen
+        {
+            MaLichHen = $"{DemoLichHenPrefix}LSK-{ca.NgayLamViec:yyyyMMdd}",
+            IdBenhNhan = IdBenhNhanDemo,
+            IdCaLamViec = IdCaLamViecLichSu,
+            IdDichVu = IdDichVuDefault,
+            SoSlot = 1,
+            HinhThucDat = HinhThucDat.TrucTuyen,
+            TrieuChung = "Ho keo dai, sot nhe (demo - lich su kham)",
+            TrangThai = TrangThaiLichHen.HoanThanh,
+            NgayTao = ngayKhamCu.AddDays(-1)
+        };
+        _db.LichHen.Add(lichHen);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var hoSoKham = new HoSoKham
+        {
+            IdLichHen = lichHen.IdLichHen,
+            IdBacSi = IdBacSiDemo,
+            ChanDoan = "Viem hong cap, khong sot cao",
+            KetQuaKham = "Hong do, amidan sung nhe, phoi trong",
+            GhiChu = "Tai kham sau 7 ngay neu khong do",
+            NgayKham = ngayKhamCu,
+            NgayTao = ngayKhamCu
+        };
+        _db.HoSoKham.Add(hoSoKham);
+
+        // Cap nhat SoSlotDaDat cho ca lich su (= 1 lich hen vua seed)
+        ca.SoSlotDaDat = 1;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        // Thuoc 1, 2 luon ton tai tu migration SeedDanhMuc.
+        _db.ToaThuoc.AddRange(
+            new ToaThuoc
+            {
+                IdHoSoKham = hoSoKham.IdHoSoKham,
+                IdThuoc = 1,
+                LieuLuong = "1 vien",
+                CachDung = "Uong sau an, ngay 3 lan",
+                SoNgayDung = 5,
+                GhiChu = "Khang sinh — uong du lieu trinh"
+            },
+            new ToaThuoc
+            {
+                IdHoSoKham = hoSoKham.IdHoSoKham,
+                IdThuoc = 2,
+                LieuLuong = "1 vien",
+                CachDung = "Uong khi sot tren 38.5°C",
+                SoNgayDung = 3,
+                GhiChu = "Ha sot"
+            });
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "[DevFixture] Da seed 1 lich su kham (HoSoKham + 2 ToaThuoc) cho benh nhan {IdBn}, ngay kham {Ngay:yyyy-MM-dd}.",
+            IdBenhNhanDemo, ngayKhamCu);
+    }
+
+    /// <summary>
+    /// Seed 3 thong bao trong-app cho patient001 de demo trang Thong bao (Module 4).
+    /// Idempotent — xoa thong bao cu co IdThamChieu = -9999 (marker demo) truoc khi tao moi.
+    /// </summary>
+    private async Task SeedThongBaoDemoAsync(CancellationToken cancellationToken)
+    {
+        const int DemoMarker = -9999;
+        const int IdTaiKhoanPatient001 = 2001;
+
+        // Don dep thong bao demo cu
+        var thongBaoCu = await _db.ThongBao
+            .Where(tb => tb.IdThamChieu == DemoMarker)
+            .ToListAsync(cancellationToken);
+        if (thongBaoCu.Count > 0)
+        {
+            _db.ThongBao.RemoveRange(thongBaoCu);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        // Kiem tra patient001 ton tai
+        var coPatient = await _db.TaiKhoan.AnyAsync(t => t.IdTaiKhoan == IdTaiKhoanPatient001, cancellationToken);
+        if (!coPatient)
+        {
+            _logger.LogWarning("[DevFixture] Khong tim thay TaiKhoan {Id} de seed ThongBao demo.", IdTaiKhoanPatient001);
+            return;
+        }
+
+        // Lay mot mau thong bao bat ky (luon ton tai tu migration SeedMauThongBao)
+        var mau = await _db.MauThongBao.OrderBy(m => m.IdMau).FirstOrDefaultAsync(cancellationToken);
+        if (mau is null)
+        {
+            _logger.LogWarning("[DevFixture] Khong co MauThongBao nao de seed ThongBao demo.");
+            return;
+        }
+
+        var now = _dateTimeProvider.UtcNow;
+        _db.ThongBao.AddRange(
+            new ThongBao
+            {
+                IdTaiKhoan = IdTaiKhoanPatient001,
+                IdMau = mau.IdMau,
+                KenhGui = KenhGui.TrongApp,
+                TieuDe = "Lich hen sap toi",
+                NoiDung = "Ban co lich hen vao ngay mai, vui long den truoc 15 phut de check-in.",
+                IdThamChieu = DemoMarker,
+                LoaiThamChieu = Domain.Enums.LoaiThamChieu.LichHen,
+                DaDoc = false,
+                NgayGui = now.AddHours(-2)
+            },
+            new ThongBao
+            {
+                IdTaiKhoan = IdTaiKhoanPatient001,
+                IdMau = mau.IdMau,
+                KenhGui = KenhGui.TrongApp,
+                TieuDe = "Toa thuoc moi",
+                NoiDung = "Bac si da ke toa thuoc cho ban. Xem chi tiet tai muc Lich su kham.",
+                IdThamChieu = DemoMarker,
+                LoaiThamChieu = Domain.Enums.LoaiThamChieu.LichHen,
+                DaDoc = false,
+                NgayGui = now.AddDays(-1)
+            },
+            new ThongBao
+            {
+                IdTaiKhoan = IdTaiKhoanPatient001,
+                IdMau = mau.IdMau,
+                KenhGui = KenhGui.TrongApp,
+                TieuDe = "Cam on ban da su dung dich vu",
+                NoiDung = "Ket qua kham cua ban da co. Truy cap Lich su kham de xem chi tiet.",
+                IdThamChieu = DemoMarker,
+                LoaiThamChieu = Domain.Enums.LoaiThamChieu.LichHen,
+                DaDoc = true,
+                NgayGui = now.AddDays(-30)
+            });
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "[DevFixture] Da seed 3 ThongBao demo cho TaiKhoan {Id} (2 chua doc, 1 da doc).",
+            IdTaiKhoanPatient001);
     }
 
     private async Task SeedTaiKhoanFixtureAsync(
