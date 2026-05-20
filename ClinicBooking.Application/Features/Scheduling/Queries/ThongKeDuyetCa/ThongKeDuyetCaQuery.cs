@@ -2,12 +2,6 @@ using MediatR;
 
 namespace ClinicBooking.Application.Features.Scheduling.Queries.ThongKeDuyetCa;
 
-public sealed record ThongKeDuyetCaQuery(
-    DateOnly? TuNgay = null,
-    DateOnly? DenNgay = null) : IRequest<ThongKeDuyetCaResponse>;
+public sealed record ThongKeDuyetCaQuery(DateOnly TuNgay, DateOnly DenNgay) : IRequest<ThongKeDuyetCaResponse>;
 
-public sealed record ThongKeDuyetCaResponse(
-    int SoChoDuyet,
-    int SoDaDuyet,
-    int SoTuChoi,
-    int SoBacSiHopDong);
+public sealed record ThongKeDuyetCaResponse(int SoChoDuyet, int SoDaDuyet, int SoTuChoi, int SoBacSiHopDong);

@@ -24,7 +24,7 @@ public sealed class KiemTraDoPhuBacSiHandlerTests
         var handler = new KiemTraDoPhuBacSiHandler(db);
         var result = await handler.Handle(new KiemTraDoPhuBacSiQuery(ck.IdChuyenKhoa, new DateOnly(2026, 5, 5), new DateOnly(2026, 5, 10)), CancellationToken.None);
 
-        result.NgayThieu.Should().ContainSingle(x => x.Ngay == new DateOnly(2026, 5, 6) && x.SoCaChoDuyet == 1 && !x.HoanToanTrong);
+        result.NgayThieu.Should().ContainSingle(x => x.Ngay == new DateOnly(2026, 5, 6) && x.SoCaChoDuyet == 1 && x.HoanToanTrong);
         result.NgayThieu.Should().NotContain(x => x.Ngay == new DateOnly(2026, 5, 5));
     }
 }

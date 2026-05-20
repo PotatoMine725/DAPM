@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClinicBooking.Application.Features.Scheduling.Queries.ThongKeDuyetCa;
 
-public sealed class ThongKeDuyetCaHandler
-    : IRequestHandler<ThongKeDuyetCaQuery, ThongKeDuyetCaResponse>
+public sealed class ThongKeDuyetCaHandler : IRequestHandler<ThongKeDuyetCaQuery, ThongKeDuyetCaResponse>
 {
     private readonly IAppDbContext _db;
 
@@ -15,32 +14,15 @@ public sealed class ThongKeDuyetCaHandler
         _db = db;
     }
 
-    public async Task<ThongKeDuyetCaResponse> Handle(
-        ThongKeDuyetCaQuery request,
-        CancellationToken cancellationToken)
+    public async Task<ThongKeDuyetCaResponse> Handle(ThongKeDuyetCaQuery request, CancellationToken cancellationToken)
     {
-        var caQuery = _db.CaLamViec.AsNoTracking().AsQueryable();
+        var query = _db.CaLamViec.AsNoTracking()
+            .Where(x => x.NgayLamViec >= request.TuNgay && x.NgayLamViec <= request.DenNgay);
 
-        if (request.TuNgay.HasValue)
-        {
-            caQuery = caQuery.Where(x => x.NgayLamViec >= request.TuNgay.Value);
-        }
-        if (request.DenNgay.HasValue)
-        {
-            caQuery = caQuery.Where(x => x.NgayLamViec <= request.DenNgay.Value);
-        }
-
-        var soChoDuyet = await caQuery
-            .CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet, cancellationToken);
-        var soDaDuyet = await caQuery
-            .CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet, cancellationToken);
-        var soTuChoi = await caQuery
-            .CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaHuy, cancellationToken);
-
-        var soBacSiHopDong = await _db.BacSi
-            .AsNoTracking()
-            .CountAsync(x => x.LoaiHopDong == LoaiHopDong.HopDong
-                          && x.TrangThai == TrangThaiBacSi.DangLam, cancellationToken);
+        var soChoDuyet = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet, cancellationToken);
+        var soDaDuyet = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet, cancellationToken);
+        var soTuChoi = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaHuy, cancellationToken);
+        var soBacSiHopDong = await _db.BacSi.AsNoTracking().CountAsync(x => x.LoaiHopDong == LoaiHopDong.HopDong, cancellationToken);
 
         return new ThongKeDuyetCaResponse(soChoDuyet, soDaDuyet, soTuChoi, soBacSiHopDong);
     }

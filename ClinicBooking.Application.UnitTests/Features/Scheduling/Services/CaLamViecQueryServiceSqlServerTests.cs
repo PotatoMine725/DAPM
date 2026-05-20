@@ -6,6 +6,7 @@ using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Services.Scheduling;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Testcontainers.MsSql;
 
@@ -69,10 +70,8 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
 
         await using var db1 = CreateContext();
         await using var db2 = CreateContext();
-        var logger1 = Substitute.For<Microsoft.Extensions.Logging.ILogger<CaLamViecQueryService>>();
-        var logger2 = Substitute.For<Microsoft.Extensions.Logging.ILogger<CaLamViecQueryService>>();
-        var service1 = new CaLamViecQueryService(db1, clock1, logger1);
-        var service2 = new CaLamViecQueryService(db2, clock2, logger2);
+        var service1 = new CaLamViecQueryService(db1, clock1, NullLogger<CaLamViecQueryService>.Instance);
+        var service2 = new CaLamViecQueryService(db2, clock2, NullLogger<CaLamViecQueryService>.Instance);
 
         var task1 = service1.IncrementSoSlotDaDatAsync(1, 1, CancellationToken.None);
         var task2 = service2.IncrementSoSlotDaDatAsync(1, 1, CancellationToken.None);
@@ -116,32 +115,6 @@ public sealed class CaLamViecQueryServiceSqlServerTests : IAsyncLifetime
             NguonTaoCa = NguonTaoCa.TuDong,
             NgayTao = DateTime.UtcNow
         });
-
-        db.BacSi.Add(new ClinicBooking.Domain.Entities.BacSi
-        {
-            IdBacSi = 1,
-            IdTaiKhoan = 1,
-            IdChuyenKhoa = 1,
-            HoTen = "BS SQL",
-            LoaiHopDong = LoaiHopDong.NoiTru,
-            TrangThai = TrangThaiBacSi.DangLam,
-            NgayTao = DateTime.UtcNow
-        });
-
-        db.ChuyenKhoa.Add(new ChuyenKhoa { IdChuyenKhoa = 1, TenChuyenKhoa = "CK SQL", ThoiGianSlotMacDinh = 15, HienThi = true });
-        db.Phong.Add(new Phong { IdPhong = 1, MaPhong = "P-SQL-1", TenPhong = "Phong SQL", SucChua = 1, TrangThai = true });
-        db.DinhNghiaCa.Add(new DinhNghiaCa { IdDinhNghiaCa = 1, TenCa = "Sang", GioBatDauMacDinh = new TimeOnly(8, 0), GioKetThucMacDinh = new TimeOnly(11, 0), TrangThai = true });
-        db.TaiKhoan.Add(new TaiKhoan
-        {
-            IdTaiKhoan = 1,
-            TenDangNhap = "sql-user",
-            Email = "sql-user@example.com",
-            SoDienThoai = "0900000009",
-            VaiTro = VaiTro.BacSi,
-            TrangThai = true,
-            NgayTao = DateTime.UtcNow
-        });
-
         db.SaveChanges();
     }
 }

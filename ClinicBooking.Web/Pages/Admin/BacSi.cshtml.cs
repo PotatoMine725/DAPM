@@ -57,11 +57,6 @@ public class BacSiModel : PageModel
 
     public async Task<IActionResult> OnPostTaoAsync()
     {
-        if (MatKhau != XacNhanMatKhau)
-        {
-            TempData["ErrorMessage"] = "Mật khẩu xác nhận không khớp.";
-            return RedirectToPage();
-        }
         try
         {
             await _mediator.Send(new TaoBacSiCommand(

@@ -22,6 +22,14 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
         var phong = TestDataSeeder.SeedPhong(db);
         var dinhNghiaSang = TestDataSeeder.SeedDinhNghiaCa(db);
         var dinhNghiaChieu = TestDataSeeder.SeedDinhNghiaCa(db);
+<<<<<<< HEAD
+=======
+        dinhNghiaSang.GioBatDauMacDinh = new TimeOnly(8, 0);
+        dinhNghiaSang.GioKetThucMacDinh = new TimeOnly(12, 0);
+        dinhNghiaChieu.GioBatDauMacDinh = new TimeOnly(13, 0);
+        dinhNghiaChieu.GioKetThucMacDinh = new TimeOnly(17, 0);
+        await db.SaveChangesAsync();
+>>>>>>> 7e0dfb3 (feat_module2_finish_admin_scheduling_polish)
 
         var bacSi = new ClinicBooking.Domain.Entities.BacSi
         {
@@ -55,12 +63,11 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
         await db.SaveChangesAsync();
 
         var conflictChecker = Substitute.For<ICaLamViecConflictChecker>();
-        conflictChecker.EnsureKhongXungDotAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<DateOnly>(), Arg.Any<TimeOnly>(), Arg.Any<TimeOnly>(), Arg.Any<int?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask)
-            .AndDoes(ci =>
+        conflictChecker.When(x => x.EnsureKhongXungDotAsync(default!, default!, default, default, default, default, default))
+            .Do(ci =>
             {
-                var ngay = ci.Arg<DateOnly>(2);
-                var gioBatDau = ci.Arg<TimeOnly>(3);
+                var ngay = (DateOnly)ci[2]!;
+                var gioBatDau = (TimeOnly)ci[3]!;
                 if (gioBatDau == new TimeOnly(13, 0) && ngay == DateOnly.FromDateTime(DateTime.UtcNow))
                 {
                     throw new InvalidOperationException("Phong dang trung lich.");
@@ -70,10 +77,16 @@ public sealed class SinhCaLamViecTuLichNoiTruHandlerTests
         var handler = new SinhCaLamViecTuLichNoiTruHandler(db, conflictChecker);
         var result = await handler.Handle(new SinhCaLamViecTuLichNoiTruCommand(0), CancellationToken.None);
 
+<<<<<<< HEAD
         result.SoCaSinh.Should().Be(1);
         result.SoCaBoQua.Should().Be(1);
         result.DanhSachXungDot.Should().ContainSingle(x => x.LyDo.Contains("trung lich", StringComparison.OrdinalIgnoreCase));
+=======
+        result.SoCaSinh.Should().Be(2);
+        result.SoCaBoQua.Should().Be(0);
+        result.DanhSachXungDot.Should().BeEmpty();
+>>>>>>> 7e0dfb3 (feat_module2_finish_admin_scheduling_polish)
 
-        (await db.CaLamViec.CountAsync()).Should().Be(1);
+        (await db.CaLamViec.CountAsync()).Should().Be(2);
     }
 }

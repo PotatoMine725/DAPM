@@ -1,6 +1,7 @@
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.DanhMuc.Dtos;
 using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachChuyenKhoa;
+using ClinicBooking.Application.Features.Scheduling.Dtos;
 using ClinicBooking.Application.Features.Scheduling.Queries.KiemTraDoPhuBacSi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -23,16 +24,20 @@ public class DashboardModel : PageModel
 
     public IReadOnlyList<ChuyenKhoaResponse> DanhSachChuyenKhoa { get; private set; } = [];
     public IReadOnlyList<CanhBaoChuyenKhoaVm> CanhBaoTheoChuyenKhoa { get; private set; } = [];
+    public IReadOnlyList<NgayThieuBacSiDto> NgayThieuTongHop { get; private set; } = [];
 
     public async Task OnGetAsync()
     {
         DanhSachChuyenKhoa = await _mediator.Send(new DanhSachChuyenKhoaQuery(1, 100, true, null));
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        CanhBaoTheoChuyenKhoa = DanhSachChuyenKhoa.Count == 0
+        var ketQua = DanhSachChuyenKhoa.Count == 0
             ? []
-            : (await Task.WhenAll(DanhSachChuyenKhoa.Select(async ck => new CanhBaoChuyenKhoaVm(
+            : await Task.WhenAll(DanhSachChuyenKhoa.Select(async ck => new CanhBaoChuyenKhoaVm(
                 ck.IdChuyenKhoa,
                 ck.TenChuyenKhoa,
-                (await _mediator.Send(new KiemTraDoPhuBacSiQuery(ck.IdChuyenKhoa, today, today.AddDays(7)))).NgayThieu)))).ToList();
+                (await _mediator.Send(new KiemTraDoPhuBacSiQuery(ck.IdChuyenKhoa, today, today.AddDays(7)))).NgayThieu)));
+
+        CanhBaoTheoChuyenKhoa = ketQua.ToList();
+        NgayThieuTongHop = CanhBaoTheoChuyenKhoa.SelectMany(x => x.NgayThieu).ToList();
     }
 }

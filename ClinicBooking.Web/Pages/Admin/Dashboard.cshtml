@@ -14,11 +14,30 @@
     </div>
 }
 
+<<<<<<< HEAD
 <div class="page-header">
     <div>
         <h1 class="page-title">Bảng điều khiển Admin</h1>
         <div class="page-subtitle">Theo dõi cảnh báo vận hành và điều hướng nhanh các khu vực quản trị.</div>
     </div>
+=======
+<div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom: var(--space-4);">
+    <div class="stat-card sc-blue">
+        <div class="sc-top"><div><div class="sc-label">Chuyên khoa cảnh báo</div></div><div class="sc-icon"><i class="fa-solid fa-triangle-exclamation"></i></div></div>
+        <div class="sc-value">@Model.CanhBaoTheoChuyenKhoa.Count</div>
+        <div class="sc-footer"><span>Cần theo dõi</span></div>
+    </div>
+    <div class="stat-card sc-orange">
+        <div class="sc-top"><div><div class="sc-label">Ngày thiếu bác sĩ</div></div><div class="sc-icon"><i class="fa-solid fa-calendar-days"></i></div></div>
+        <div class="sc-value">@Model.NgayThieuTongHop.Count</div>
+        <div class="sc-footer"><span>Trong 7 ngày</span></div>
+    </div>
+    <div class="stat-card sc-green">
+        <div class="sc-top"><div><div class="sc-label">Trạng thái</div></div><div class="sc-icon"><i class="fa-solid fa-circle-check"></i></div></div>
+        <div class="sc-value">OK</div>
+        <div class="sc-footer"><span>Tổng quan admin</span></div>
+    </div>
+>>>>>>> 7e0dfb3 (feat_module2_finish_admin_scheduling_polish)
 </div>
 
 <div class="card section-stack" style="margin-bottom: var(--space-4);">
@@ -38,7 +57,11 @@
             <div class="card" style="border:1px solid var(--color-border-subtle); box-shadow:none; margin-bottom: var(--space-3);">
                 <div class="card-header">
                     <span class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px; margin-right:4px;"><path d="M10 3h4v2h-4z" stroke="currentColor" stroke-width="2"/><path d="M9 5h6v4H9z" stroke="currentColor" stroke-width="2"/><path d="M7 9h10v11H7z" stroke="currentColor" stroke-width="2"/><path d="M10 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> @ck.TenChuyenKhoa <span class="badge @severityClass" style="margin-left:8px;">@ck.NgayThieu.Count ngày thiếu</span></span>
+<<<<<<< HEAD
                     <a class="btn btn-sm btn-secondary" href="/Admin/CaLamViec">Xem ca</a>
+=======
+                    <a class="btn btn-sm btn-secondary" href="/Admin/QuanLyCaLamViec?chuyenKhoa=@ck.IdChuyenKhoa">Xem ca</a>
+>>>>>>> 7e0dfb3 (feat_module2_finish_admin_scheduling_polish)
                 </div>
                 @if (!ck.NgayThieu.Any())
                 {

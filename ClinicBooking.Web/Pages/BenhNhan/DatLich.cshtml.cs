@@ -6,6 +6,7 @@ using ClinicBooking.Application.Features.DanhMuc.Queries.DanhSachDichVu;
 using ClinicBooking.Application.Features.LichHen.Commands.TaoLichHen;
 using ClinicBooking.Application.Features.Scheduling.Dtos;
 using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecCongKhai;
+using CaLamViecCongKhaiDto = ClinicBooking.Application.Features.Scheduling.Dtos.CaLamViecPublicResponse;
 using ClinicBooking.Application.Features.Scheduling.Queries.KiemTraDoPhuBacSi;
 using ClinicBooking.Domain.Entities;
 using MediatR;
@@ -135,8 +136,13 @@ public class DatLichModel : PageModel
 
     private async Task TaiDuLieuAsync(DateOnly ngay)
     {
+<<<<<<< HEAD
         DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(SoTrang: 1, KichThuocTrang: 100, IdChuyenKhoa: null, HienThi: true, TuKhoa: null));
         DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(SoTrang: 1, KichThuocTrang: 50, IdBacSi: null, IdChuyenKhoa: IdChuyenKhoa, IdPhong: null, TuNgay: ngay, DenNgay: ngay, ConTrong: true));
+=======
+        DanhSachDichVu = await _mediator.Send(new DanhSachDichVuQuery(1, 100, null, true));
+        DanhSachCa = await _mediator.Send(new DanhSachCaLamViecCongKhaiQuery(1, 50, null, IdChuyenKhoa, null, ngay, ngay, true));
+>>>>>>> 7e0dfb3 (feat_module2_finish_admin_scheduling_polish)
         CanhBaoThieuBacSi = (await _mediator.Send(new KiemTraDoPhuBacSiQuery(IdChuyenKhoa, ngay, ngay))).NgayThieu;
         TenDichVu = DanhSachDichVu.FirstOrDefault(x => x.IdDichVu == IdDichVu)?.TenDichVu;
         TenChuyenKhoaDaChon = "Nội tổng quát";

@@ -1,0 +1,12 @@
+@model ClinicBooking.Web.ViewComponents.AdminBadgeCounterViewComponent.AdminBadgeCountersDto
+
+<span class="sidebar-badges">
+    @if (Model.SoCaChoDuyet > 0)
+    {
+        <span class="sidebar-badge sidebar-badge--warning">@Model.SoCaChoDuyet</span>
+    }
+    @if (Model.SoDonNghiPhepChoDuyet > 0)
+    {
+        <span class="sidebar-badge sidebar-badge--danger">@Model.SoDonNghiPhepChoDuyet</span>
+    }
+</span>

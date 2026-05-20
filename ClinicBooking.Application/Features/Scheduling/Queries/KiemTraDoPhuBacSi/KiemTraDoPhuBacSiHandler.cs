@@ -32,7 +32,7 @@ public sealed class KiemTraDoPhuBacSiHandler : IRequestHandler<KiemTraDoPhuBacSi
             .AsEnumerable()
             .Select(x => new NgayThieuBacSiDto(x.Ngay, x.SoCaChoDuyet, x.HoanToanTrong))
             .OrderBy(x => x.Ngay)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new KiemTraDoPhuBacSiResponse(ds);
     }
