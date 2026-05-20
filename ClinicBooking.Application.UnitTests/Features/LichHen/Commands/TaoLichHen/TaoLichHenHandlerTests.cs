@@ -43,7 +43,7 @@ public sealed class TaoLichHenHandlerTests
         maGen.SinhMaLichHenAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns("LH-20260505-000001");
         mediator.Send(Arg.Any<KiemTraQuyenDatLichQuery>(), Arg.Any<CancellationToken>())
-            .Returns(new KiemTraQuyenDatLichResult(true, null, null, null));
+            .Returns(new KiemTraQuyenDatLichResult(true, null, 0, false, null, false));
         return new Deps(user, clock, scheduling, notif, maGen, mediator);
     }
 

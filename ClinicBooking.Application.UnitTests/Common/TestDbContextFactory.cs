@@ -14,6 +14,7 @@ namespace ClinicBooking.Application.UnitTests.Common;
 public class TestDbContextFactory : IDisposable
 {
     private readonly SqliteConnection _connection;
+    private bool _schemaReady;
 
     public TestDbContextFactory()
     {
@@ -23,10 +24,8 @@ public class TestDbContextFactory : IDisposable
 
     /// <summary>
     /// Tao mot <see cref="AppDbContext"/> chia se cung 1 SQLite connection.
-    /// Goi <c>Database.EnsureCreated()</c> de tao schema.
-    /// <br/>
-    /// Lan goi dau tien se xoa du lieu seed tu migration Module1_TestDataSeed
-    /// (IDs >= 2000) de tranh xung dot unique constraint voi du lieu test.
+    /// Schema chi tao mot lan moi factory instance — cac CreateContext sau tai su dung cung schema/du lieu
+    /// de cac test multi-context (concurrency, factory behavior) nhin thay du lieu chung.
     /// </summary>
     public AppDbContext CreateContext()
     {
@@ -35,6 +34,11 @@ public class TestDbContextFactory : IDisposable
             .Options;
 
         var context = new AppDbContext(options);
+        if (_schemaReady)
+        {
+            return context;
+        }
+
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
         // EnsureCreated() applies HasData from model snapshot (including module test fixtures).
@@ -70,6 +74,7 @@ public class TestDbContextFactory : IDisposable
             cmd.ExecuteNonQuery();
         }
 
+        _schemaReady = true;
         return context;
     }
 

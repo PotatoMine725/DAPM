@@ -239,6 +239,7 @@ public sealed class CaLamViecQueryServiceTests
         var service = CreateService(factory, out var db);
         var ca = SeedCa(db, TrangThaiDuyetCa.DaDuyet, soSlotToiDa: 5, soSlotDaDat: 0, ngay: new DateOnly(2026, 5, 5));
         var benhNhan = TestDataSeeder.SeedBenhNhan(db);
+        var dichVu = TestDataSeeder.SeedDichVu(db);
 
         db.GiuCho.Add(new GiuCho
         {
@@ -253,12 +254,12 @@ public sealed class CaLamViecQueryServiceTests
         {
             IdCaLamViec = ca.IdCaLamViec,
             IdBenhNhan = benhNhan.IdBenhNhan,
-            IdDichVu = TestDataSeeder.SeedDichVu(db, ca.IdChuyenKhoa).IdDichVu,
+            IdDichVu = dichVu.IdDichVu,
+            SoSlot = 1,
+            HinhThucDat = HinhThucDat.TrucTuyen,
             TrangThai = TrangThaiLichHen.DangKham,
             NgayTao = FixedNow,
             MaLichHen = "LH-UT-1",
-            SoSlot = 1,
-            HinhThucDat = HinhThucDat.TrucTuyen,
             RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
         });
         await db.SaveChangesAsync();
