@@ -46,6 +46,7 @@
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/CaLamViec") || currentPath.StartsWith("/LeTan/QuanLyCaLamViec") ? "active" : "")"
                        href="/Admin/CaLamViec">
                         <i class="ph ph-calendar-dots"></i> Quản lý ca làm việc
+                        @await Component.InvokeAsync("AdminBadgeCounter")
                     </a>
                 </li>
                 <li>
@@ -58,6 +59,7 @@
                     <a class="sidebar-nav-item @(currentPath.StartsWith("/Admin/NghiPhep") || currentPath.StartsWith("/LeTan/NghiPhep") ? "active" : "")"
                        href="/Admin/NghiPhep">
                         <i class="ph ph-calendar-x"></i> Nghỉ phép
+                        @await Component.InvokeAsync("AdminBadgeCounter")
                     </a>
                 </li>
                 <li>
