@@ -1,6 +1,7 @@
 using ClinicBooking.Application.Abstractions.Security;
 using ClinicBooking.Application.Common.Constants;
 using ClinicBooking.Application.Features.Scheduling.Commands.DuyetCaLamViec;
+using ClinicBooking.Application.Features.Scheduling.Commands.DuyetNhieuCaLamViec;
 using ClinicBooking.Application.Features.Scheduling.Dtos;
 using ClinicBooking.Application.Features.Scheduling.Queries.DanhSachCaLamViecChoDuyet;
 using ClinicBooking.Application.Features.Scheduling.Queries.ThongKeDuyetCa;
@@ -30,6 +31,14 @@ public class DuyetCaModel : PageModel
 
     [BindProperty] public int IdCaLamViecChon { get; set; }
     [BindProperty] public string? LyDoTuChoi { get; set; }
+    [BindProperty] public List<int> DanhSachIdCaDuyet { get; set; } = [];
+
+    // Filter properties
+    [BindProperty(SupportsGet = true)] public int? IdBacSiLoc { get; set; }
+    [BindProperty(SupportsGet = true)] public NguonTaoCa? NguonTaoCaLoc { get; set; }
+    [BindProperty(SupportsGet = true)] public int? IdChuyenKhoaLoc { get; set; }
+    [BindProperty(SupportsGet = true)] public DateOnly? TuNgayLoc { get; set; }
+    [BindProperty(SupportsGet = true)] public DateOnly? DenNgayLoc { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -71,18 +80,53 @@ public class DuyetCaModel : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnPostDuyetNhieuAsync()
+    {
+        if (DanhSachIdCaDuyet == null || !DanhSachIdCaDuyet.Any())
+        {
+            TempData["ErrorMessage"] = "Vui lòng chọn ít nhất một ca để duyệt.";
+            return RedirectToPage();
+        }
+
+        try
+        {
+            var idAdmin = _currentUser.IdTaiKhoan ?? 0;
+            var result = await _mediator.Send(new DuyetNhieuCaLamViecCommand(DanhSachIdCaDuyet, idAdmin));
+
+            if (result.SoThanhCong > 0)
+            {
+                TempData["SuccessMessage"] = $"Đã duyệt thành công {result.SoThanhCong} ca.";
+            }
+
+            if (result.SoThatBai > 0)
+            {
+                var chiTietLoi = string.Join(", ", result.DanhSachLoi.Select(x => $"Ca #{x.IdCaLamViec}: {x.LyDo}"));
+                TempData["ErrorMessage"] = $"{result.SoThatBai} ca thất bại. Chi tiết: {chiTietLoi}";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+        return RedirectToPage();
+    }
+
     private async Task TaiDuLieuAsync()
     {
-        var dauThang = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1);
-        var cuoiThang = dauThang.AddMonths(1).AddDays(-1);
+        var tuNgay = TuNgayLoc ?? new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var denNgay = DenNgayLoc ?? tuNgay.AddMonths(1).AddDays(-1);
 
-        ThongKe = await _mediator.Send(new ThongKeDuyetCaQuery(dauThang, cuoiThang));
+        ThongKe = await _mediator.Send(new ThongKeDuyetCaQuery(tuNgay, denNgay));
 
         DanhSachChoDuyet = await _mediator.Send(new DanhSachCaLamViecChoDuyetQuery(
             SoTrang: 1,
             KichThuocTrang: 100,
             TrangThaiDuyet: TrangThaiDuyetCa.ChoDuyet,
-            NguonTaoCa: NguonTaoCa.BacSiDangKy));
+            NguonTaoCa: NguonTaoCaLoc ?? NguonTaoCa.BacSiDangKy,
+            IdBacSi: IdBacSiLoc,
+            IdChuyenKhoa: IdChuyenKhoaLoc,
+            TuNgay: TuNgayLoc,
+            DenNgay: DenNgayLoc));
 
         // 20 ca xu ly gan day (DaDuyet hoac DaHuy)
         var daDuyet = await _mediator.Send(new DanhSachCaLamViecChoDuyetQuery(

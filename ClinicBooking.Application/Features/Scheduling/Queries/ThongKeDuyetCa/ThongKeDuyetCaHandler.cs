@@ -19,11 +19,18 @@ public sealed class ThongKeDuyetCaHandler : IRequestHandler<ThongKeDuyetCaQuery,
         var query = _db.CaLamViec.AsNoTracking()
             .Where(x => x.NgayLamViec >= request.TuNgay && x.NgayLamViec <= request.DenNgay);
 
-        var soChoDuyet = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet, cancellationToken);
-        var soDaDuyet = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet, cancellationToken);
-        var soTuChoi = await query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaHuy, cancellationToken);
-        var soBacSiHopDong = await _db.BacSi.AsNoTracking().CountAsync(x => x.LoaiHopDong == LoaiHopDong.HopDong, cancellationToken);
+        // Run all count queries in parallel for better performance
+        var soChoDuyetTask = query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.ChoDuyet, cancellationToken);
+        var soDaDuyetTask = query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaDuyet, cancellationToken);
+        var soTuChoiTask = query.CountAsync(x => x.TrangThaiDuyet == TrangThaiDuyetCa.DaHuy, cancellationToken);
+        var soBacSiHopDongTask = _db.BacSi.AsNoTracking().CountAsync(x => x.LoaiHopDong == LoaiHopDong.HopDong, cancellationToken);
 
-        return new ThongKeDuyetCaResponse(soChoDuyet, soDaDuyet, soTuChoi, soBacSiHopDong);
+        await Task.WhenAll(soChoDuyetTask, soDaDuyetTask, soTuChoiTask, soBacSiHopDongTask);
+
+        return new ThongKeDuyetCaResponse(
+            soChoDuyetTask.Result,
+            soDaDuyetTask.Result,
+            soTuChoiTask.Result,
+            soBacSiHopDongTask.Result);
     }
 }
